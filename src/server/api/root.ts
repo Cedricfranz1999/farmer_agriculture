@@ -2,6 +2,12 @@ import { postRouter } from "~/server/api/routers/post";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { signupRouter } from "./routers/sign-up";
 import { organicFarmerRouter } from "./routers/organic-sign-up";
+import { farmerDashboardRouter } from "./routers/dashboard";
+import { farmersRouter } from "./routers/farmers";
+import { OrganicfarmersRouterData } from "./routers/organic-farmer";
+import { eventsRouter } from "./routers/events";
+import { messagesRouter } from "./routers/messages";
+import { reportsRouter } from "./routers/reports";
 
 /**
  * This is the primary router for your server.
@@ -12,6 +18,12 @@ export const appRouter = createTRPCRouter({
   post: postRouter,
   auth: signupRouter,
   organicFarmer: organicFarmerRouter,
+  dashboardData: farmerDashboardRouter,
+  farmers: farmersRouter,
+  organicFarmersData: OrganicfarmersRouterData,
+  events: eventsRouter,
+  messages: messagesRouter,
+  reports: reportsRouter,
 });
 
 // export type definition of API

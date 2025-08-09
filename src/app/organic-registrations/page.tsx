@@ -8,6 +8,7 @@ import { useToast } from "~/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft } from "lucide-react";
 
 // Define form schema that matches your Organic_Farmer schema
 const organicFarmerSignupSchema = z
@@ -341,10 +342,19 @@ const OrganicFarmerSignupPage = () => {
 
   return (
     <div className="relative min-h-screen bg-gray-800 bg-[url('/farmers4.png')] bg-cover bg-center py-8 bg-blend-overlay">
-      <div className="mx-auto max-w-[1800px] rounded-lg bg-[#f9f8f8] p-8 shadow-md">
-        <h1 className="mb-6 text-center text-3xl font-bold text-gray-800">
-          Organic Farmer Registration
-        </h1>
+      <div className="mx-auto max-w-[2000px] rounded-lg bg-[#f9f8f8] p-8 shadow-md lg:px-40 lg:py-10">
+        <div className="relative mb-6 flex items-center justify-between">
+          <a
+            href="/sign-in"
+            className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Login
+          </a>
+          <h1 className="absolute left-1/2 -translate-x-1/2 text-3xl font-bold text-gray-800">
+            Organic Farmer Registration
+          </h1>
+        </div>
 
         {/* Progress bar */}
         <div className="mb-8">

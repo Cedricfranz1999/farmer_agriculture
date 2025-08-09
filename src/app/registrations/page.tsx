@@ -579,7 +579,7 @@ const FarmerSignupPage = () => {
 
   return (
     <div className="relative min-h-screen bg-gray-700 bg-[url('/farmers4.png')] bg-cover bg-center py-8 bg-blend-overlay">
-      <div className="mx-auto max-w-[1800px] rounded-lg bg-[#f9f8f8] p-8 shadow-md">
+      <div className="mx-auto max-w-[2000px] rounded-lg bg-[#f9f8f8] shadow-md lg:px-32 lg:py-10">
         <div className="relative mb-6 flex items-center justify-between">
           <a
             href="/sign-in"

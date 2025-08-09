@@ -20,72 +20,67 @@ model Post {
     @@index([name])
 }
 
-
 model Admin {
-        id        Int      @id @default(autoincrement())
-        username  String
-        password  String
+    id        Int      @id @default(autoincrement())
+    username  String
+    password  String
+    concernMessages ConcernMessage[]
 }
+
 model Farmer {
-    id Int @id @default(autoincrement())
-    username String
-    password String
-    email_address String?
-    surname String
-    firstname String
-    middleName String?
-    extensionName String?
-    sex GENDER
-    houseOrLotOrBuildingNo String
-    streetOrSitioOrSubDivision String
-    barangay String
-    municipalityOrCity String
-    province String
-    region String
-    contactNumber String
-    placeOfBirth String
-    dateOfBirth DateTime
-    highestFormOfEducation EDUCATION_LEVEL
-    religion String?
-    civilStaus CIVIL_STATUS
-    nameOfSpouse String? // if Married
-    FourPS_Benificiaty String? // open field text
-    mothersName String?
-    fathersName String?
-    govermentId String // open field text
-    personToContactIncaseOfEmerceny String? // name of person to contact in case of emergency
-    personContactNumberIncaseOfEmergency String? // contact number to contact in case of emergency
-    grossAnualIncomeLastYearFarming Int
-    grossAnualIncomeLastYeaNonFarming Int
-    farmerImage String
-    farmerSignatureAsImage String?
-    farmerFingerPrintAsImage String?
-    
-    // Category selection (only one allowed)
-    categoryType FARMER_CATEGORY
-    //choose only 1
-    farmerDetails FarmerDetails?
-    farmworkerDetails FarmWorkerDetails?
-    fisherfolkDetails FisherfolkDetails?
-    AGRI_YOUTH AGRI_YOUTH[]
+  id Int @id @default(autoincrement())
+  status FarmerRegistrationsStatus @default(APPLICANTS)
+  username String
+  password String
+  email_address String?
+  surname String
+  firstname String
+  middleName String?
+  extensionName String?
+  sex GENDER
+  houseOrLotOrBuildingNo String
+  streetOrSitioOrSubDivision String
+  barangay String
+  municipalityOrCity String
+  province String
+  region String
+  contactNumber String
+  placeOfBirth String
+  dateOfBirth DateTime
+  highestFormOfEducation EDUCATION_LEVEL
+  religion String?
+  civilStaus CIVIL_STATUS
+  nameOfSpouse String?
+  FourPS_Benificiaty String?
+  mothersName String?
+  fathersName String?
+  govermentId String
+  personToContactIncaseOfEmerceny String?
+  personContactNumberIncaseOfEmergency String?
+  grossAnualIncomeLastYearFarming Int
+  grossAnualIncomeLastYeaNonFarming Int
+  farmerImage String
+  farmerSignatureAsImage String?
+  farmerFingerPrintAsImage String?
+  
+  categoryType FARMER_CATEGORY
+  farmerDetails FarmerDetails?
+  farmworkerDetails FarmWorkerDetails?
+  fisherfolkDetails FisherfolkDetails?
+  AGRI_YOUTH AGRI_YOUTH[]
+  
+  houseHead houseHead? @relation(fields: [houseHeadId], references: [id])
+  houseHeadId Int? @unique
 
-     
-    //
-    
-    houseHead houseHead? @relation(fields: [houseHeadId], references: [id])
-    houseHeadId Int? @unique
+  farmDetails FarmDetails[]
+  numberOfFarms Int          
 
-    // Farm details relationship (one-to-many)
-    farmDetails FarmDetails[]  
-    numberOfFarms Int          
-    createdAt DateTime @default(now())
-    updatedAt DateTime? @updatedAt
+  concerns FarmerConcern[]
+  concernMessages ConcernMessage[]
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
 }
-
-
-
-
 
 model FarmerDetails {
     id Int @id @default(autoincrement())
@@ -98,7 +93,6 @@ model FarmerDetails {
     livestockDetails String?
     poultry Boolean @default(false)
     poultryDetails String?
-   
 }
 
 model LotDetails {
@@ -111,6 +105,7 @@ model LotDetails {
     farmerDetails FarmDetails @relation(fields: [farmerDetailsId], references: [id])
     farmerDetailsId Int @unique
 }
+
 model FarmDetails { 
     id Int @id @default(autoincrement())
     Location String
@@ -118,35 +113,18 @@ model FarmDetails {
     withAncestordomain  Boolean? 
     agrarianReform    Boolean
     OwnerDocumentsNumber String
-    //choose option 
-    // option 1
-
     RegisterOwner Boolean?
     ownerName String
-    // option 2
     othersField String?
-
-    // end of option 
-
-
- // choose option 
-     // option 1
-
     tenantOwner Boolean?
     teenantName String?
-    // option 2
-
     Leese      Boolean?
     leeseName  String?
-    //end of option
-
     others String?
-
     farmer Farmer @relation(fields: [farmerId], references: [id]) 
     farmerId Int  
     lotDetails LotDetails?
 }
-
 
 model FarmWorkerDetails {
     id Int @id @default(autoincrement())
@@ -183,7 +161,6 @@ model AGRI_YOUTH {
     others String?
 }
 
-
 model houseHead {
     id Int @id @default(autoincrement())
     houseHoldHead String
@@ -192,6 +169,180 @@ model houseHead {
     numberOfMale Int
     NumberOfFemale Int
     farmer Farmer?
+}
+
+model FarmerConcern {
+  id Int @id @default(autoincrement())
+  title String
+  description String
+  image String?
+  status ConcernStatus @default(OPEN)
+  farmer Farmer @relation(fields: [farmerId], references: [id])
+  farmerId Int
+  messages ConcernMessage[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Organic_Farmer {
+  id Int @id @default(autoincrement())
+  status organicFarmerRegistrationsStatus @default(APPLICANTS)
+  username String
+  password String
+  email_address String?
+  surname String
+  firstname String
+  middleName String?
+  extensionName String?
+  sex GENDER
+  houseOrLotOrBuildingNo String
+  streetOrSitioOrSubDivision String
+  barangay String
+  municipalityOrCity String
+  province String
+  region String
+  contactNumber String
+  placeOfBirth String
+  dateOfBirth DateTime
+  highestFormOfEducation EDUCATION_LEVEL
+  religion String?
+  civilStaus CIVIL_STATUS
+  FourPS_Benificiaty String?
+  mothersName String?
+  fathersName String?
+  govermentId String
+  personToContactIncaseOfEmerceny String?
+  personContactNumberIncaseOfEmergency String?
+  grossAnualIncomeLastYearFarming Int
+  grossAnualIncomeLastYeaNonFarming Int
+  farmerImage String
+  withOrganicAgricultureCertification  Boolean?
+  certification Certification?
+  whatStagesInCertification  String?
+  productionForInputs        CHOICES_BUSINESS_NATURE?
+  productionForFood          CHOICES_BUSINESS_NATURE?
+  postHarvestAndProcessing   CHOICES_BUSINESS_NATURE?
+  tradingAndWholeSale        CHOICES_BUSINESS_NATURE?
+  retailing                  CHOICES_BUSINESS_NATURE?
+  transPortAndLogistics      CHOICES_BUSINESS_NATURE?
+  WareHousing                CHOICES_BUSINESS_NATURE?
+  Others        String?
+  direcToConsumer Boolean?
+  trader         Boolean?
+  specificType1       String?
+  retailer  Boolean?
+  institutionalBuyer Boolean?
+  SpecificType2      String? 
+  internationalBasedBuyers Boolean? 
+  SpecificType3 String?
+  others  String?
+  Grains                          AgriculturalCommoditiesFisheryProducts? @relation("Grains")
+  LowlandVegetables               AgriculturalCommoditiesFisheryProducts? @relation("LowlandVegetables")
+  UplandVegetables                AgriculturalCommoditiesFisheryProducts? @relation("UplandVegetables")
+  FruitsAndNots                   AgriculturalCommoditiesFisheryProducts? @relation("FruitsAndNots")
+  Mushroom                        AgriculturalCommoditiesFisheryProducts? @relation("Mushroom")
+  OrganicSoil                     AgriculturalCommoditiesFisheryProducts? @relation("OrganicSoil")
+  Rootcrops                       AgriculturalCommoditiesFisheryProducts? @relation("Rootcrops")
+  PultryProducts                  AgriculturalCommoditiesFisheryProducts? @relation("PultryProducts")
+  LiveStockProducts              AgriculturalCommoditiesFisheryProducts? @relation("LiveStockProducts")
+  FisheriesAndAquaCulture        AgriculturalCommoditiesFisheryProducts? @relation("FisheriesAndAquaCulture")
+  IndustrialCropsAndProducts     AgriculturalCommoditiesFisheryProducts? @relation("IndustrialCropsAndProducts")
+  OtherCommodity                 AgriculturalCommoditiesFisheryProducts? @relation("OtherCommodity")
+  othersCommodity                 String?
+  ownSharedFacilities OwnSharedFacilities[] 
+  concerns OrganicFarmerConcern[]
+  concernMessages ConcernMessage[]
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model AgriculturalCommoditiesFisheryProducts {
+  id Int @id @default(autoincrement())
+  name String
+  sizeInHa Int
+  annualVolumeInKG Int
+  Certification String?
+  GrainsId                      Int? @unique
+  LowlandVegetablesId          Int? @unique
+  UplandVegetablesId           Int? @unique
+  FruitsAndNotsId              Int? @unique
+  MushroomId                   Int? @unique
+  OrganicSoilId                Int? @unique
+  RootcropsId                  Int? @unique
+  PultryProductsId             Int? @unique
+  LiveStockProductsId          Int? @unique
+  FisheriesAndAquaCultureId    Int? @unique
+  IndustrialCropsAndProductsId Int? @unique
+  OtherCommodityId             Int? @unique
+  Grains                      Organic_Farmer? @relation("Grains", fields: [GrainsId], references: [id])
+  LowlandVegetables           Organic_Farmer? @relation("LowlandVegetables", fields: [LowlandVegetablesId], references: [id])
+  UplandVegetables            Organic_Farmer? @relation("UplandVegetables", fields: [UplandVegetablesId], references: [id])
+  FruitsAndNots               Organic_Farmer? @relation("FruitsAndNots", fields: [FruitsAndNotsId], references: [id])
+  Mushroom                    Organic_Farmer? @relation("Mushroom", fields: [MushroomId], references: [id])
+  OrganicSoil                 Organic_Farmer? @relation("OrganicSoil", fields: [OrganicSoilId], references: [id])
+  Rootcrops                   Organic_Farmer? @relation("Rootcrops", fields: [RootcropsId], references: [id])
+  PultryProducts              Organic_Farmer? @relation("PultryProducts", fields: [PultryProductsId], references: [id])
+  LiveStockProducts           Organic_Farmer? @relation("LiveStockProducts", fields: [LiveStockProductsId], references: [id])
+  FisheriesAndAquaCulture     Organic_Farmer? @relation("FisheriesAndAquaCulture", fields: [FisheriesAndAquaCultureId], references: [id])
+  IndustrialCropsAndProducts  Organic_Farmer? @relation("IndustrialCropsAndProducts", fields: [IndustrialCropsAndProductsId], references: [id])
+  OtherCommodity              Organic_Farmer? @relation("OtherCommodity", fields: [OtherCommodityId], references: [id])
+}
+
+model OwnSharedFacilities {
+  id Int @id @default(autoincrement())
+  facilitiesMachineryEquipmentUsed String
+  ownership String
+  model String
+  quantity String
+  volumeServicesArea String
+  averageWorkingHoursDay String
+  Remarks String?
+  dedicatedToOrganic Boolean
+  organicFarmerId Int?
+  organicFarmer   Organic_Farmer? @relation(fields: [organicFarmerId], references: [id])
+}
+
+model OrganicFarmerConcern {
+  id Int @id @default(autoincrement())
+  title String
+  description String
+  image String?
+  status ConcernStatus @default(OPEN)
+  organicFarmer Organic_Farmer @relation(fields: [farmerId], references: [id])
+  farmerId Int
+  messages ConcernMessage[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ConcernMessage {
+  id Int @id @default(autoincrement())
+  content String
+  senderType MessageSenderType
+  admin Admin? @relation(fields: [adminId], references: [id])
+  adminId Int?
+  farmer Farmer? @relation(fields: [farmerId], references: [id])
+  farmerId Int?
+  organicFarmer Organic_Farmer? @relation(fields: [organicFarmerId], references: [id])
+  organicFarmerId Int?
+  farmerConcern FarmerConcern? @relation(fields: [farmerConcernId], references: [id])
+  farmerConcernId Int?
+  organicFarmerConcern OrganicFarmerConcern? @relation(fields: [organicFarmerConcernId], references: [id])
+  organicFarmerConcernId Int?
+  createdAt DateTime @default(now())
+}
+
+model Events {
+  id Int @id @default(autoincrement())
+  Eventdate DateTime
+  What String
+  Where String
+  Image String?
+  Note  String
+  forFarmersOnly Boolean @default(true)
+  forOgranicsFarmersOnly  Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 enum GENDER {
@@ -223,217 +374,38 @@ enum FARMER_CATEGORY {
     AGRI_YOUTH
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-model Organic_Farmer {
-  id Int @id @default(autoincrement())
-
-  //PROFILE
-    username String
-    password String
-    email_address String?
-    surname String
-    firstname String
-    middleName String?
-    extensionName String?
-    sex GENDER
-    houseOrLotOrBuildingNo String
-    streetOrSitioOrSubDivision String
-    barangay String
-    municipalityOrCity String
-    province String
-    region String
-    contactNumber String
-    placeOfBirth String
-    dateOfBirth DateTime
-    highestFormOfEducation EDUCATION_LEVEL
-    religion String?
-    civilStaus CIVIL_STATUS
-    FourPS_Benificiaty String? // open field text
-    mothersName String?
-    fathersName String?
-    govermentId String // open field text
-    personToContactIncaseOfEmerceny String? // name of person to contact in case of emergency
-    personContactNumberIncaseOfEmergency String? // contact number to contact in case of emergency
-    grossAnualIncomeLastYearFarming Int
-    grossAnualIncomeLastYeaNonFarming Int
-    farmerImage String
-
-    //END PROFILE
-    
-    //CERTIFICATION
-    //choices
-    // if yes or true
-    withOrganicAgricultureCertification  Boolean?
-    //choose this
-    certification Certification?
-    // if no or false
-    whatStagesInCertification  String?
-    // end choices
-
- // END CERTIFICATION
-
-
- //NATURE OF BUSINESS
-  productionForInputs        CHOICES_BUSINESS_NATURE?
-  productionForFood          CHOICES_BUSINESS_NATURE?
-  postHarvestAndProcessing   CHOICES_BUSINESS_NATURE?
-  tradingAndWholeSale        CHOICES_BUSINESS_NATURE?
-  retailing                  CHOICES_BUSINESS_NATURE?
-  transPortAndLogistics      CHOICES_BUSINESS_NATURE?
-  WareHousing                CHOICES_BUSINESS_NATURE?
-  Others        String?
-
-   //END OF NATURE OF BUSINESS
- 
- //TARGET MARKET
-
- //choices1
- direcToConsumer Boolean?
- trader         Boolean?
- specificType1       String?
- // end  //choices1
-
- // choices 2  
- retailer  Boolean?
- institutionalBuyer Boolean?
- SpecificType2      String? 
- // end  //choices2 
-
-  //choices3
-  
-  internationalBasedBuyers Boolean? 
-  SpecificType3 String?
-
-// end choices3
-
-//choice 4 
-
-others  String?
-
-// end of choice 4 
-
- //end TARGET MARKET
-
-
- //AgriculturalCommoditiesFisheryProducts
-
- Grains                          AgriculturalCommoditiesFisheryProducts? @relation("Grains")
-  LowlandVegetables               AgriculturalCommoditiesFisheryProducts? @relation("LowlandVegetables")
-  UplandVegetables                AgriculturalCommoditiesFisheryProducts? @relation("UplandVegetables")
-  FruitsAndNots                   AgriculturalCommoditiesFisheryProducts? @relation("FruitsAndNots")
-  Mushroom                        AgriculturalCommoditiesFisheryProducts? @relation("Mushroom")
-  OrganicSoil                     AgriculturalCommoditiesFisheryProducts? @relation("OrganicSoil")
-  Rootcrops                       AgriculturalCommoditiesFisheryProducts? @relation("Rootcrops")
-  PultryProducts                  AgriculturalCommoditiesFisheryProducts? @relation("PultryProducts")
-  LiveStockProducts              AgriculturalCommoditiesFisheryProducts? @relation("LiveStockProducts")
-  FisheriesAndAquaCulture        AgriculturalCommoditiesFisheryProducts? @relation("FisheriesAndAquaCulture")
-  IndustrialCropsAndProducts     AgriculturalCommoditiesFisheryProducts? @relation("IndustrialCropsAndProducts")
-  OtherCommodity                 AgriculturalCommoditiesFisheryProducts? @relation("OtherCommodity")
- othersCommodity                 String?
-  
-
- //end AgriculturalCommoditiesFisheryProducts
-
-// owned share
-   ownSharedFacilities OwnSharedFacilities[] 
-
-   //  end owned share
-
-
-createdAt DateTime? @default(now())
-updatedAt DateTime? @updatedAt
-
-}
-
-model AgriculturalCommoditiesFisheryProducts {
-  id Int @id @default(autoincrement())
-  name String
-  sizeInHa Int
-  annualVolumeInKG Int
-  Certification String?
-
-  // 12 possible foreign keys for 12 different types
-  GrainsId                      Int? @unique
-  LowlandVegetablesId          Int? @unique
-  UplandVegetablesId           Int? @unique
-  FruitsAndNotsId              Int? @unique
-  MushroomId                   Int? @unique
-  OrganicSoilId                Int? @unique
-  RootcropsId                  Int? @unique
-  PultryProductsId             Int? @unique
-  LiveStockProductsId          Int? @unique
-  FisheriesAndAquaCultureId    Int? @unique
-  IndustrialCropsAndProductsId Int? @unique
-  OtherCommodityId             Int? @unique
-
-  Grains                      Organic_Farmer? @relation("Grains", fields: [GrainsId], references: [id])
-  LowlandVegetables           Organic_Farmer? @relation("LowlandVegetables", fields: [LowlandVegetablesId], references: [id])
-  UplandVegetables            Organic_Farmer? @relation("UplandVegetables", fields: [UplandVegetablesId], references: [id])
-  FruitsAndNots               Organic_Farmer? @relation("FruitsAndNots", fields: [FruitsAndNotsId], references: [id])
-  Mushroom                    Organic_Farmer? @relation("Mushroom", fields: [MushroomId], references: [id])
-  OrganicSoil                 Organic_Farmer? @relation("OrganicSoil", fields: [OrganicSoilId], references: [id])
-  Rootcrops                   Organic_Farmer? @relation("Rootcrops", fields: [RootcropsId], references: [id])
-  PultryProducts              Organic_Farmer? @relation("PultryProducts", fields: [PultryProductsId], references: [id])
-  LiveStockProducts           Organic_Farmer? @relation("LiveStockProducts", fields: [LiveStockProductsId], references: [id])
-  FisheriesAndAquaCulture     Organic_Farmer? @relation("FisheriesAndAquaCulture", fields: [FisheriesAndAquaCultureId], references: [id])
-  IndustrialCropsAndProducts  Organic_Farmer? @relation("IndustrialCropsAndProducts", fields: [IndustrialCropsAndProductsId], references: [id])
-  OtherCommodity              Organic_Farmer? @relation("OtherCommodity", fields: [OtherCommodityId], references: [id])
-}
-
-
-model OwnSharedFacilities {
-  id Int @id @default(autoincrement())
-
-  facilitiesMachineryEquipmentUsed String
-  ownership String
-  model String
-  quantity String
-  volumeServicesArea String
-  averageWorkingHoursDay String
-  Remarks String?
-  dedicatedToOrganic Boolean
-
-  // foreign key to farmer (nullable)
-  organicFarmerId Int?
-  organicFarmer   Organic_Farmer? @relation(fields: [organicFarmerId], references: [id])
-}
-
 enum Certification {
     THIRD_PARTY_CERTIFICATION
     PARTICIPATORY_GUARANTEE_SYSTEM
-
 }
 
 enum CHOICES_BUSINESS_NATURE {
-
     PRIMARY_BUSINESS
     SECONDARY_BUSINESS
     NOT_APPLICABLE
+}
 
+enum organicFarmerRegistrationsStatus {
+    APPLICANTS
+    NOT_QUALIFIED
+    REGISTERED
+}
+
+enum FarmerRegistrationsStatus {
+    APPLICANTS
+    NOT_QUALIFIED
+    REGISTERED
+}
+
+enum ConcernStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum MessageSenderType {
+  ADMIN
+  FARMER
+  ORGANIC_FARMER
 }
