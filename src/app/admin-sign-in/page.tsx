@@ -37,8 +37,16 @@ const AdminLoginPage = () => {
         username: username.trim(),
         password,
       });
-      if (result.success) {
-        login(result.user, result.token);
+      if (result.success && result.user) {
+        login(
+          {
+            id: result.user.id,
+            type: "ADMIN",
+            username: result.user.username,
+          },
+          result.token,
+        );
+
         router.push("/admin/dashboard");
       } else {
         setError("Login failed");

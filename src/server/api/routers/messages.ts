@@ -106,8 +106,15 @@ export const messagesRouter = createTRPCRouter({
     }),
 
   // Get messages for a specific concern
+  // Get messages for a specific concern
   getMessages: publicProcedure
-    .input(z.object({ concernId: z.number() }))
+    .input(
+      z.object({
+        concernId: z.number(),
+        userType: z.enum(["ADMIN", "FARMER", "ORGANIC_FARMER"]),
+        userId: z.number(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       // First, check if it's a farmer concern or organic farmer concern
       const farmerConcern = await ctx.db.farmerConcern.findUnique({
@@ -124,11 +131,50 @@ export const messagesRouter = createTRPCRouter({
         throw new Error("Concern not found");
       }
 
-      // Get messages based on concern type
+      // Check if the current user has access to this concern
+      const currentUserId = input.userId;
+      const currentUserType = input.userType;
+
+      // If user is not admin, verify they own the concern
+      if (currentUserType !== "ADMIN") {
+        if (
+          (farmerConcern && farmerConcern.farmerId !== currentUserId) ||
+          (organicFarmerConcern &&
+            organicFarmerConcern.farmerId !== currentUserId)
+        ) {
+          throw new Error("Unauthorized access to this concern");
+        }
+      }
+
+      // Base where clause for messages
+      const whereClause: any = farmerConcern
+        ? { farmerConcernId: input.concernId }
+        : { organicFarmerConcernId: input.concernId };
+
+      // For farmers/organic farmers, show:
+      // 1. Their own messages
+      // 2. All admin messages in this concern
+      if (
+        currentUserType === "FARMER" ||
+        currentUserType === "ORGANIC_FARMER"
+      ) {
+        whereClause.OR = [
+          // Messages from the current user
+          {
+            OR: [
+              { farmerId: currentUserId },
+              { organicFarmerId: currentUserId },
+            ],
+          },
+          // OR messages from admin
+          { senderType: "ADMIN" },
+        ];
+      }
+      // For admin, show all messages (no additional filters needed)
+
+      // Get messages based on concern type and user type
       const messages = await ctx.db.concernMessage.findMany({
-        where: farmerConcern
-          ? { farmerConcernId: input.concernId }
-          : { organicFarmerConcernId: input.concernId },
+        where: whereClause,
         include: {
           admin: {
             select: {
@@ -158,7 +204,6 @@ export const messagesRouter = createTRPCRouter({
 
       return messages;
     }),
-
   // Send a message
   sendMessage: publicProcedure
     .input(

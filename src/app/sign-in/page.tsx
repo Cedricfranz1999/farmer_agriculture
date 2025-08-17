@@ -39,34 +39,45 @@ const LoginPage = () => {
     }, 150);
   };
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    // Validate fields
     if (!usernameOrEmail.trim() || !password.trim()) {
       setError("Please fill in all fields");
       return;
     }
+
     try {
+      let result;
+
       if (isFarmer) {
-        const result = await farmerLogin.mutateAsync({
+        result = await farmerLogin.mutateAsync({
           usernameOrEmail: usernameOrEmail.trim(),
           password,
         });
-        if (result.success) {
-          router.push("/farmer/dashboard");
-        } else {
-          setError("Login failed");
-        }
       } else {
-        const result = await organicFarmerLogin.mutateAsync({
+        result = await organicFarmerLogin.mutateAsync({
           usernameOrEmail: usernameOrEmail.trim(),
           password,
         });
-        if (result.success) {
-          router.push("/organic-farmer/dashboard");
-        } else {
-          setError("Login failed");
-        }
+      }
+
+      if (result.success && result.user) {
+        login(
+          {
+            id: result.user.id,
+            email: result.user.email as string,
+            type: isFarmer ? "FARMER" : "ORGANIC_FARMER",
+            username: result.user.username,
+          },
+          result.token,
+        );
+
+        router.push(isFarmer ? "/farmer/events" : "/organicFarmer/event");
+      } else {
+        setError("Login failed");
       }
     } catch (err) {
       setError("An error occurred during login. Please try again.");

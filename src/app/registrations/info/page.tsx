@@ -565,11 +565,15 @@ const FarmerProfilePrintGenerator = () => {
                     </p>
                     <div className="relative h-20 w-32 overflow-hidden rounded-lg border-2 border-gray-300 shadow-sm">
                       <Image
-                        src={farmer.govermentId || "/placeholder.svg"}
+                        src={
+                          farmer.govermentId ||
+                          "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png"
+                        }
                         alt="Government ID"
                         fill
                         className="object-cover"
                         sizes="128px"
+                        unoptimized
                       />
                     </div>
                   </div>
@@ -584,6 +588,7 @@ const FarmerProfilePrintGenerator = () => {
                         fill
                         className="object-cover"
                         sizes="128px"
+                        unoptimized
                       />
                     </div>
                   </div>
@@ -601,6 +606,7 @@ const FarmerProfilePrintGenerator = () => {
                           fill
                           className="object-cover"
                           sizes="128px"
+                          unoptimized
                         />
                       </div>
                     </div>
@@ -620,6 +626,7 @@ const FarmerProfilePrintGenerator = () => {
                           fill
                           className="object-cover"
                           sizes="128px"
+                          unoptimized
                         />
                       </div>
                     </div>
