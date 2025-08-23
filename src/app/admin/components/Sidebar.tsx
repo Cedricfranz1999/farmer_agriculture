@@ -278,6 +278,22 @@ const Sidebar = () => {
                 </Link>
               </div>
             </motion.div>
+               <motion.div whileHover={{ scale: 1.02 }}>
+              <div className="flex items-center justify-between">
+                <Link
+                  href="/admin/allocations"
+                  className={`flex flex-1 items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+                    isActive("/admin/allocations")
+                      ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
+                      : "text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
+                  }`}
+                >
+                  <FileText className="h-4 w-4" />
+                  
+                  allocations
+                </Link>
+              </div>
+            </motion.div>
 
             {/* Reports */}
             <motion.div whileHover={{ scale: 1.02 }}>

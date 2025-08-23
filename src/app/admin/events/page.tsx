@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useState, useMemo, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
@@ -321,6 +320,101 @@ const EventsCalendarPage = () => {
     );
   };
 
+  // Upcoming Events Component
+  const UpcomingEventsList = () => {
+    const { data: upcomingEvents, isLoading } = api.events.getUpcomingEvents.useQuery({
+      limit: 5,
+    });
+  
+    if (isLoading) {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Card key={i} className="border-emerald-100 bg-white/80">
+              <CardContent className="p-4">
+                <Skeleton className="h-4 w-3/4 mb-2" />
+                <Skeleton className="h-3 w-1/2 mb-3" />
+                <Skeleton className="h-20 w-full mb-3" />
+                <Skeleton className="h-3 w-full mb-1" />
+                <Skeleton className="h-3 w-2/3" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      );
+    }
+  
+    if (!upcomingEvents || upcomingEvents.length === 0) {
+      return (
+        <div className="text-center py-6 bg-white/50 rounded-lg border border-dashed border-emerald-200 bg">
+          <CalendarIcon className="mx-auto h-12 w-12 text-emerald-300 mb-3" />
+          <p className="text-emerald-700">No upcoming events scheduled</p>
+        </div>
+      );
+    }
+  
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        {upcomingEvents.map((event) => (
+          <Card key={event.id} className="border-emerald-200 bg-white/80 hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              {event.Image && (
+                <div className="relative h-32 w-full mb-3 overflow-hidden rounded-md">
+                  <Image
+                    src={event.Image || "/placeholder.svg"}
+                    alt={event.What}
+                    fill
+                    className="object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder.svg?height=128&width=256";
+                    }}
+                    unoptimized
+                  />
+                </div>
+              )}
+              
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-semibold text-emerald-800 line-clamp-2">{event.What}</h3>
+              </div>
+              
+              <div className="flex items-center text-sm text-gray-600 mb-2">
+                <CalendarIcon className="h-4 w-4 mr-1" />
+                {new Date(event.Eventdate).toLocaleDateString()}
+              </div>
+              
+              <div className="flex items-center text-sm text-gray-600 mb-3">
+                <Clock className="h-4 w-4 mr-1" />
+                {new Date(event.Eventdate).toLocaleTimeString([], { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
+              </div>
+              
+              <div className="flex items-center text-sm text-gray-600 mb-3">
+                <MapPin className="h-4 w-4 mr-1" />
+                <span className="line-clamp-1">{event.Where}</span>
+              </div>
+              
+              <div className="flex flex-wrap gap-1">
+                {event.forFarmersOnly && (
+                  <Badge variant="outline" className="text-xs py-0 px-2 bg-amber-50">
+                    Farmers
+                  </Badge>
+                )}
+                {event.forOgranicsFarmersOnly && (
+                  <Badge variant="outline" className="text-xs py-0 px-2 bg-green-50">
+                    Organic
+                  </Badge>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50 p-4">
       <div className="container mx-auto">
@@ -332,6 +426,12 @@ const EventsCalendarPage = () => {
           <p className="mt-2 text-lg text-slate-600">
             View, create, and manage agricultural events
           </p>
+        </div>
+
+        {/* Upcoming Events Section */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold text-emerald-800 mb-4">Upcoming Events</h2>
+          <UpcomingEventsList />
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
