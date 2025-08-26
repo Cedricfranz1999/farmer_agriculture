@@ -40,9 +40,9 @@ const Sidebar = () => {
             {/* Events */}
             <motion.div whileHover={{ scale: 1.02 }}>
               <Link
-                href="/farmer/events"
+                href="/organic_farmer/events"
                 className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-                  isActive("/farmer/events")
+                  isActive("/organic_farmer/events")
                     ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
                     : "text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
                 }`}
@@ -55,9 +55,9 @@ const Sidebar = () => {
             {/* Concerns */}
             <motion.div whileHover={{ scale: 1.02 }}>
               <Link
-                href="/farmer/concerns"
+                href="/organic_farmer/concerns"
                 className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-                  isActive("/farmer/concerns")
+                  isActive("/organic_farmer/concerns")
                     ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
                     : "text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
                 }`}
@@ -69,9 +69,9 @@ const Sidebar = () => {
 
                   <motion.div whileHover={{ scale: 1.02 }}>
               <Link
-                href="/farmer/profile"
+                href="/organic_farmer/profile"
                 className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-                  isActive("/farmer/profile")
+                  isActive("/organic_farmer/profile")
                     ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
                     : "text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
                 }`}

@@ -75,7 +75,7 @@ const LoginPage = () => {
           result.token,
         );
 
-        router.push(isFarmer ? "/farmer/events" : "/organicFarmer/event");
+        router.push(isFarmer ? "/farmer/events" : "/organic_farmer/events");
       } else {
         setError("Login failed");
       }

@@ -106,4 +106,32 @@ export const OrganicfarmersRouterData = createTRPCRouter({
 
       return updatedFarmer;
     }),
+     getOrganicFarmerById: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ input, ctx }) => {
+      const farmer = await ctx.db.organic_Farmer.findUnique({
+        where: { id: input.id },
+        include: {
+          Grains: true,
+          LowlandVegetables: true,
+          UplandVegetables: true,
+          FruitsAndNots: true,
+          Mushroom: true,
+          OrganicSoil: true,
+          Rootcrops: true,
+          PultryProducts: true,
+          LiveStockProducts: true,
+          FisheriesAndAquaCulture: true,
+          IndustrialCropsAndProducts: true,
+          OtherCommodity: true,
+          ownSharedFacilities: true,
+        }
+      })
+      
+      if (!farmer) {
+        throw new Error('Organic farmer not found')
+      }
+      
+      return farmer
+    }),
 });

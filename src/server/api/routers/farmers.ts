@@ -106,4 +106,30 @@ export const farmersRouter = createTRPCRouter({
 
       return updatedFarmer;
     }),
+    getFarmerById: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ input, ctx }) => {
+      const farmer = await ctx.db.farmer.findUnique({
+        where: { id: input.id },
+        include: {
+          farmerDetails: true,
+          farmworkerDetails: true,
+          fisherfolkDetails: true,
+          AGRI_YOUTH: true,
+          houseHead: true,
+          farmDetails: {
+            include: {
+              lotDetails: true
+            }
+          }
+        }
+      })
+      
+      if (!farmer) {
+        throw new Error('Farmer not found')
+      }
+      
+      return farmer
+    }),
+    
 });

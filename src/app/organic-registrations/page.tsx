@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
+import { Switch } from "~/components/ui/switch";
+import { Label } from "~/components/ui/label";
 
 // Define form schema that matches your Organic_Farmer schema
 const organicFarmerSignupSchema = z
@@ -168,6 +170,8 @@ const organicFarmerSignupSchema = z
 type OrganicFarmerSignupForm = z.infer<typeof organicFarmerSignupSchema>;
 
 const OrganicFarmerSignupPage = () => {
+  const [isWaray, setIsWaray] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -218,15 +222,15 @@ const OrganicFarmerSignupPage = () => {
   const signupMutation = api.organicFarmer.signup.useMutation({
     onSuccess: () => {
       toast({
-        title: "Success!",
-        description: "Organic farmer account created successfully",
+        title: isWaray ? "Malinamposan!" : "Success!",
+        description: isWaray ? "Organic farmer account nga malinamposan nga ginhimo" : "Organic farmer account created successfully",
         variant: "default",
       });
-      router.push("/organic-farmer/login");
+      router.push("/organic-registrations/info");
     },
     onError: (error) => {
       toast({
-        title: "Error",
+        title: isWaray ? "Sayop" : "Error",
         description: error.message,
         variant: "destructive",
       });
@@ -308,8 +312,8 @@ const OrganicFarmerSignupPage = () => {
       setActiveStep((prev) => prev + 1);
     } else {
       toast({
-        title: "Validation Error",
-        description: "Please fill out all required fields correctly",
+        title: isWaray ? "Sayop ha Pag-validate" : "Validation Error",
+        description: isWaray ? "Palihog pun-i an tanan nga kinahanglanon nga mga field nga tama" : "Please fill out all required fields correctly",
         variant: "destructive",
       });
     }
@@ -352,11 +356,21 @@ const OrganicFarmerSignupPage = () => {
             className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Login
+            {!isWaray ? "Back to Login" : "Balik ha Pag-login"}
           </a>
           <h1 className="absolute left-1/2 -translate-x-1/2 text-3xl font-bold text-gray-800">
-            Organic Farmer Registration
+            {!isWaray ? "Organic Farmer Registration" : "Pagrehistro han Organic Farmer"}
           </h1>
+          
+          {/* Switch */}
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="language"
+              checked={isWaray}
+              onCheckedChange={setIsWaray}
+            />
+            <Label htmlFor="language">{isWaray ? "Waray" : "English"}</Label>
+          </div>
         </div>
 
         {/* Progress bar */}
@@ -382,13 +396,13 @@ const OrganicFarmerSignupPage = () => {
             ))}
           </div>
           <div className="mt-2 text-center text-sm text-gray-600">
-            {activeStep === 1 && "Personal Information"}
-            {activeStep === 2 && "Address Information"}
-            {activeStep === 3 && "Certification Details"}
-            {activeStep === 4 && "Nature of Business"}
-            {activeStep === 5 && "Target Market"}
-            {activeStep === 6 && "Agricultural Commodities"}
-            {activeStep === 7 && "Facilities & Equipment"}
+            {activeStep === 1 && (!isWaray ? "Personal Information" : "Impormasyon Personal")}
+            {activeStep === 2 && (!isWaray ? "Address Information" : "Impormasyon han Address")}
+            {activeStep === 3 && (!isWaray ? "Certification Details" : "Mga Detalye han Sertipikasyon")}
+            {activeStep === 4 && (!isWaray ? "Nature of Business" : "Klase han Negosyo")}
+            {activeStep === 5 && (!isWaray ? "Target Market" : "Target nga Merkado")}
+            {activeStep === 6 && (!isWaray ? "Agricultural Commodities" : "Mga Produkto Agrikultural")}
+            {activeStep === 7 && (!isWaray ? "Facilities & Equipment" : "Mga Pasilidad ngan Ekipo")}
           </div>
         </div>
 
@@ -402,18 +416,18 @@ const OrganicFarmerSignupPage = () => {
               className="space-y-6"
             >
               <h2 className="border-b pb-2 text-2xl font-bold text-gray-800">
-                Personal Information
+                {!isWaray ? "Personal Information" : "Impormasyon Personal"}
               </h2>
 
               {/* Credentials Section */}
               <div className="rounded-lg bg-gray-50 p-4">
                 <h3 className="mb-4 text-lg font-medium text-gray-700">
-                  Account Credentials
+                  {!isWaray ? "Account Credentials" : "Mga Kredensyal han Account"}
                 </h3>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Username*
+                      {!isWaray ? "Username*" : "Username*"}
                     </label>
                     <input
                       type="text"
@@ -430,7 +444,7 @@ const OrganicFarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Password*
+                      {!isWaray ? "Password*" : "Password*"}
                     </label>
                     <input
                       type="password"
@@ -447,7 +461,7 @@ const OrganicFarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Confirm Password*
+                      {!isWaray ? "Confirm Password*" : "Ikonpirma an Password*"}
                     </label>
                     <input
                       type="password"
@@ -470,12 +484,12 @@ const OrganicFarmerSignupPage = () => {
               {/* Name Section */}
               <div className="rounded-lg bg-gray-50 p-4">
                 <h3 className="mb-4 text-lg font-medium text-gray-700">
-                  Name Information
+                  {!isWaray ? "Name Information" : "Impormasyon han Ngalan"}
                 </h3>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Surname*
+                      {!isWaray ? "Surname*" : "Apelyido*"}
                     </label>
                     <input
                       type="text"
@@ -492,7 +506,7 @@ const OrganicFarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      First Name*
+                      {!isWaray ? "First Name*" : "Pangaran*"}
                     </label>
                     <input
                       type="text"
@@ -509,7 +523,7 @@ const OrganicFarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Middle Name
+                      {!isWaray ? "Middle Name" : "Tunga nga Ngalan"}
                     </label>
                     <input
                       type="text"
@@ -521,7 +535,7 @@ const OrganicFarmerSignupPage = () => {
                 <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-4">
                   <div className="md:col-span-3">
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Extension Name
+                      {!isWaray ? "Extension Name" : "Extension han Ngalan"}
                     </label>
                     <input
                       type="text"
@@ -535,24 +549,24 @@ const OrganicFarmerSignupPage = () => {
               {/* Personal Details Section */}
               <div className="rounded-lg bg-gray-50 p-4">
                 <h3 className="mb-4 text-lg font-medium text-gray-700">
-                  Personal Details
+                  {!isWaray ? "Personal Details" : "Mga Detalye Personal"}
                 </h3>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Sex*
+                      {!isWaray ? "Sex*" : "Sekso*"}
                     </label>
                     <select
                       className="block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500"
                       {...register("sex")}
                     >
-                      <option value="MALE">Male</option>
-                      <option value="FEMALE">Female</option>
+                      <option value="MALE">{!isWaray ? "Male" : "Lalaki"}</option>
+                      <option value="FEMALE">{!isWaray ? "Female" : "Babaye"}</option>
                     </select>
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Date of Birth*
+                      {!isWaray ? "Date of Birth*" : "Adlaw han Pagkatawo*"}
                     </label>
                     <input
                       type="date"
@@ -571,7 +585,7 @@ const OrganicFarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Place of Birth*
+                      {!isWaray ? "Place of Birth*" : "Lugar han Pagkatawo*"}
                     </label>
                     <input
                       type="text"
@@ -592,42 +606,42 @@ const OrganicFarmerSignupPage = () => {
                 <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Civil Status*
+                      {!isWaray ? "Civil Status*" : "Estado Sibil*"}
                     </label>
                     <select
                       className="block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500"
                       {...register("civilStaus")}
                     >
-                      <option value="SINGLE">Single</option>
-                      <option value="MARRIED">Married</option>
-                      <option value="WIDOWED">Widowed</option>
-                      <option value="SEPARATED">Separated</option>
+                      <option value="SINGLE">{!isWaray ? "Single" : "Soltero/Soltera"}</option>
+                      <option value="MARRIED">{!isWaray ? "Married" : "Minyo"}</option>
+                      <option value="WIDOWED">{!isWaray ? "Widowed" : "Balo/Bala"}</option>
+                      <option value="SEPARATED">{!isWaray ? "Separated" : "Nabulag"}</option>
                     </select>
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Highest Form of Education*
+                      {!isWaray ? "Highest Form of Education*" : "Pinakataas nga Porma han Edukasyon*"}
                     </label>
                     <select
                       className="block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500"
                       {...register("highestFormOfEducation")}
                     >
-                      <option value="NONE">None</option>
-                      <option value="ELEMENTARY">Elementary</option>
-                      <option value="HIGHSCHOOL">High School</option>
+                      <option value="NONE">{!isWaray ? "None" : "Waray"}</option>
+                      <option value="ELEMENTARY">{!isWaray ? "Elementary" : "Elementarya"}</option>
+                      <option value="HIGHSCHOOL">{!isWaray ? "High School" : "Haiskul"}</option>
                       <option value="SENIOR_HIGHSCHOOL">
-                        Senior High School
+                        {!isWaray ? "Senior High School" : "Senior High School"}
                       </option>
-                      <option value="COLLEGE">College</option>
-                      <option value="POST_GRADUATE">Post Graduate</option>
-                      <option value="VOCATIONAL">Vocational</option>
+                      <option value="COLLEGE">{!isWaray ? "College" : "Kolehiyo"}</option>
+                      <option value="POST_GRADUATE">{!isWaray ? "Post Graduate" : "Post Graduate"}</option>
+                      <option value="VOCATIONAL">{!isWaray ? "Vocational" : "Bokasyonal"}</option>
                     </select>
                   </div>
                 </div>
                 <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Religion
+                      {!isWaray ? "Religion" : "Relihiyon"}
                     </label>
                     <input
                       type="text"
@@ -637,7 +651,7 @@ const OrganicFarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Email Address
+                      {!isWaray ? "Email Address" : "Email Address"}
                     </label>
                     <input
                       type="email"
@@ -651,12 +665,12 @@ const OrganicFarmerSignupPage = () => {
               {/* Family Information Section */}
               <div className="rounded-lg bg-gray-50 p-4">
                 <h3 className="mb-4 text-lg font-medium text-gray-700">
-                  Family Information
+                  {!isWaray ? "Family Information" : "Impormasyon han Pamilya"}
                 </h3>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Mothers Name
+                      {!isWaray ? "Mothers Name" : "Ngaran han Iroy"}
                     </label>
                     <input
                       type="text"
@@ -666,7 +680,7 @@ const OrganicFarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Fathers Name
+                      {!isWaray ? "Fathers Name" : "Ngaran han Amay"}
                     </label>
                     <input
                       type="text"
@@ -680,12 +694,12 @@ const OrganicFarmerSignupPage = () => {
               {/* Government & Emergency Section */}
               <div className="rounded-lg bg-gray-50 p-4">
                 <h3 className="mb-4 text-lg font-medium text-gray-700">
-                  Government & Emergency Information
+                  {!isWaray ? "Government & Emergency Information" : "Impormasyon han Gobierno ngan Emergensya"}
                 </h3>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      4PS Beneficiary
+                      {!isWaray ? "4PS Beneficiary" : "Benepisyaryo han 4PS"}
                     </label>
                     <input
                       type="text"
@@ -695,7 +709,7 @@ const OrganicFarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Government ID*
+                      {!isWaray ? "Government ID*" : "Government ID (Litrato)*"}
                     </label>
                     <input
                       type="file"
@@ -726,7 +740,7 @@ const OrganicFarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Person to contact in case of emergency
+                      {!isWaray ? "Person to contact in case of emergency" : "Tao nga Kontakon Kon May Emergensya"}
                     </label>
                     <input
                       type="text"
@@ -736,7 +750,7 @@ const OrganicFarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Emergency contact number*
+                      {!isWaray ? "Emergency contact number*" : "Numero han Kontak Kon May Emergensya*"}
                     </label>
                     <input
                       type="text"
@@ -759,12 +773,12 @@ const OrganicFarmerSignupPage = () => {
               {/* Income Section */}
               <div className="rounded-lg bg-gray-50 p-4">
                 <h3 className="mb-4 text-lg font-medium text-gray-700">
-                  Income Information
+                  {!isWaray ? "Income Information" : "Impormasyon han Kita"}
                 </h3>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Gross Annual Income (Farming)*
+                      {!isWaray ? "Gross Annual Income (Farming)*" : "Gross Annual Income (Pagparauma)*"}
                     </label>
                     <input
                       type="number"
@@ -785,7 +799,7 @@ const OrganicFarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Gross Annual Income (Non-Farming)*
+                      {!isWaray ? "Gross Annual Income (Non-Farming)*" : "Gross Annual Income (Diri Pagparauma)*"}
                     </label>
                     <input
                       type="number"
@@ -810,12 +824,12 @@ const OrganicFarmerSignupPage = () => {
               {/* File Upload Section */}
               <div className="rounded-lg bg-gray-50 p-4">
                 <h3 className="mb-4 text-lg font-medium text-gray-700">
-                  Document Upload
+                  {!isWaray ? "Document Upload" : "Pag-upload han Dokumento"}
                 </h3>
                 <div className="grid grid-cols-1 gap-6">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Farmer Image*
+                      {!isWaray ? "Farmer Image*" : "Litrato han Parauma*"}
                     </label>
                     <input
                       type="file"
@@ -853,7 +867,7 @@ const OrganicFarmerSignupPage = () => {
                   onClick={nextStep}
                   className="rounded-md bg-green-600 px-6 py-2 text-white shadow-sm hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none"
                 >
-                  Next
+                  {!isWaray ? "Next" : "Sunod"}
                 </button>
               </div>
             </motion.div>
@@ -867,11 +881,13 @@ const OrganicFarmerSignupPage = () => {
               transition={{ duration: 0.5 }}
               className="space-y-4"
             >
-              <h2 className="text-xl font-semibold">Address Information</h2>
+              <h2 className="text-xl font-semibold">
+                {!isWaray ? "Address Information" : "Impormasyon han Address"}
+              </h2>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    House/Lot/Building No*
+                    {!isWaray ? "House/Lot/Building No*" : "Balay/Lote/Gusali No*"}
                   </label>
                   <input
                     type="text"
@@ -890,7 +906,7 @@ const OrganicFarmerSignupPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Street/Sitio/Subdivision*
+                    {!isWaray ? "Street/Sitio/Subdivision*" : "Kalsada/Sitio/Subdivision*"}
                   </label>
                   <input
                     type="text"
@@ -911,7 +927,7 @@ const OrganicFarmerSignupPage = () => {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Barangay*
+                    {!isWaray ? "Barangay*" : "Barangay*"}
                   </label>
                   <input
                     type="text"
@@ -928,7 +944,7 @@ const OrganicFarmerSignupPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Municipality/City*
+                    {!isWaray ? "Municipality/City*" : "Munispyo/Siyudad*"}
                   </label>
                   <input
                     type="text"
@@ -949,7 +965,7 @@ const OrganicFarmerSignupPage = () => {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Province*
+                    {!isWaray ? "Province*" : "Probinsya*"}
                   </label>
                   <input
                     type="text"
@@ -966,7 +982,7 @@ const OrganicFarmerSignupPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Region*
+                    {!isWaray ? "Region*" : "Rehiyon*"}
                   </label>
                   <input
                     type="text"
@@ -984,7 +1000,7 @@ const OrganicFarmerSignupPage = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Contact Number*
+                  {!isWaray ? "Contact Number*" : "Numero han Kontak*"}
                 </label>
                 <input
                   type="text"
@@ -1005,14 +1021,14 @@ const OrganicFarmerSignupPage = () => {
                   onClick={prevStep}
                   className="rounded-md bg-gray-300 px-4 py-2 text-gray-800 hover:bg-gray-400"
                 >
-                  Back
+                  {!isWaray ? "Back" : "Balik"}
                 </button>
                 <button
                   type="button"
                   onClick={nextStep}
                   className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700"
                 >
-                  Next
+                  {!isWaray ? "Next" : "Sunod"}
                 </button>
               </div>
             </motion.div>
@@ -1026,7 +1042,9 @@ const OrganicFarmerSignupPage = () => {
               transition={{ duration: 0.5 }}
               className="space-y-4"
             >
-              <h2 className="text-xl font-semibold">Certification Details</h2>
+              <h2 className="text-xl font-semibold">
+                {!isWaray ? "Certification Details" : "Mga Detalye han Sertipikasyon"}
+              </h2>
 
               <div className="rounded-lg border border-gray-200 p-4">
                 <div className="mb-4">
@@ -1037,7 +1055,7 @@ const OrganicFarmerSignupPage = () => {
                       {...register("withOrganicAgricultureCertification")}
                     />
                     <span className="ml-2 text-sm font-medium text-gray-700">
-                      Do you have Organic Agriculture Certification?
+                      {!isWaray ? "Do you have Organic Agriculture Certification?" : "Igkakarawat ka ba hin Organic Agriculture Certification?"}
                     </span>
                   </label>
                 </div>
@@ -1045,18 +1063,18 @@ const OrganicFarmerSignupPage = () => {
                 {withCertification && (
                   <div className="mt-4">
                     <label className="block text-sm font-medium text-gray-700">
-                      Certification Type
+                      {!isWaray ? "Certification Type" : "Klase han Sertipikasyon"}
                     </label>
                     <select
                       className="mt-1 block w-full rounded-md border border-gray-300 p-2"
                       {...register("certification")}
                     >
-                      <option value="">Select certification type</option>
+                      <option value="">{!isWaray ? "Select certification type" : "Pili-a an klase han sertipikasyon"}</option>
                       <option value="THIRD_PARTY_CERTIFICATION">
-                        Third Party Certification
+                        {!isWaray ? "Third Party Certification" : "Third Party Certification"}
                       </option>
                       <option value="PARTICIPATORY_GUARANTEE_SYSTEM">
-                        Participatory Guarantee System
+                        {!isWaray ? "Participatory Guarantee System" : "Participatory Guarantee System"}
                       </option>
                     </select>
                   </div>
@@ -1065,13 +1083,13 @@ const OrganicFarmerSignupPage = () => {
                 {!withCertification && (
                   <div className="mt-4">
                     <label className="block text-sm font-medium text-gray-700">
-                      What stages are you in for certification?
+                      {!isWaray ? "What stages are you in for certification?" : "Ha ano nga mga yugto ka ha sertipikasyon?"}
                     </label>
                     <textarea
                       className="mt-1 block w-full rounded-md border border-gray-300 p-2"
                       rows={3}
                       {...register("whatStagesInCertification")}
-                      placeholder="Describe your current certification stage..."
+                      placeholder={!isWaray ? "Describe your current certification stage..." : "Iladawan an imo kasangkaran nga yugto ha sertipikasyon..."}
                     />
                   </div>
                 )}
@@ -1083,14 +1101,14 @@ const OrganicFarmerSignupPage = () => {
                   onClick={prevStep}
                   className="rounded-md bg-gray-300 px-4 py-2 text-gray-800 hover:bg-gray-400"
                 >
-                  Back
+                  {!isWaray ? "Back" : "Balik"}
                 </button>
                 <button
                   type="button"
                   onClick={nextStep}
                   className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700"
                 >
-                  Next
+                  {!isWaray ? "Next" : "Sunod"}
                 </button>
               </div>
             </motion.div>
@@ -1104,35 +1122,45 @@ const OrganicFarmerSignupPage = () => {
               transition={{ duration: 0.5 }}
               className="space-y-4"
             >
-              <h2 className="text-xl font-semibold">Nature of Business</h2>
+              <h2 className="text-xl font-semibold">
+                {!isWaray ? "Nature of Business" : "Klase han Negosyo"}
+              </h2>
 
               <div className="rounded-lg border border-gray-200 p-4">
                 <p className="mb-4 text-sm text-gray-600">
-                  Select the nature of your business activities and specify if
-                  they are primary or secondary business.
+                  {!isWaray ? "Select the nature of your business activities and specify if they are primary or secondary business." : "Pili-a an klase han imo mga kalihokan ha negosyo ngan ispesipiko kon primary o secondary business ini."}
                 </p>
 
                 <div className="space-y-4">
                   {[
                     {
                       key: "productionForInputs",
-                      label: "Production for Inputs",
+                      label: !isWaray ? "Production for Inputs" : "Produksyon para ha Inputs",
                     },
-                    { key: "productionForFood", label: "Production for Food" },
+                    { 
+                      key: "productionForFood", 
+                      label: !isWaray ? "Production for Food" : "Produksyon para ha Pagkaon" 
+                    },
                     {
                       key: "postHarvestAndProcessing",
-                      label: "Post Harvest and Processing",
+                      label: !isWaray ? "Post Harvest and Processing" : "Post Harvest ngan Pagproseso",
                     },
                     {
                       key: "tradingAndWholeSale",
-                      label: "Trading and Wholesale",
+                      label: !isWaray ? "Trading and Wholesale" : "Trading ngan Wholesale",
                     },
-                    { key: "retailing", label: "Retailing" },
+                    { 
+                      key: "retailing", 
+                      label: !isWaray ? "Retailing" : "Retailing" 
+                    },
                     {
                       key: "transPortAndLogistics",
-                      label: "Transport and Logistics",
+                      label: !isWaray ? "Transport and Logistics" : "Transporte ngan Logistics",
                     },
-                    { key: "WareHousing", label: "Warehousing" },
+                    { 
+                      key: "WareHousing", 
+                      label: !isWaray ? "Warehousing" : "Warehousing" 
+                    },
                   ].map((business) => (
                     <div
                       key={business.key}
@@ -1146,27 +1174,27 @@ const OrganicFarmerSignupPage = () => {
                           className="block w-full rounded-md border border-gray-300 p-2"
                           {...register(business.key as any)}
                         >
-                          <option value="NOT_APPLICABLE">Not applicable</option>
+                          <option value="NOT_APPLICABLE">{!isWaray ? "Not applicable" : "Diri aplikable"}</option>
                           <option value="PRIMARY_BUSINESS">
-                            Primary Business
+                            {!isWaray ? "Primary Business" : "Primary Business"}
                           </option>
                           <option value="SECONDARY_BUSINESS">
-                            Secondary Business
+                            {!isWaray ? "Secondary Business" : "Secondary Business"}
                           </option>
                         </select>
-                      </div>
+                        </div>
                     </div>
                   ))}
 
                   <div className="mt-4">
                     <label className="block text-sm font-medium text-gray-700">
-                      Others (specify)
+                      {!isWaray ? "Others (specify)" : "Iba (ispesipiko)"}
                     </label>
                     <input
                       type="text"
                       className="mt-1 block w-full rounded-md border border-gray-300 p-2"
                       {...register("businessOthers")}
-                      placeholder="Specify other business activities..."
+                      placeholder={!isWaray ? "Specify other business activities..." : "Ispesipiko an iba nga mga kalihokan ha negosyo..."}
                     />
                   </div>
                 </div>
@@ -1178,14 +1206,14 @@ const OrganicFarmerSignupPage = () => {
                   onClick={prevStep}
                   className="rounded-md bg-gray-300 px-4 py-2 text-gray-800 hover:bg-gray-400"
                 >
-                  Back
+                  {!isWaray ? "Back" : "Balik"}
                 </button>
                 <button
                   type="button"
                   onClick={nextStep}
                   className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700"
                 >
-                  Next
+                  {!isWaray ? "Next" : "Sunod"}
                 </button>
               </div>
             </motion.div>
@@ -1199,12 +1227,13 @@ const OrganicFarmerSignupPage = () => {
               transition={{ duration: 0.5 }}
               className="space-y-4"
             >
-              <h2 className="text-xl font-semibold">Target Market</h2>
+              <h2 className="text-xl font-semibold">
+                {!isWaray ? "Target Market" : "Target nga Merkado"}
+              </h2>
 
               <div className="rounded-lg border border-gray-200 p-4">
                 <p className="mb-4 text-sm text-gray-600">
-                  Select your target markets and specify details where
-                  applicable.
+                  {!isWaray ? "Select your target markets and specify details where applicable." : "Pili-a an imo target nga mga merkado ngan ispesipiko an mga detalye kon kinahanglan."}
                 </p>
 
                 <div className="space-y-6">
@@ -1221,7 +1250,7 @@ const OrganicFarmerSignupPage = () => {
                         htmlFor="direcToConsumer"
                         className="ml-2 font-medium text-gray-700"
                       >
-                        Direct to Consumer
+                        {!isWaray ? "Direct to Consumer" : "Direkta ha Konsumidor"}
                       </label>
                     </div>
                     <div className="mb-2 flex items-center">
@@ -1235,18 +1264,18 @@ const OrganicFarmerSignupPage = () => {
                         htmlFor="trader"
                         className="ml-2 font-medium text-gray-700"
                       >
-                        Trader
+                        {!isWaray ? "Trader" : "Trader"}
                       </label>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
-                        Specific Type 1
+                        {!isWaray ? "Specific Type 1" : "Espesipiko nga Klase 1"}
                       </label>
                       <input
                         type="text"
                         className="mt-1 block w-full rounded-md border border-gray-300 p-2"
                         {...register("specificType1")}
-                        placeholder="Specify type..."
+                        placeholder={!isWaray ? "Specify type..." : "Ispesipiko an klase..."}
                       />
                     </div>
                   </div>
@@ -1264,7 +1293,7 @@ const OrganicFarmerSignupPage = () => {
                         htmlFor="retailer"
                         className="ml-2 font-medium text-gray-700"
                       >
-                        Retailer
+                        {!isWaray ? "Retailer" : "Retailer"}
                       </label>
                     </div>
                     <div className="mb-2 flex items-center">
@@ -1278,18 +1307,18 @@ const OrganicFarmerSignupPage = () => {
                         htmlFor="institutionalBuyer"
                         className="ml-2 font-medium text-gray-700"
                       >
-                        Institutional Buyer
+                        {!isWaray ? "Institutional Buyer" : "Institutional Buyer"}
                       </label>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
-                        Specific Type 2
+                        {!isWaray ? "Specific Type 2" : "Espesipiko nga Klase 2"}
                       </label>
                       <input
                         type="text"
                         className="mt-1 block w-full rounded-md border border-gray-300 p-2"
                         {...register("SpecificType2")}
-                        placeholder="Specify type..."
+                        placeholder={!isWaray ? "Specify type..." : "Ispesipiko an klase..."}
                       />
                     </div>
                   </div>
@@ -1307,18 +1336,18 @@ const OrganicFarmerSignupPage = () => {
                         htmlFor="internationalBasedBuyers"
                         className="ml-2 font-medium text-gray-700"
                       >
-                        International Based Buyers
+                        {!isWaray ? "International Based Buyers" : "Internasyonal nga mga Palalit"}
                       </label>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
-                        Specific Type 3
+                        {!isWaray ? "Specific Type 3" : "Espesipiko nga Klase 3"}
                       </label>
                       <input
                         type="text"
                         className="mt-1 block w-full rounded-md border border-gray-300 p-2"
                         {...register("SpecificType3")}
-                        placeholder="Specify type..."
+                        placeholder={!isWaray ? "Specify type..." : "Ispesipiko an klase..."}
                       />
                     </div>
                   </div>
@@ -1326,13 +1355,13 @@ const OrganicFarmerSignupPage = () => {
                   {/* Others */}
                   <div className="rounded-lg bg-gray-50 p-4">
                     <label className="block text-sm font-medium text-gray-700">
-                      Others (specify)
+                      {!isWaray ? "Others (specify)" : "Iba (ispesipiko)"}
                     </label>
                     <input
                       type="text"
                       className="mt-1 block w-full rounded-md border border-gray-300 p-2"
                       {...register("marketOthers")}
-                      placeholder="Specify other market types..."
+                      placeholder={!isWaray ? "Specify other market types..." : "Ispesipiko an iba nga mga klase han merkado..."}
                     />
                   </div>
                 </div>
@@ -1344,14 +1373,14 @@ const OrganicFarmerSignupPage = () => {
                   onClick={prevStep}
                   className="rounded-md bg-gray-300 px-4 py-2 text-gray-800 hover:bg-gray-400"
                 >
-                  Back
+                  {!isWaray ? "Back" : "Balik"}
                 </button>
                 <button
                   type="button"
                   onClick={nextStep}
                   className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700"
                 >
-                  Next
+                  {!isWaray ? "Next" : "Sunod"}
                 </button>
               </div>
             </motion.div>
@@ -1366,21 +1395,20 @@ const OrganicFarmerSignupPage = () => {
               className="space-y-4"
             >
               <h2 className="text-xl font-semibold">
-                Agricultural Commodities & Fishery Products
+                {!isWaray ? "Agricultural Commodities & Fishery Products" : "Mga Produkto Agrikultural ngan Pangisda"}
               </h2>
 
               <div className="rounded-lg border border-gray-200 p-4">
                 <div className="mb-4 flex items-center justify-between">
                   <p className="text-sm text-gray-600">
-                    Add the agricultural commodities and fishery products you
-                    produce.
+                    {!isWaray ? "Add the agricultural commodities and fishery products you produce." : "Dugangi an mga produkto agrikultural ngan pangisda nga imo ginproprodyus."}
                   </p>
                   <button
                     type="button"
                     onClick={addCommodity}
                     className="rounded-md bg-green-600 px-4 py-2 text-sm text-white hover:bg-green-700"
                   >
-                    Add Commodity
+                    {!isWaray ? "Add Commodity" : "Dugangi hin Produkto"}
                   </button>
                 </div>
 
@@ -1392,7 +1420,7 @@ const OrganicFarmerSignupPage = () => {
                     >
                       <div className="mb-4 flex items-center justify-between">
                         <h4 className="font-medium text-gray-700">
-                          Commodity {index + 1}
+                          {!isWaray ? `Commodity ${index + 1}` : `Produkto ${index + 1}`}
                         </h4>
                         {index > 0 && (
                           <button
@@ -1400,7 +1428,7 @@ const OrganicFarmerSignupPage = () => {
                             onClick={() => removeCommodity(index)}
                             className="rounded-md bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600"
                           >
-                            Remove
+                            {!isWaray ? "Remove" : "Kuhaa"}
                           </button>
                         )}
                       </div>
@@ -1408,7 +1436,7 @@ const OrganicFarmerSignupPage = () => {
                       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>
                           <label className="block text-sm font-medium text-gray-700">
-                            Commodity Type*
+                            {!isWaray ? "Commodity Type*" : "Klase han Produkto*"}
                           </label>
                           <select
                             className="mt-1 block w-full rounded-md border border-gray-300 p-2"
@@ -1416,39 +1444,39 @@ const OrganicFarmerSignupPage = () => {
                               `agriculturalCommodities.${index}.type` as const,
                             )}
                           >
-                            <option value="Grains">Grains</option>
+                            <option value="Grains">{!isWaray ? "Grains" : "Mga Liso"}</option>
                             <option value="LowlandVegetables">
-                              Lowland Vegetables
+                              {!isWaray ? "Lowland Vegetables" : "Lowland Vegetables"}
                             </option>
                             <option value="UplandVegetables">
-                              Upland Vegetables
+                              {!isWaray ? "Upland Vegetables" : "Upland Vegetables"}
                             </option>
                             <option value="FruitsAndNots">
-                              Fruits and Nuts
+                              {!isWaray ? "Fruits and Nuts" : "Prutas ngan Nuts"}
                             </option>
-                            <option value="Mushroom">Mushroom</option>
-                            <option value="OrganicSoil">Organic Soil</option>
-                            <option value="Rootcrops">Root Crops</option>
+                            <option value="Mushroom">{!isWaray ? "Mushroom" : "Uhong"}</option>
+                            <option value="OrganicSoil">{!isWaray ? "Organic Soil" : "Organic Soil"}</option>
+                            <option value="Rootcrops">{!isWaray ? "Root Crops" : "Root Crops"}</option>
                             <option value="PultryProducts">
-                              Poultry Products
+                              {!isWaray ? "Poultry Products" : "Mga Produkto Manok"}
                             </option>
                             <option value="LiveStockProducts">
-                              Livestock Products
+                              {!isWaray ? "Livestock Products" : "Mga Produkto Hayupan"}
                             </option>
                             <option value="FisheriesAndAquaCulture">
-                              Fisheries and Aquaculture
+                              {!isWaray ? "Fisheries and Aquaculture" : "Pangisda ngan Aquaculture"}
                             </option>
                             <option value="IndustrialCropsAndProducts">
-                              Industrial Crops and Products
+                              {!isWaray ? "Industrial Crops and Products" : "Industrial Crops and Products"}
                             </option>
                             <option value="OtherCommodity">
-                              Other Commodity
+                              {!isWaray ? "Other Commodity" : "Iba nga Produkto"}
                             </option>
                           </select>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700">
-                            Name*
+                            {!isWaray ? "Name*" : "Ngaran*"}
                           </label>
                           <input
                             type="text"
@@ -1456,7 +1484,7 @@ const OrganicFarmerSignupPage = () => {
                             {...register(
                               `agriculturalCommodities.${index}.name` as const,
                             )}
-                            placeholder="Commodity name..."
+                            placeholder={!isWaray ? "Commodity name..." : "Ngaran han produkto..."}
                           />
                         </div>
                       </div>
@@ -1464,7 +1492,7 @@ const OrganicFarmerSignupPage = () => {
                       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div>
                           <label className="block text-sm font-medium text-gray-700">
-                            Size (in Ha)*
+                            {!isWaray ? "Size (in Ha)*" : "Sukol (ha Ha)*"}
                           </label>
                           <input
                             type="number"
@@ -1479,7 +1507,7 @@ const OrganicFarmerSignupPage = () => {
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700">
-                            Annual Volume (in KG)*
+                            {!isWaray ? "Annual Volume (in KG)*" : "Taonan nga Volume (ha KG)*"}
                           </label>
                           <input
                             type="number"
@@ -1494,7 +1522,7 @@ const OrganicFarmerSignupPage = () => {
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700">
-                            Certification
+                            {!isWaray ? "Certification" : "Sertipikasyon"}
                           </label>
                           <input
                             type="text"
@@ -1502,7 +1530,7 @@ const OrganicFarmerSignupPage = () => {
                             {...register(
                               `agriculturalCommodities.${index}.certification` as const,
                             )}
-                            placeholder="Certification details..."
+                            placeholder={!isWaray ? "Certification details..." : "Mga detalye han sertipikasyon..."}
                           />
                         </div>
                       </div>
@@ -1512,13 +1540,13 @@ const OrganicFarmerSignupPage = () => {
 
                 <div className="mt-4">
                   <label className="block text-sm font-medium text-gray-700">
-                    Other Commodities (specify)
+                    {!isWaray ? "Other Commodities (specify)" : "Iba nga mga Produkto (ispesipiko)"}
                   </label>
                   <textarea
                     className="mt-1 block w-full rounded-md border border-gray-300 p-2"
                     rows={3}
                     {...register("othersCommodity")}
-                    placeholder="Specify other commodities not listed above..."
+                    placeholder={!isWaray ? "Specify other commodities not listed above..." : "Ispesipiko an iba nga mga produkto nga waray nakalista ha ibabaw..."}
                   />
                 </div>
               </div>
@@ -1529,14 +1557,14 @@ const OrganicFarmerSignupPage = () => {
                   onClick={prevStep}
                   className="rounded-md bg-gray-300 px-4 py-2 text-gray-800 hover:bg-gray-400"
                 >
-                  Back
+                  {!isWaray ? "Back" : "Balik"}
                 </button>
                 <button
                   type="button"
                   onClick={nextStep}
                   className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700"
                 >
-                  Next
+                  {!isWaray ? "Next" : "Sunod"}
                 </button>
               </div>
             </motion.div>
@@ -1551,21 +1579,20 @@ const OrganicFarmerSignupPage = () => {
               className="space-y-4"
             >
               <h2 className="text-xl font-semibold">
-                Owned/Shared Facilities & Equipment
+                {!isWaray ? "Owned/Shared Facilities & Equipment" : "Mga Pasilidad ngan Ekipo nga Tag-iya o Ginhihimoan"}
               </h2>
 
               <div className="rounded-lg border border-gray-200 p-4">
                 <div className="mb-4 flex items-center justify-between">
                   <p className="text-sm text-gray-600">
-                    Add information about facilities, machinery, and equipment
-                    you own or share.
+                    {!isWaray ? "Add information about facilities, machinery, and equipment you own or share." : "Dugangi an impormasyon bahin han mga pasilidad, makina, ngan ekipo nga imo tag-iya o ginhihimoan."}
                   </p>
                   <button
                     type="button"
                     onClick={addFacility}
                     className="rounded-md bg-green-600 px-4 py-2 text-sm text-white hover:bg-green-700"
                   >
-                    Add Facility/Equipment
+                    {!isWaray ? "Add Facility/Equipment" : "Dugangi hin Pasilidad/Ekipo"}
                   </button>
                 </div>
 
@@ -1577,7 +1604,7 @@ const OrganicFarmerSignupPage = () => {
                     >
                       <div className="mb-4 flex items-center justify-between">
                         <h4 className="font-medium text-gray-700">
-                          Facility/Equipment {index + 1}
+                          {!isWaray ? `Facility/Equipment ${index + 1}` : `Pasilidad/Ekipo ${index + 1}`}
                         </h4>
                         {index > 0 && (
                           <button
@@ -1585,7 +1612,7 @@ const OrganicFarmerSignupPage = () => {
                             onClick={() => removeFacility(index)}
                             className="rounded-md bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600"
                           >
-                            Remove
+                            {!isWaray ? "Remove" : "Kuhaa"}
                           </button>
                         )}
                       </div>
@@ -1593,7 +1620,7 @@ const OrganicFarmerSignupPage = () => {
                       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>
                           <label className="block text-sm font-medium text-gray-700">
-                            Facilities/Machinery/Equipment Used*
+                            {!isWaray ? "Facilities/Machinery/Equipment Used*" : "Mga Pasilidad/Makina/Ekipo nga Gin-gamit*"}
                           </label>
                           <input
                             type="text"
@@ -1601,12 +1628,12 @@ const OrganicFarmerSignupPage = () => {
                             {...register(
                               `ownSharedFacilities.${index}.facilitiesMachineryEquipmentUsed` as const,
                             )}
-                            placeholder="Equipment name..."
+                            placeholder={!isWaray ? "Equipment name..." : "Ngaran han ekipo..."}
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700">
-                            Ownership*
+                            {!isWaray ? "Ownership*" : "Pagka-tag-iya*"}
                           </label>
                           <input
                             type="text"
@@ -1614,7 +1641,7 @@ const OrganicFarmerSignupPage = () => {
                             {...register(
                               `ownSharedFacilities.${index}.ownership` as const,
                             )}
-                            placeholder="Owned/Shared/Rented..."
+                            placeholder={!isWaray ? "Owned/Shared/Rented..." : "Tag-iya/Ginhihimoan/Ginpaupahan..."}
                           />
                         </div>
                       </div>
@@ -1622,7 +1649,7 @@ const OrganicFarmerSignupPage = () => {
                       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div>
                           <label className="block text-sm font-medium text-gray-700">
-                            Model*
+                            {!isWaray ? "Model*" : "Modelo*"}
                           </label>
                           <input
                             type="text"
@@ -1630,12 +1657,12 @@ const OrganicFarmerSignupPage = () => {
                             {...register(
                               `ownSharedFacilities.${index}.model` as const,
                             )}
-                            placeholder="Model/Brand..."
+                            placeholder={!isWaray ? "Model/Brand..." : "Modelo/Brand..."}
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700">
-                            Quantity*
+                            {!isWaray ? "Quantity*" : "Gidaghanon*"}
                           </label>
                           <input
                             type="text"
@@ -1643,12 +1670,12 @@ const OrganicFarmerSignupPage = () => {
                             {...register(
                               `ownSharedFacilities.${index}.quantity` as const,
                             )}
-                            placeholder="Number of units..."
+                            placeholder={!isWaray ? "Number of units..." : "Gidaghanon han mga units..."}
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700">
-                            Volume/Services Area*
+                            {!isWaray ? "Volume/Services Area*" : "Volume/Serbisyo nga Area*"}
                           </label>
                           <input
                             type="text"
@@ -1656,7 +1683,7 @@ const OrganicFarmerSignupPage = () => {
                             {...register(
                               `ownSharedFacilities.${index}.volumeServicesArea` as const,
                             )}
-                            placeholder="Service area coverage..."
+                            placeholder={!isWaray ? "Service area coverage..." : "Sakop han serbisyo nga area..."}
                           />
                         </div>
                       </div>
@@ -1664,7 +1691,7 @@ const OrganicFarmerSignupPage = () => {
                       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>
                           <label className="block text-sm font-medium text-gray-700">
-                            Average Working Hours/Day*
+                            {!isWaray ? "Average Working Hours/Day*" : "Average nga Oras han Pagtrabaho/Adlaw*"}
                           </label>
                           <input
                             type="text"
@@ -1672,7 +1699,7 @@ const OrganicFarmerSignupPage = () => {
                             {...register(
                               `ownSharedFacilities.${index}.averageWorkingHoursDay` as const,
                             )}
-                            placeholder="Hours per day..."
+                            placeholder={!isWaray ? "Hours per day..." : "Oras kada adlaw..."}
                           />
                         </div>
                         <div className="flex items-center pt-6">
@@ -1688,14 +1715,14 @@ const OrganicFarmerSignupPage = () => {
                             htmlFor={`dedicatedToOrganic-${index}`}
                             className="ml-2 text-sm text-gray-700"
                           >
-                            Dedicated to Organic Production
+                            {!isWaray ? "Dedicated to Organic Production" : "Dedikado ha Organic Production"}
                           </label>
                         </div>
                       </div>
 
                       <div className="mt-4">
                         <label className="block text-sm font-medium text-gray-700">
-                          Remarks
+                          {!isWaray ? "Remarks" : "Mga Komento"}
                         </label>
                         <textarea
                           className="mt-1 block w-full rounded-md border border-gray-300 p-2"
@@ -1703,7 +1730,7 @@ const OrganicFarmerSignupPage = () => {
                           {...register(
                             `ownSharedFacilities.${index}.Remarks` as const,
                           )}
-                          placeholder="Additional remarks or notes..."
+                          placeholder={!isWaray ? "Additional remarks or notes..." : "Dugang nga mga komento o nota..."}
                         />
                       </div>
                     </div>
@@ -1717,7 +1744,7 @@ const OrganicFarmerSignupPage = () => {
                   onClick={prevStep}
                   className="rounded-md bg-gray-300 px-4 py-2 text-gray-800 hover:bg-gray-400"
                 >
-                  Back
+                  {!isWaray ? "Back" : "Balik"}
                 </button>
                 <button
                   type="submit"
@@ -1725,8 +1752,8 @@ const OrganicFarmerSignupPage = () => {
                   className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-50"
                 >
                   {isSubmitting || signupMutation.isPending
-                    ? "Submitting..."
-                    : "Submit Registration"}
+                    ? !isWaray ? "Submitting..." : "Ginpapadara..."
+                    : !isWaray ? "Submit Registration" : "Isumite an Pagrehistro"}
                 </button>
               </div>
             </motion.div>

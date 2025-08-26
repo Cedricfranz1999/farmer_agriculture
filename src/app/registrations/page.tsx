@@ -9,8 +9,11 @@ import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
+import { Switch } from "~/components/ui/switch";
+import { Label } from "~/components/ui/label";
 
 // Define form schema that matches your exact Prisma schema
+
 const signupSchema = z
   .object({
     // Basic info
@@ -206,6 +209,8 @@ const signupSchema = z
 type SignupForm = z.infer<typeof signupSchema>;
 
 const FarmerSignupPage = () => {
+  const [isWaray, setIsWaray] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -247,6 +252,7 @@ const FarmerSignupPage = () => {
     mode: "onChange",
   });
 
+  console.log("ERRORS",errors)
   const { toast } = useToast();
   const router = useRouter();
   const [activeStep, setActiveStep] = useState(1);
@@ -363,15 +369,15 @@ const FarmerSignupPage = () => {
   const signupMutation = api.auth.signup.useMutation({
     onSuccess: () => {
       toast({
-        title: "Success!",
-        description: "Account created successfully",
+        title: isWaray ? "Malinamposan!" : "Success!",
+        description: isWaray ? "Account nga malinamposan nga ginhimo" : "Account created successfully",
         variant: "default",
       });
-      router.push("/farmer/login");
+      router.push("/registrations/info");
     },
     onError: (error) => {
       toast({
-        title: "Error",
+        title: isWaray ? "Sayop" : "Error",
         description: error.message,
         variant: "destructive",
       });
@@ -521,8 +527,8 @@ const FarmerSignupPage = () => {
       setActiveStep((prev) => prev + 1);
     } else {
       toast({
-        title: "Validation Error",
-        description: "Please fill out all required fields correctly",
+        title: isWaray ? "Sayop ha Pag-validate" : "Validation Error",
+        description: isWaray ? "Palihog pun-i an tanan nga kinahanglanon nga mga field nga tama" : "Please fill out all required fields correctly",
         variant: "destructive",
       });
     }
@@ -575,6 +581,7 @@ const FarmerSignupPage = () => {
 
     // Set the selected owner type
     setValue(`farmDetails.${farmIndex}.${ownerType}` as any, true);
+
   };
 
   return (
@@ -590,11 +597,22 @@ const FarmerSignupPage = () => {
             className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Login
+            {!isWaray ? "Back to login" : "Balik ha Pag-login"}
           </a>
+
           <h1 className="absolute left-1/2 -translate-x-1/2 text-3xl font-bold text-gray-800">
-            Farmer Registration
+            {!isWaray ? "Farmer Registration" : "Pagrehistro han Parauma"}
           </h1>
+
+          {/* Switch */}
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="language"
+              checked={isWaray}
+              onCheckedChange={setIsWaray}
+            />
+            <Label htmlFor="language">{isWaray ? "Waray" : "English"}</Label>
+          </div>
         </div>
 
         {/* Progress bar */}
@@ -631,18 +649,18 @@ const FarmerSignupPage = () => {
               className="space-y-6"
             >
               <h2 className="border-b pb-2 text-2xl font-bold text-gray-800">
-                Personal Information
+                {!isWaray ? "Personal Information" : "Impormasyon Personal"}
               </h2>
 
               {/* Credentials Section */}
               <div className="rounded-lg bg-gray-50 p-4">
                 <h3 className="mb-4 text-lg font-medium text-gray-700">
-                  Account Credentials
+                  {!isWaray ? "Account Credentials" : "Mga Kredensyal han Account"}
                 </h3>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Username*
+                      {!isWaray ? "Username*" : "Username*"}
                     </label>
                     <input
                       type="text"
@@ -659,7 +677,7 @@ const FarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Password*
+                      {!isWaray ? "Password*" : "Password*"}
                     </label>
                     <input
                       type="password"
@@ -676,7 +694,7 @@ const FarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Confirm Password*
+                      {!isWaray ? "Confirm Password*" : "Ikonpirma an Password*"}
                     </label>
                     <input
                       type="password"
@@ -699,12 +717,12 @@ const FarmerSignupPage = () => {
               {/* Name Section */}
               <div className="rounded-lg bg-gray-50 p-4">
                 <h3 className="mb-4 text-lg font-medium text-gray-700">
-                  Name Information
+                  {!isWaray ? "Name Information" : "Impormasyon han Ngalan"}
                 </h3>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Surname*
+                      {!isWaray ? "Surname*" : "Apelyido*"}
                     </label>
                     <input
                       type="text"
@@ -721,7 +739,7 @@ const FarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      First Name*
+                      {!isWaray ? "First Name*" : "Pangaran*"}
                     </label>
                     <input
                       type="text"
@@ -738,7 +756,7 @@ const FarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Middle Name
+                      {!isWaray ? "Middle Name" : "Tunga nga Ngalan"}
                     </label>
                     <input
                       type="text"
@@ -750,7 +768,7 @@ const FarmerSignupPage = () => {
                 <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-4">
                   <div className="md:col-span-3">
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Extension Name
+                      {!isWaray ? "Extension Name" : "Extension han Ngalan"}
                     </label>
                     <input
                       type="text"
@@ -764,24 +782,24 @@ const FarmerSignupPage = () => {
               {/* Personal Details Section */}
               <div className="rounded-lg bg-gray-50 p-4">
                 <h3 className="mb-4 text-lg font-medium text-gray-700">
-                  Personal Details
+                  {!isWaray ? "Personal Details" : "Mga Detalye Personal"}
                 </h3>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Sex*
+                      {!isWaray ? "Sex*" : "Sekso*"}
                     </label>
                     <select
                       className="block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                       {...register("sex")}
                     >
-                      <option value="MALE">Male</option>
-                      <option value="FEMALE">Female</option>
+                      <option value="MALE">{!isWaray ? "Male" : "Lalaki"}</option>
+                      <option value="FEMALE">{!isWaray ? "Female" : "Babaye"}</option>
                     </select>
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Date of Birth*
+                      {!isWaray ? "Date of Birth*" : "Adlaw han Pagkatawo*"}
                     </label>
                     <input
                       type="date"
@@ -800,7 +818,7 @@ const FarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Place of Birth*
+                      {!isWaray ? "Place of Birth*" : "Lugar han Pagkatawo*"}
                     </label>
                     <input
                       type="text"
@@ -821,42 +839,42 @@ const FarmerSignupPage = () => {
                 <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Civil Status*
+                      {!isWaray ? "Civil Status*" : "Estado Sibil*"}
                     </label>
                     <select
                       className="block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                       {...register("civilStaus")}
                     >
-                      <option value="SINGLE">Single</option>
-                      <option value="MARRIED">Married</option>
-                      <option value="WIDOWED">Widowed</option>
-                      <option value="SEPARATED">Separated</option>
+                      <option value="SINGLE">{!isWaray ? "Single" : "Soltero/Soltera"}</option>
+                      <option value="MARRIED">{!isWaray ? "Married" : "Minyo"}</option>
+                      <option value="WIDOWED">{!isWaray ? "Widowed" : "Balo/Bala"}</option>
+                      <option value="SEPARATED">{!isWaray ? "Separated" : "Nabulag"}</option>
                     </select>
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Highest Form of Education*
+                      {!isWaray ? "Highest Form of Education*" : "Pinakataas nga Porma han Edukasyon*"}
                     </label>
                     <select
                       className="block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                       {...register("highestFormOfEducation")}
                     >
-                      <option value="NONE">None</option>
-                      <option value="ELEMENTARY">Elementary</option>
-                      <option value="HIGHSCHOOL">High School</option>
+                      <option value="NONE">{!isWaray ? "None" : "Waray"}</option>
+                      <option value="ELEMENTARY">{!isWaray ? "Elementary" : "Elementarya"}</option>
+                      <option value="HIGHSCHOOL">{!isWaray ? "High School" : "Haiskul"}</option>
                       <option value="SENIOR_HIGHSCHOOL">
-                        Senior High School
+                        {!isWaray ? "Senior High School" : "Senior High School"}
                       </option>
-                      <option value="COLLEGE">College</option>
-                      <option value="POST_GRADUATE">Post Graduate</option>
-                      <option value="VOCATIONAL">Vocational</option>
+                      <option value="COLLEGE">{!isWaray ? "College" : "Kolehiyo"}</option>
+                      <option value="POST_GRADUATE">{!isWaray ? "Post Graduate" : "Post Graduate"}</option>
+                      <option value="VOCATIONAL">{!isWaray ? "Vocational" : "Bokasyonal"}</option>
                     </select>
                   </div>
                 </div>
                 <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Religion
+                      {!isWaray ? "Religion" : "Relihiyon"}
                     </label>
                     <input
                       type="text"
@@ -866,7 +884,7 @@ const FarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Email Address
+                      {!isWaray ? "Email Address" : "Email Address"}
                     </label>
                     <input
                       type="email"
@@ -880,12 +898,12 @@ const FarmerSignupPage = () => {
               {/* Family Information Section */}
               <div className="rounded-lg bg-gray-50 p-4">
                 <h3 className="mb-4 text-lg font-medium text-gray-700">
-                  Family Information
+                  {!isWaray ? "Family Information" : "Impormasyon han Pamilya"}
                 </h3>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Name of Spouse (if married)
+                      {!isWaray ? "Name of Spouse (if married)" : "Ngaran han Asawa (kon minyo)"}
                     </label>
                     <input
                       type="text"
@@ -895,7 +913,7 @@ const FarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Mothers Name
+                      {!isWaray ? "Mothers Name" : "Ngaran han Iroy"}
                     </label>
                     <input
                       type="text"
@@ -905,7 +923,7 @@ const FarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Fathers Name
+                      {!isWaray ? "Fathers Name" : "Ngaran han Amay"}
                     </label>
                     <input
                       type="text"
@@ -917,78 +935,73 @@ const FarmerSignupPage = () => {
               </div>
 
               {/* Government & Emergency Section */}
-              {/* Add this in the File Upload Section */}
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">
-                  Government ID (Image)*
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className={`block w-full rounded-md border p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                    errors.govermentId ? "border-red-500" : "border-gray-300"
-                  }`}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onload = (event) => {
-                        if (typeof event.target?.result === "string") {
-                          setValue("govermentId", event.target.result);
-                        }
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }}
-                  required
-                />
-                {errors.govermentId && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.govermentId.message}
-                  </p>
-                )}
-              </div>
+              <div className="rounded-lg bg-gray-50 p-4">
+                <h3 className="mb-4 text-lg font-medium text-gray-700">
+                  {!isWaray ? "Government & Emergency Information" : "Impormasyon han Gobierno ngan Emergensya"}
+                </h3>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    {!isWaray ? "Government ID (Image)*" : "Government ID (Litrato)*"}
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className={`block w-full rounded-md border p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                      errors.govermentId ? "border-red-500" : "border-gray-300"
+                    }`}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          if (typeof event.target?.result === "string") {
+                            setValue("govermentId", event.target.result);
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    required
+                  />
+                  {errors.govermentId && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.govermentId.message}
+                    </p>
+                  )}
+                </div>
 
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">
-                  person To Contact IncaseOf Emerceny
-                </label>
-                <input
-                  type="text"
-                  className="block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  {...register("personToContactIncaseOfEmerceny")}
-                />
-              </div>
+                <div className="mt-4">
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    {!isWaray ? "Person To Contact In Case Of Emergency" : "Tao nga Kontakon Kon May Emergensya"}
+                  </label>
+                  <input
+                    type="text"
+                    className="block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    {...register("personToContactIncaseOfEmerceny")}
+                  />
+                </div>
 
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">
-                  person Contact Number Incase Of Emergency
-                </label>
-                <input
-                  type="text"
-                  className="block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  {...register("personContactNumberIncaseOfEmergency")}
-                />
-                <div />
-                <label className="mb-1 block text-sm font-medium text-gray-700">
-                  Fathers Name
-                </label>
-                <input
-                  type="text"
-                  className="block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  {...register("fathersName")}
-                />
+                <div className="mt-4">
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    {!isWaray ? "Person Contact Number In Case Of Emergency" : "Numero han Kontak Kon May Emergensya"}
+                  </label>
+                  <input
+                    type="text"
+                    className="block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    {...register("personContactNumberIncaseOfEmergency")}
+                  />
+                </div>
               </div>
 
               {/* Income Section */}
               <div className="rounded-lg bg-gray-50 p-4">
                 <h3 className="mb-4 text-lg font-medium text-gray-700">
-                  Income Information
+                  {!isWaray ? "Income Information" : "Impormasyon han Kita"}
                 </h3>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Gross Annual Income (Farming)*
+                      {!isWaray ? "Gross Annual Income (Farming)*" : "Gross Annual Income (Pagparauma)*"}
                     </label>
                     <input
                       type="number"
@@ -1009,7 +1022,7 @@ const FarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Gross Annual Income (Non-Farming)*
+                      {!isWaray ? "Gross Annual Income (Non-Farming)*" : "Gross Annual Income (Diri Pagparauma)*"}
                     </label>
                     <input
                       type="number"
@@ -1034,12 +1047,12 @@ const FarmerSignupPage = () => {
               {/* File Upload Section */}
               <div className="rounded-lg bg-gray-50 p-4">
                 <h3 className="mb-4 text-lg font-medium text-gray-700">
-                  Document Upload
+                  {!isWaray ? "Document Upload" : "Pag-upload han Dokumento"}
                 </h3>
                 <div className="grid grid-cols-1 gap-6">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700">
-                      Farmer Image*
+                      {!isWaray ? "Farmer Image*" : "Litrato han Parauma*"}
                     </label>
                     <input
                       type="file"
@@ -1077,7 +1090,7 @@ const FarmerSignupPage = () => {
                   onClick={nextStep}
                   className="rounded-md bg-blue-600 px-6 py-2 text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
                 >
-                  Next
+                  {!isWaray ? "Next" : "Sunod"}
                 </button>
               </div>
             </motion.div>
@@ -1091,11 +1104,13 @@ const FarmerSignupPage = () => {
               transition={{ duration: 0.5 }}
               className="space-y-4"
             >
-              <h2 className="text-xl font-semibold">Address Information</h2>
+              <h2 className="text-xl font-semibold">
+                {!isWaray ? "Address Information" : "Impormasyon han Address"}
+              </h2>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    House/Lot/Building No*
+                    {!isWaray ? "House/Lot/Building No*" : "Balay/Lote/Gusali No*"}
                   </label>
                   <input
                     type="text"
@@ -1114,7 +1129,7 @@ const FarmerSignupPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Street/Sitio/Subdivision*
+                    {!isWaray ? "Street/Sitio/Subdivision*" : "Kalsada/Sitio/Subdivision*"}
                   </label>
                   <input
                     type="text"
@@ -1135,7 +1150,7 @@ const FarmerSignupPage = () => {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Barangay*
+                    {!isWaray ? "Barangay*" : "Barangay*"}
                   </label>
                   <input
                     type="text"
@@ -1152,7 +1167,7 @@ const FarmerSignupPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Municipality/City*
+                    {!isWaray ? "Municipality/City*" : "Munispyo/Siyudad*"}
                   </label>
                   <input
                     type="text"
@@ -1173,7 +1188,7 @@ const FarmerSignupPage = () => {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Province*
+                    {!isWaray ? "Province*" : "Probinsya*"}
                   </label>
                   <input
                     type="text"
@@ -1190,7 +1205,7 @@ const FarmerSignupPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Region*
+                    {!isWaray ? "Region*" : "Rehiyon*"}
                   </label>
                   <input
                     type="text"
@@ -1208,7 +1223,7 @@ const FarmerSignupPage = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Contact Number*
+                  {!isWaray ? "Contact Number*" : "Numero han Kontak*"}
                 </label>
                 <input
                   type="text"
@@ -1229,14 +1244,14 @@ const FarmerSignupPage = () => {
                   onClick={prevStep}
                   className="rounded-md bg-gray-300 px-4 py-2 text-gray-800 hover:bg-gray-400"
                 >
-                  Back
+                  {!isWaray ? "Back" : "Balik"}
                 </button>
                 <button
                   type="button"
                   onClick={nextStep}
                   className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
                 >
-                  Next
+                  {!isWaray ? "Next" : "Sunod"}
                 </button>
               </div>
             </motion.div>
@@ -1250,10 +1265,12 @@ const FarmerSignupPage = () => {
               transition={{ duration: 0.5 }}
               className="space-y-4"
             >
-              <h2 className="text-xl font-semibold">Category and Details</h2>
+              <h2 className="text-xl font-semibold">
+                {!isWaray ? "Category and Details" : "Kategorya ngan mga Detalye"}
+              </h2>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Category Type*
+                  {!isWaray ? "Category Type*" : "Klase han Kategorya*"}
                 </label>
                 <select
                   className={`mt-1 block w-full rounded-md border p-2 ${
@@ -1261,10 +1278,10 @@ const FarmerSignupPage = () => {
                   }`}
                   {...register("categoryType")}
                 >
-                  <option value="FARMER">Farmer</option>
-                  <option value="FARMWORKER">Farm Worker</option>
-                  <option value="FISHERFOLK">Fisherfolk</option>
-                  <option value="AGRI_YOUTH">Agri Youth</option>
+                  <option value="FARMER">{!isWaray ? "Farmer" : "Parauma"}</option>
+                  <option value="FARMWORKER">{!isWaray ? "Farm Worker" : "Parag-uma"}</option>
+                  <option value="FISHERFOLK">{!isWaray ? "Fisherfolk" : "Mangingisda"}</option>
+                  <option value="AGRI_YOUTH">{!isWaray ? "Agri Youth" : "Agri Youth"}</option>
                 </select>
                 {errors.categoryType && (
                   <p className="mt-1 text-sm text-red-600">
@@ -1276,7 +1293,9 @@ const FarmerSignupPage = () => {
               {/* Farmer Details */}
               {categoryType === "FARMER" && (
                 <div className="space-y-4 rounded-lg border border-gray-200 p-4">
-                  <h3 className="text-lg font-medium">Farmer Details</h3>
+                  <h3 className="text-lg font-medium">
+                    {!isWaray ? "Farmer Details" : "Mga Detalye han Parauma"}
+                  </h3>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="flex items-center">
                       <input
@@ -1289,7 +1308,7 @@ const FarmerSignupPage = () => {
                         htmlFor="rice"
                         className="ml-2 block text-sm text-gray-700"
                       >
-                        Rice
+                        {!isWaray ? "Rice" : "Paray"}
                       </label>
                     </div>
                     <div className="flex items-center">
@@ -1303,13 +1322,13 @@ const FarmerSignupPage = () => {
                         htmlFor="corn"
                         className="ml-2 block text-sm text-gray-700"
                       >
-                        Corn
+                        {!isWaray ? "Corn" : "Mais"}
                       </label>
                     </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Other Crops
+                      {!isWaray ? "Other Crops" : "Iba nga mga Tanom"}
                     </label>
                     <input
                       type="text"
@@ -1329,12 +1348,12 @@ const FarmerSignupPage = () => {
                         htmlFor="livestock"
                         className="ml-2 block text-sm text-gray-700"
                       >
-                        Livestock
+                        {!isWaray ? "Livestock" : "Hayupan"}
                       </label>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
-                        Livestock Details
+                        {!isWaray ? "Livestock Details" : "Mga Detalye han Hayupan"}
                       </label>
                       <input
                         type="text"
@@ -1355,12 +1374,12 @@ const FarmerSignupPage = () => {
                         htmlFor="poultry"
                         className="ml-2 block text-sm text-gray-700"
                       >
-                        Poultry
+                        {!isWaray ? "Poultry" : "Manok"}
                       </label>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
-                        Poultry Details
+                        {!isWaray ? "Poultry Details" : "Mga Detalye han Manok"}
                       </label>
                       <input
                         type="text"
@@ -1375,7 +1394,9 @@ const FarmerSignupPage = () => {
               {/* Farm Worker Details */}
               {categoryType === "FARMWORKER" && (
                 <div className="space-y-4 rounded-lg border border-gray-200 p-4">
-                  <h3 className="text-lg font-medium">Farm Worker Details</h3>
+                  <h3 className="text-lg font-medium">
+                    {!isWaray ? "Farm Worker Details" : "Mga Detalye han Parag-uma"}
+                  </h3>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="flex items-center">
                       <input
@@ -1388,7 +1409,7 @@ const FarmerSignupPage = () => {
                         htmlFor="landPreparation"
                         className="ml-2 block text-sm text-gray-700"
                       >
-                        Land Preparation
+                        {!isWaray ? "Land Preparation" : "Pagpreparar han Duta"}
                       </label>
                     </div>
                     <div className="flex items-center">
@@ -1402,7 +1423,7 @@ const FarmerSignupPage = () => {
                         htmlFor="plantingTransplanting"
                         className="ml-2 block text-sm text-gray-700"
                       >
-                        Planting/Transplanting
+                        {!isWaray ? "Planting/Transplanting" : "Pagtanom/Pagtransplant"}
                       </label>
                     </div>
                     <div className="flex items-center">
@@ -1416,7 +1437,7 @@ const FarmerSignupPage = () => {
                         htmlFor="cultivation"
                         className="ml-2 block text-sm text-gray-700"
                       >
-                        Cultivation
+                        {!isWaray ? "Cultivation" : "Pag-uma"}
                       </label>
                     </div>
                     <div className="flex items-center">
@@ -1430,13 +1451,13 @@ const FarmerSignupPage = () => {
                         htmlFor="harvesting"
                         className="ml-2 block text-sm text-gray-700"
                       >
-                        Harvesting
+                        {!isWaray ? "Harvesting" : "Pag-ani"}
                       </label>
                     </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Other Activities
+                      {!isWaray ? "Other Activities" : "Iba nga mga Kalihokan"}
                     </label>
                     <input
                       type="text"
@@ -1450,7 +1471,9 @@ const FarmerSignupPage = () => {
               {/* Fisherfolk Details */}
               {categoryType === "FISHERFOLK" && (
                 <div className="space-y-4 rounded-lg border border-gray-200 p-4">
-                  <h3 className="text-lg font-medium">Fisherfolk Details</h3>
+                  <h3 className="text-lg font-medium">
+                    {!isWaray ? "Fisherfolk Details" : "Mga Detalye han Mangingisda"}
+                  </h3>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="flex items-center">
                       <input
@@ -1463,7 +1486,7 @@ const FarmerSignupPage = () => {
                         htmlFor="fishCapture"
                         className="ml-2 block text-sm text-gray-700"
                       >
-                        Fish Capture
+                        {!isWaray ? "Fish Capture" : "Pangisda"}
                       </label>
                     </div>
                     <div className="flex items-center">
@@ -1477,7 +1500,7 @@ const FarmerSignupPage = () => {
                         htmlFor="aquaculture"
                         className="ml-2 block text-sm text-gray-700"
                       >
-                        Aquaculture
+                        {!isWaray ? "Aquaculture" : "Aquaculture"}
                       </label>
                     </div>
                     <div className="flex items-center">
@@ -1491,7 +1514,7 @@ const FarmerSignupPage = () => {
                         htmlFor="gleaning"
                         className="ml-2 block text-sm text-gray-700"
                       >
-                        Gleaning
+                        {!isWaray ? "Gleaning" : "Gleaning"}
                       </label>
                     </div>
                     <div className="flex items-center">
@@ -1505,7 +1528,7 @@ const FarmerSignupPage = () => {
                         htmlFor="fishProcessing"
                         className="ml-2 block text-sm text-gray-700"
                       >
-                        Fish Processing
+                        {!isWaray ? "Fish Processing" : "Pagproseso han Isda"}
                       </label>
                     </div>
                     <div className="flex items-center">
@@ -1519,13 +1542,13 @@ const FarmerSignupPage = () => {
                         htmlFor="fishVending"
                         className="ml-2 block text-sm text-gray-700"
                       >
-                        Fish Vending
+                        {!isWaray ? "Fish Vending" : "Pagbaligya han Isda"}
                       </label>
                     </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Other Activities
+                      {!isWaray ? "Other Activities" : "Iba nga mga Kalihokan"}
                     </label>
                     <input
                       type="text"
@@ -1539,7 +1562,9 @@ const FarmerSignupPage = () => {
               {/* Agri Youth Details */}
               {categoryType === "AGRI_YOUTH" && (
                 <div className="space-y-4 rounded-lg border border-gray-200 p-4">
-                  <h3 className="text-lg font-medium">Agri Youth Details</h3>
+                  <h3 className="text-lg font-medium">
+                    {!isWaray ? "Agri Youth Details" : "Mga Detalye han Agri Youth"}
+                  </h3>
                   <div className="grid grid-cols-1 gap-4">
                     <div className="flex items-center">
                       <input
@@ -1552,7 +1577,7 @@ const FarmerSignupPage = () => {
                         htmlFor="partOfFarmingHouseHold"
                         className="ml-2 block text-sm text-gray-700"
                       >
-                        Part of Farming Household
+                        {!isWaray ? "Part of Farming Household" : "Kabahin han Pamilya nga Parauma"}
                       </label>
                     </div>
                     <div className="flex items-center">
@@ -1566,7 +1591,7 @@ const FarmerSignupPage = () => {
                         htmlFor="attendedFormalAgriFishery"
                         className="ml-2 block text-sm text-gray-700"
                       >
-                        Attended Formal Agri-Fishery Training
+                        {!isWaray ? "Attended Formal Agri-Fishery Training" : "Nakarawat han Pormal nga Paghanas ha Agri-Fishery"}
                       </label>
                     </div>
                     <div className="flex items-center">
@@ -1580,7 +1605,7 @@ const FarmerSignupPage = () => {
                         htmlFor="attendedNonFormalAgriFishery"
                         className="ml-2 block text-sm text-gray-700"
                       >
-                        Attended Non-Formal Agri-Fishery Training
+                        {!isWaray ? "Attended Non-Formal Agri-Fishery Training" : "Nakarawat han Diri Pormal nga Paghanas ha Agri-Fishery"}
                       </label>
                     </div>
                     <div className="flex items-center">
@@ -1594,7 +1619,7 @@ const FarmerSignupPage = () => {
                         htmlFor="participatedInAnyAgriculturalActivity"
                         className="ml-2 block text-sm text-gray-700"
                       >
-                        Participated in Any Agricultural Activity
+                        {!isWaray ? "Participated in Any Agricultural Activity" : "Nakikibahin ha Bisán Anu nga Kalihokan Agrikultural"}
                       </label>
                     </div>
                     <div className="flex items-center">
@@ -1608,13 +1633,13 @@ const FarmerSignupPage = () => {
                         htmlFor="agriYouthFishVending"
                         className="ml-2 block text-sm text-gray-700"
                       >
-                        Fish Vending
+                        {!isWaray ? "Fish Vending" : "Pagbaligya han Isda"}
                       </label>
                     </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Other Activities
+                      {!isWaray ? "Other Activities" : "Iba nga mga Kalihokan"}
                     </label>
                     <input
                       type="text"
@@ -1631,14 +1656,14 @@ const FarmerSignupPage = () => {
                   onClick={prevStep}
                   className="rounded-md bg-gray-300 px-4 py-2 text-gray-800 hover:bg-gray-400"
                 >
-                  Back
+                  {!isWaray ? "Back" : "Balik"}
                 </button>
                 <button
                   type="button"
                   onClick={nextStep}
                   className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
                 >
-                  Next
+                  {!isWaray ? "Next" : "Sunod"}
                 </button>
               </div>
             </motion.div>
@@ -1653,18 +1678,18 @@ const FarmerSignupPage = () => {
               className="space-y-4"
             >
               <h2 className="text-xl font-semibold">
-                Household and Farm Details
+                {!isWaray ? "Household and Farm Details" : "Mga Detalye han Panimalay ngan Uma"}
               </h2>
 
               {/* Household Head Information */}
               <div className="space-y-4 rounded-lg border border-gray-200 p-4">
                 <h3 className="text-lg font-medium">
-                  Household Head Information
+                  {!isWaray ? "Household Head Information" : "Impormasyon han Ulo han Panimalay"}
                 </h3>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Household Head Name
+                      {!isWaray ? "Household Head Name" : "Ngaran han Ulo han Panimalay"}
                     </label>
                     <input
                       type="text"
@@ -1674,7 +1699,7 @@ const FarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Relationship to Household Head
+                      {!isWaray ? "Relationship to Household Head" : "Relasyon ha Ulo han Panimalay"}
                     </label>
                     <input
                       type="text"
@@ -1686,7 +1711,7 @@ const FarmerSignupPage = () => {
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Total Household Members
+                      {!isWaray ? "Total Household Members" : "Total nga Miyembro han Panimalay"}
                     </label>
                     <input
                       type="number"
@@ -1698,7 +1723,7 @@ const FarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Number of Male
+                      {!isWaray ? "Number of Male" : "Gidaghanon han Lalaki"}
                     </label>
                     <input
                       type="number"
@@ -1708,7 +1733,7 @@ const FarmerSignupPage = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Number of Female
+                      {!isWaray ? "Number of Female" : "Gidaghanon han Babaye"}
                     </label>
                     <input
                       type="number"
@@ -1721,21 +1746,25 @@ const FarmerSignupPage = () => {
 
               {/* Farm Details */}
               <div className="space-y-4 rounded-lg border border-gray-200 p-4">
-                <h3 className="text-lg font-medium">Farm Details</h3>
+                <h3 className="text-lg font-medium">
+                  {!isWaray ? "Farm Details" : "Mga Detalye han Uma"}
+                </h3>
                 {farmDetails?.map((farm, index) => (
                   <div
                     key={index}
                     className="mb-6 space-y-4 rounded-lg border border-gray-200 p-4"
                   >
                     <div className="flex items-center justify-between">
-                      <h4 className="text-md font-medium">Farm {index + 1}</h4>
+                      <h4 className="text-md font-medium">
+                        {!isWaray ? `Farm ${index + 1}` : `Uma ${index + 1}`}
+                      </h4>
                       {index > 0 && (
                         <button
                           type="button"
                           onClick={() => removeFarm(index)}
                           className="rounded-md bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600"
                         >
-                          Remove
+                          {!isWaray ? "Remove" : "Kuhaa"}
                         </button>
                       )}
                     </div>
@@ -1744,7 +1773,7 @@ const FarmerSignupPage = () => {
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div>
                         <label className="block text-sm font-medium text-gray-700">
-                          Farm Location*
+                          {!isWaray ? "Farm Location*" : "Lugar han Uma*"}
                         </label>
                         <input
                           type="text"
@@ -1765,7 +1794,7 @@ const FarmerSignupPage = () => {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700">
-                          Total Farm Area (in Ha)*
+                          {!isWaray ? "Total Farm Area (in Ha)*" : "Total nga Area han Uma (ha Ha)*"}
                         </label>
                         <input
                           type="number"
@@ -1795,7 +1824,7 @@ const FarmerSignupPage = () => {
                     {/* Land Classification */}
                     <div className="mt-4">
                       <label className="block text-sm font-medium text-gray-700">
-                        Land Classification
+                        {!isWaray ? "Land Classification" : "Klase han Duta"}
                       </label>
                       <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div className="flex items-center">
@@ -1811,7 +1840,7 @@ const FarmerSignupPage = () => {
                             htmlFor={`withAncestordomain-${index}`}
                             className="ml-2 block text-sm text-gray-700"
                           >
-                            With Ancestor Domain
+                            {!isWaray ? "With Ancestor Domain" : "May Ancestor Domain"}
                           </label>
                         </div>
                         <div className="flex items-center">
@@ -1827,7 +1856,7 @@ const FarmerSignupPage = () => {
                             htmlFor={`agrarianReform-${index}`}
                             className="ml-2 block text-sm text-gray-700"
                           >
-                            Agrarian Reform
+                            {!isWaray ? "Agrarian Reform" : "Agrarian Reform"}
                           </label>
                         </div>
                       </div>
@@ -1836,7 +1865,7 @@ const FarmerSignupPage = () => {
                     {/* Owner Documents */}
                     <div className="mt-4">
                       <label className="block text-sm font-medium text-gray-700">
-                        Owner Documents Number*
+                        {!isWaray ? "Owner Documents Number*" : "Numero han Dokumento han Tag-iya*"}
                       </label>
                       <input
                         type="text"
@@ -1862,7 +1891,7 @@ const FarmerSignupPage = () => {
                     {/* Owner Type Selection */}
                     <div className="mt-4 rounded-lg border border-gray-200 p-4">
                       <h4 className="mb-3 text-sm font-medium text-gray-700">
-                        Owner Type (Select one)*
+                        {!isWaray ? "Owner Type (Select one)*" : "Klase han Tag-iya (Pili hin usa)*"}
                       </h4>
                       <div className="space-y-4">
                         {/* Registered Owner */}
@@ -1883,13 +1912,13 @@ const FarmerSignupPage = () => {
                             htmlFor={`registerOwner-${index}`}
                             className="ml-2 block text-sm text-gray-700"
                           >
-                            Registered Owner
+                            {!isWaray ? "Registered Owner" : "Rehistradong Tag-iya"}
                           </label>
                         </div>
                         {watch(`farmDetails.${index}.RegisterOwner`) && (
                           <div className="ml-6">
                             <label className="block text-sm font-medium text-gray-700">
-                              Owner Name*
+                              {!isWaray ? "Owner Name*" : "Ngaran han Tag-iya*"}
                             </label>
                             <input
                               type="text"
@@ -1926,13 +1955,13 @@ const FarmerSignupPage = () => {
                             htmlFor={`tenantOwner-${index}`}
                             className="ml-2 block text-sm text-gray-700"
                           >
-                            Tenant Owner
+                            {!isWaray ? "Tenant Owner" : "Tag-iya nga Nagpapaupa"}
                           </label>
                         </div>
                         {watch(`farmDetails.${index}.tenantOwner`) && (
                           <div className="ml-6">
                             <label className="block text-sm font-medium text-gray-700">
-                              Tenant Name*
+                              {!isWaray ? "Tenant Name*" : "Ngaran han Nagpapaupa*"}
                             </label>
                             <input
                               type="text"
@@ -1972,13 +2001,13 @@ const FarmerSignupPage = () => {
                             htmlFor={`lease-${index}`}
                             className="ml-2 block text-sm text-gray-700"
                           >
-                            Lease
+                            {!isWaray ? "Lease" : "Lease"}
                           </label>
                         </div>
                         {watch(`farmDetails.${index}.Leese`) && (
                           <div className="ml-6">
                             <label className="block text-sm font-medium text-gray-700">
-                              Lease Name*
+                              {!isWaray ? "Lease Name*" : "Ngaran han Lease*"}
                             </label>
                             <input
                               type="text"
@@ -2018,12 +2047,12 @@ const FarmerSignupPage = () => {
                             htmlFor={`others-${index}`}
                             className="ml-2 block text-sm text-gray-700"
                           >
-                            Others
+                            {!isWaray ? "Others" : "Iba"}
                           </label>
                         </div>
                         <div className="ml-6">
                           <label className="block text-sm font-medium text-gray-700">
-                            Other Details
+                            {!isWaray ? "Other Details" : "Iba nga mga Detalye"}
                           </label>
                           <input
                             type="text"
@@ -2039,11 +2068,13 @@ const FarmerSignupPage = () => {
                     {/* Lot Details (for Farmers only) */}
                     {categoryType === "FARMER" && (
                       <div className="mt-4 rounded-lg border border-gray-200 p-4">
-                        <h4 className="text-md font-medium">Lot Details*</h4>
+                        <h4 className="text-md font-medium">
+                          {!isWaray ? "Lot Details*" : "Mga Detalye han Lote*"}
+                        </h4>
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                           <div>
                             <label className="block text-sm font-medium text-gray-700">
-                              Crops/Commodity*
+                              {!isWaray ? "Crops/Commodity*" : "Mga Tanom/Komodidad*"}
                             </label>
                             <input
                               type="text"
@@ -2069,7 +2100,7 @@ const FarmerSignupPage = () => {
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700">
-                              Size (in Ha)*
+                              {!isWaray ? "Size (in Ha)*" : "Sukol (ha Ha)*"}
                             </label>
                             <input
                               type="number"
@@ -2099,7 +2130,7 @@ const FarmerSignupPage = () => {
                         </div>
                         <div className="mt-4">
                           <label className="block text-sm font-medium text-gray-700">
-                            Number of Head (Livestock/Poultry)*
+                            {!isWaray ? "Number of Head (Livestock/Poultry)*" : "Gidaghanon han Ulo (Hayupan/Manok)*"}
                           </label>
                           <input
                             type="number"
@@ -2128,7 +2159,7 @@ const FarmerSignupPage = () => {
                         </div>
                         <div className="mt-4">
                           <label className="block text-sm font-medium text-gray-700">
-                            Farm Type*
+                            {!isWaray ? "Farm Type*" : "Klase han Uma*"}
                           </label>
                           <input
                             type="text"
@@ -2164,7 +2195,7 @@ const FarmerSignupPage = () => {
                             htmlFor={`organicPractitioner-${index}`}
                             className="ml-2 block text-sm text-gray-700"
                           >
-                            Organic Practitioner
+                            {!isWaray ? "Organic Practitioner" : "Organic Practitioner"}
                           </label>
                         </div>
                       </div>
@@ -2177,7 +2208,7 @@ const FarmerSignupPage = () => {
                   onClick={addFarm}
                   className="mt-4 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
                 >
-                  Add Another Farm
+                  {!isWaray ? "Add Another Farm" : "Dugangi pa hin Uma"}
                 </button>
               </div>
 
@@ -2187,7 +2218,7 @@ const FarmerSignupPage = () => {
                   onClick={prevStep}
                   className="rounded-md bg-gray-300 px-4 py-2 text-gray-800 hover:bg-gray-400"
                 >
-                  Back
+                  {!isWaray ? "Back" : "Balik"}
                 </button>
                 <button
                   type="submit"
@@ -2195,8 +2226,8 @@ const FarmerSignupPage = () => {
                   className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-50"
                 >
                   {isSubmitting || signupMutation.isPending
-                    ? "Submitting..."
-                    : "Submit"}
+                    ? !isWaray ? "Submitting..." : "Ginpapadara..."
+                    : !isWaray ? "Submit" : "Isumite"}
                 </button>
               </div>
             </motion.div>
