@@ -107,7 +107,8 @@ const signupSchema = z
     agriYouthOthers: z.string().optional(),
 
     // House head details
-    houseHoldHead: z.string().optional(),
+    houseHoldHead: z.string().min(1, "House hold must be requird"),
+
     relationship: z.string().optional(),
     numberOfLivingHouseHoldMembersTotal: z.number().optional(),
     numberOfMale: z.number().optional(),
@@ -138,15 +139,13 @@ const signupSchema = z
           // Lot details (for farmers only) - Note: sizeInHa is Int in schema
           lotDetails: z
             .object({
-              cropsORCommodity: z
-                .string()
-                .min(1, "Crops/Commodity is required"),
+              cropsORCommodity: z.string().optional(),
               sizeInHa: z.number().int().min(0, "Size must be at least 0"),
               numberOfHeadForLivestockAndPoultry: z
                 .number()
                 .int()
                 .min(0, "Number must be at least 0"),
-              FarmType: z.string().min(1, "Farm type is required"),
+              FarmType: z.string().optional(),
               organicPractitioner: z.boolean(),
             })
             .optional(),
@@ -1094,9 +1093,7 @@ const FarmerSignupPage = () => {
               {/* File Upload Section */}
               <div className="rounded-lg bg-gray-50 p-4">
                 <h3 className="mb-4 text-lg font-medium text-gray-700">
-                  {!isWaray
-                    ? "Ownership documents"
-                    : "Pag-upload han Dokumento"}
+                  {!isWaray ? "Document Upload" : "Pag-upload han Dokumento"}
                 </h3>
                 <div className="grid grid-cols-1 gap-6">
                   <div>
@@ -1783,6 +1780,11 @@ const FarmerSignupPage = () => {
                       className="mt-1 block w-full rounded-md border border-gray-300 p-2"
                       {...register("houseHoldHead")}
                     />
+                    {errors.houseHoldHead && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.houseHoldHead?.message}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
@@ -1811,6 +1813,11 @@ const FarmerSignupPage = () => {
                         valueAsNumber: true,
                       })}
                     />
+                    {errors.numberOfLivingHouseHoldMembersTotal && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.numberOfLivingHouseHoldMembersTotal?.message}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
@@ -1821,6 +1828,11 @@ const FarmerSignupPage = () => {
                       className="mt-1 block w-full rounded-md border border-gray-300 p-2"
                       {...register("numberOfMale", { valueAsNumber: true })}
                     />
+                    {errors.numberOfMale && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.numberOfMale?.message}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
@@ -1831,6 +1843,11 @@ const FarmerSignupPage = () => {
                       className="mt-1 block w-full rounded-md border border-gray-300 p-2"
                       {...register("NumberOfFemale", { valueAsNumber: true })}
                     />
+                    {errors.NumberOfFemale && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.NumberOfFemale?.message}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

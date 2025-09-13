@@ -157,15 +157,14 @@ export const signupRouter = createTRPCRouter({
               // Lot details (for farmers only) - Note: Int fields in schema
               lotDetails: z
                 .object({
-                  cropsORCommodity: z
-                    .string()
-                    .min(1, "Crops/Commodity is required"),
+                  cropsORCommodity: z.string().optional().nullable(),
+
                   sizeInHa: z.number().int().min(0, "Size must be at least 0"),
                   numberOfHeadForLivestockAndPoultry: z
                     .number()
                     .int()
                     .min(0, "Number must be at least 0"),
-                  FarmType: z.string().min(1, "Farm type is required"),
+                  FarmType: z.string().optional().nullable(),
                   organicPractitioner: z.boolean(),
                 })
                 .optional(),

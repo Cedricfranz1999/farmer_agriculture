@@ -97,10 +97,10 @@ model FarmerDetails {
 
 model LotDetails {
     id Int @id @default(autoincrement())
-    cropsORCommodity String
+    cropsORCommodity String?
     sizeInHa Int
     numberOfHeadForLivestockAndPoultry Int
-    FarmType String
+    FarmType String?
     organicPractitioner Boolean    
     farmerDetails FarmDetails @relation(fields: [farmerDetailsId], references: [id])
     farmerDetailsId Int @unique
@@ -397,6 +397,7 @@ enum FarmerRegistrationsStatus {
     NOT_QUALIFIED
     REGISTERED
     ARCHIVED
+
 }
 
 enum ConcernStatus {

@@ -282,7 +282,9 @@ const FarmerApplicantsPage = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem
-                    onClick={() => handleViewDetails(farmer.id)}
+                    onClick={() =>
+                      router.push("/admin/organic-farmer/profile/" + farmer.id)
+                    }
                     className="cursor-pointer"
                   >
                     <Eye className="mr-2 h-4 w-4" />
@@ -544,7 +546,10 @@ const FarmerApplicantsPage = () => {
                                     >
                                       <DropdownMenuItem
                                         onClick={() =>
-                                          handleViewDetails(farmer.id)
+                                          router.push(
+                                            "/admin/organic-farmer/profile/" +
+                                              farmer.id,
+                                          )
                                         }
                                         className="cursor-pointer"
                                       >

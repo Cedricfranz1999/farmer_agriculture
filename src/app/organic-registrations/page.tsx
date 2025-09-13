@@ -1657,6 +1657,13 @@ const OrganicFarmerSignupPage = () => {
                                 : "Ngaran han produkto..."
                             }
                           />
+
+                          <p className="mt-1 text-sm text-red-600">
+                            {
+                              errors.agriculturalCommodities?.[index]?.name
+                                ?.message
+                            }
+                          </p>
                         </div>
                       </div>
 
@@ -1827,6 +1834,12 @@ const OrganicFarmerSignupPage = () => {
                                 : "Ngaran han ekipo..."
                             }
                           />
+                          <p className="mt-1 text-sm text-red-600">
+                            {
+                              errors.ownSharedFacilities?.[index]
+                                ?.facilitiesMachineryEquipmentUsed?.message
+                            }
+                          </p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700">
@@ -1844,6 +1857,12 @@ const OrganicFarmerSignupPage = () => {
                                 : "Tag-iya/Ginhihimoan/Ginpaupahan..."
                             }
                           />
+                          <p className="mt-1 text-sm text-red-600">
+                            {
+                              errors.ownSharedFacilities?.[index]?.ownership
+                                ?.message
+                            }
+                          </p>
                         </div>
                       </div>
 
@@ -1862,6 +1881,12 @@ const OrganicFarmerSignupPage = () => {
                               !isWaray ? "Model/Brand..." : "Modelo/Brand..."
                             }
                           />
+                          <p className="mt-1 text-sm text-red-600">
+                            {
+                              errors.ownSharedFacilities?.[index]?.model
+                                ?.message
+                            }
+                          </p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700">
@@ -1879,6 +1904,12 @@ const OrganicFarmerSignupPage = () => {
                                 : "Gidaghanon han mga units..."
                             }
                           />
+                          <p className="mt-1 text-sm text-red-600">
+                            {
+                              errors.ownSharedFacilities?.[index]?.quantity
+                                ?.message
+                            }
+                          </p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700">
@@ -1898,6 +1929,12 @@ const OrganicFarmerSignupPage = () => {
                                 : "Sakop han serbisyo nga area..."
                             }
                           />
+                          <p className="mt-1 text-sm text-red-600">
+                            {
+                              errors.ownSharedFacilities?.[index]
+                                ?.volumeServicesArea?.message
+                            }
+                          </p>
                         </div>
                       </div>
 
@@ -1920,6 +1957,14 @@ const OrganicFarmerSignupPage = () => {
                                 : "Oras kada adlaw..."
                             }
                           />
+                          <p>
+                            <p className="mt-1 text-sm text-red-600">
+                              {
+                                errors.ownSharedFacilities?.[index]
+                                  ?.averageWorkingHoursDay?.message
+                              }
+                            </p>
+                          </p>
                         </div>
                         <div className="flex items-center pt-6">
                           <input
@@ -1963,6 +2008,11 @@ const OrganicFarmerSignupPage = () => {
                 </div>
               </div>
 
+              <p className="text-end text-red-400">
+                {errors
+                  ? "Please review all required fields in the previous steps "
+                  : ""}
+              </p>
               <div className="flex justify-between">
                 <button
                   type="button"
