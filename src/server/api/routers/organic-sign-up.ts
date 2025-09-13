@@ -289,33 +289,39 @@ export const organicFarmerRouter = createTRPCRouter({
       return completeOrganicFarmer;
     }),
 
-  getLatestOrganicFarmer: publicProcedure.query(async ({ ctx }) => {
-    const latestFarmer = await ctx.db.organic_Farmer.findFirst({
-      orderBy: { createdAt: "desc" },
-      include: {
-        Grains: true,
-        LowlandVegetables: true,
-        UplandVegetables: true,
-        FruitsAndNots: true,
-        Mushroom: true,
-        OrganicSoil: true,
-        Rootcrops: true,
-        PultryProducts: true,
-        LiveStockProducts: true,
-        FisheriesAndAquaCulture: true,
-        IndustrialCropsAndProducts: true,
-        OtherCommodity: true,
-        ownSharedFacilities: true,
-      },
-    });
-
-    if (!latestFarmer) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "No farmers found",
+  getLatestOrganicFarmer: publicProcedure
+    .input(
+      z.object({
+        id: z.number().optional().nullable(),
+      }),
+    )
+    .query(async ({ ctx }) => {
+      const latestFarmer = await ctx.db.organic_Farmer.findFirst({
+        orderBy: { createdAt: "desc" },
+        include: {
+          Grains: true,
+          LowlandVegetables: true,
+          UplandVegetables: true,
+          FruitsAndNots: true,
+          Mushroom: true,
+          OrganicSoil: true,
+          Rootcrops: true,
+          PultryProducts: true,
+          LiveStockProducts: true,
+          FisheriesAndAquaCulture: true,
+          IndustrialCropsAndProducts: true,
+          OtherCommodity: true,
+          ownSharedFacilities: true,
+        },
       });
-    }
 
-    return latestFarmer;
-  }),
+      if (!latestFarmer) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No farmers found",
+        });
+      }
+
+      return latestFarmer;
+    }),
 });

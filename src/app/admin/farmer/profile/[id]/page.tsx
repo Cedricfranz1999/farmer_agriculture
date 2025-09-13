@@ -5,6 +5,7 @@ import { useState, useRef } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { useReactToPrint } from "react-to-print";
 import { api } from "~/trpc/react";
+import { useParams } from "next/navigation";
 
 // Type definitions based on your Prisma schema
 interface FarmerDetails {
@@ -126,6 +127,8 @@ interface FarmerData {
 }
 
 const FarmerProfilePrintGenerator = () => {
+  const params = useParams();
+  const id = params.id; // 👈 this is your dynamic [id]
   const [showActions, setShowActions] = useState(true);
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -133,7 +136,7 @@ const FarmerProfilePrintGenerator = () => {
     data: farmer,
     isLoading,
     error,
-  } = api.auth.getLatestFarmer.useQuery({});
+  } = api.auth.getLatestFarmer.useQuery({ id: Number(id) });
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,

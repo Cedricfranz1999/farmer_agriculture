@@ -5,6 +5,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import bcrypt, { compare } from "bcryptjs";
+import { Input } from "~/components/ui/input";
 
 export const signupRouter = createTRPCRouter({
   signup: publicProcedure
@@ -360,28 +361,37 @@ export const signupRouter = createTRPCRouter({
 
       return completeFarmer;
     }),
-  getLatestFarmer: publicProcedure.query(async ({ ctx }) => {
-    const latestFarmer = await ctx.db.farmer.findFirst({
-      orderBy: { createdAt: "desc" },
-      include: {
-        farmerDetails: true,
-        farmworkerDetails: true,
-        fisherfolkDetails: true,
-        AGRI_YOUTH: true,
-        houseHead: true,
-        farmDetails: true,
-      },
-    });
-
-    if (!latestFarmer) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "No farmers found",
+  getLatestFarmer: publicProcedure
+    .input(
+      z.object({
+        id: z.number().optional().nullable(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const latestFarmer = await ctx.db.farmer.findFirst({
+        where: {
+          id: input.id ?? undefined,
+        },
+        orderBy: { createdAt: "desc" },
+        include: {
+          farmerDetails: true,
+          farmworkerDetails: true,
+          fisherfolkDetails: true,
+          AGRI_YOUTH: true,
+          houseHead: true,
+          farmDetails: true,
+        },
       });
-    }
 
-    return latestFarmer;
-  }),
+      if (!latestFarmer) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No farmers found",
+        });
+      }
+
+      return latestFarmer;
+    }),
 
   farmerLogin: publicProcedure
     .input(

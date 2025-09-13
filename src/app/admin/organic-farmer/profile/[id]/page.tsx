@@ -38,7 +38,7 @@ const FarmerProfilePrintView = () => {
     data: farmer,
     isLoading,
     error,
-  } = api.organicFarmer.getLatestOrganicFarmer.useQuery({});
+  } = api.organicFarmer.getLatestOrganicFarmer.useQuery({ id: Number(id) });
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,

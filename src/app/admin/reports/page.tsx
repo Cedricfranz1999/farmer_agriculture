@@ -82,6 +82,10 @@ const ReportsPage = () => {
   const [reportType, setReportType] = useState<
     "farmers" | "events" | "concerns" | "overview"
   >("overview");
+
+  const [status, setStatus] = useState<
+    "ARCHIVED" | "APPLICANTS" | "REGISTERED" | "NOT_QUALIFIED" | "ALL"
+  >("ALL");
   const [exportFormat, setExportFormat] = useState<"csv" | "print">("csv");
   const printRef = React.useRef<HTMLDivElement>(null);
 
@@ -95,6 +99,7 @@ const ReportsPage = () => {
     endDate: dateRange?.to,
     reportType,
     search: searchTerm,
+    status: status,
   });
 
   // Print functionality
@@ -263,7 +268,27 @@ const ReportsPage = () => {
                 </Popover>
               </div>
 
-              {/* Report Type */}
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  Status
+                </label>
+                <Select
+                  value={status}
+                  onValueChange={(value: any) => setStatus(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">ALL</SelectItem>
+
+                    <SelectItem value="NOT_QUALIFIED">NOT_QUALIFIED</SelectItem>
+                    <SelectItem value="REGISTERED">REGISTERED</SelectItem>
+                    <SelectItem value="ARCHIVED">ARCHIVED</SelectItem>
+                    <SelectItem value="APPLICANTS">APPLICANTS</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">
                   Report Type

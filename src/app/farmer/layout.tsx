@@ -1,21 +1,37 @@
 "use client";
 import { Toaster } from "~/components/ui/toaster";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { motion } from "framer-motion";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
+import { useAuthStore } from "../store/authStore";
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
+  const role = useAuthStore((state) => state?.user?.type);
 
-  // useEffect(() => {
-  //   const adminData = localStorage.getItem("adminData");
-  //   if (!adminData) {
-  //     router.push("/adminLogin");
-  //   }
-  // }, [router]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
+    if (role === "FARMER") {
+      router.push("/farmer/events");
+    } else {
+      router.push("/sign-in");
+    }
+  }, [mounted, role, router]);
+
+  if (!mounted) {
+    // prevent hydration mismatch
+    return null;
+  }
 
   return (
     <motion.div

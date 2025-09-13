@@ -58,7 +58,7 @@ const FarmerApplicantsPage = () => {
   } = api.organicFarmersData.getApplicants.useQuery({
     page: currentPage,
     limit: limit,
-    status: FarmerRegistrationsStatus.NOT_QUALIFIED,
+    status: "NOT_QUALIFIED",
     search: searchTerm,
   });
   const debounce = (func: (...args: any[]) => void, delay: number) => {
@@ -114,7 +114,7 @@ const FarmerApplicantsPage = () => {
   const handleStatusUpdate = (
     farmerId: number,
     farmerName: string,
-    newStatus: "APPLICANTS" | "NOT_QUALIFIED" | "REGISTERED",
+    newStatus: "APPLICANTS" | "NOT_QUALIFIED" | "REGISTERED" | "ARCHIVED",
   ) => {
     setSelectedFarmer({
       id: farmerId,
@@ -205,17 +205,10 @@ const FarmerApplicantsPage = () => {
             <div className="flex items-start space-x-4">
               <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border-2 border-emerald-200">
                 <Image
-                  src={
-                    farmer.farmerImage ||
-                    "/placeholder.svg?height=64&width=64&query=farmer"
-                  }
+                  src={farmer.farmerImage}
                   alt={`${farmer.firstname} ${farmer.surname}`}
                   fill
                   className="object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = "/placeholder.svg?height=64&width=64";
-                  }}
                   unoptimized
                 />
               </div>
@@ -312,6 +305,15 @@ const FarmerApplicantsPage = () => {
                   >
                     <UserX className="mr-2 h-4 w-4" />
                     Reject
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      handleStatusUpdate(farmer.id, fullName, "ARCHIVED")
+                    }
+                    className="cursor-pointer text-yellow-600 hover:text-yellow-700"
+                  >
+                    <UserX className="mr-2 h-4 w-4" />
+                    ARCHIVE
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -476,19 +478,10 @@ const FarmerApplicantsPage = () => {
                               <td className="p-4">
                                 <div className="relative h-12 w-12 overflow-hidden rounded-full border-2 border-emerald-200">
                                   <Image
-                                    src={
-                                      farmer.farmerImage ||
-                                      "/placeholder.svg?height=48&width=48&query=farmer"
-                                    }
+                                    src={farmer.farmerImage}
                                     alt={`${farmer.firstname} ${farmer.surname}`}
                                     fill
                                     className="object-cover"
-                                    onError={(e) => {
-                                      const target =
-                                        e.target as HTMLImageElement;
-                                      target.src =
-                                        "/placeholder.svg?height=48&width=48";
-                                    }}
                                     unoptimized
                                   />
                                 </div>

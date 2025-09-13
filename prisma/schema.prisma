@@ -389,12 +389,14 @@ enum organicFarmerRegistrationsStatus {
     APPLICANTS
     NOT_QUALIFIED
     REGISTERED
+    ARCHIVED
 }
 
 enum FarmerRegistrationsStatus {
     APPLICANTS
     NOT_QUALIFIED
     REGISTERED
+    ARCHIVED
 }
 
 enum ConcernStatus {

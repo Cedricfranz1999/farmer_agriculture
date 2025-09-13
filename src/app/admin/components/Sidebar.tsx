@@ -245,6 +245,61 @@ const Sidebar = () => {
               )}
             </motion.div>
 
+            <motion.div whileHover={{ scale: 1.02 }}>
+              <div className="flex items-center justify-between">
+                <div
+                  className={`flex flex-1 cursor-default items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+                    isActive("/admin/archived-farmers")
+                      ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
+                      : "text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
+                  }`}
+                >
+                  <Users className="h-4 w-4" />
+                  Archived Farmer
+                </div>
+                <button
+                  onClick={() => toggleMenu("/admin/archived-farmers")}
+                  className="p-2 text-emerald-600 hover:text-emerald-800"
+                >
+                  {expandedMenus["/admin/archived-farmers"] ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+
+              {expandedMenus["/admin/archived-farmers"] && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="ml-4 overflow-hidden"
+                >
+                  <Link
+                    href="/admin/archived-farmers/farmers"
+                    className={`mt-3 flex items-center gap-3 rounded-lg px-3 py-2 text-xs transition-all ${
+                      isActive("/admin/archived-farmers/farmers")
+                        ? "bg-emerald-100 text-emerald-800"
+                        : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+                    }`}
+                  >
+                    <span className="ml-4">Farmers</span>
+                  </Link>
+
+                  <Link
+                    href="/admin/archived-farmers/organic-farmers"
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-xs transition-all ${
+                      isActive("/admin/archived-farmers/organic-farmers")
+                        ? "bg-emerald-100 text-emerald-800"
+                        : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+                    }`}
+                  >
+                    <span className="ml-4">Organic</span>
+                  </Link>
+                </motion.div>
+              )}
+            </motion.div>
+
             {/* Events */}
             <motion.div whileHover={{ scale: 1.02 }}>
               <div className="flex items-center justify-between">
@@ -278,7 +333,7 @@ const Sidebar = () => {
                 </Link>
               </div>
             </motion.div>
-               <motion.div whileHover={{ scale: 1.02 }}>
+            <motion.div whileHover={{ scale: 1.02 }}>
               <div className="flex items-center justify-between">
                 <Link
                   href="/admin/allocations"
@@ -289,7 +344,6 @@ const Sidebar = () => {
                   }`}
                 >
                   <FileText className="h-4 w-4" />
-                  
                   allocations
                 </Link>
               </div>

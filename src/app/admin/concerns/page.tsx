@@ -399,7 +399,7 @@ const Page = () => {
                       {newConcernData.image && (
                         <div className="relative h-32 w-full overflow-hidden rounded-lg border">
                           <Image
-                            src={newConcernData.image || "/placeholder.svg"}
+                            src={newConcernData.image}
                             alt="Concern image"
                             fill
                             className="object-cover"

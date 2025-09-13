@@ -670,14 +670,12 @@ export default function AgreBaseLanding() {
                     transition={{ delay: 1 }}
                     className="mb-12 text-center text-xl leading-relaxed text-gray-700"
                   >
-                    To revolutionize agricultural decision-making in Northwest
-                    Samar through innovative digital solutions that streamline
-                    farmer registration processes, improve data accuracy, and
-                    promote sustainable farming practices. We are committed to
-                    bridging the digital divide in rural communities by
-                    providing accessible, reliable, and user-friendly technology
-                    that empowers farmers and supports government agencies in
-                    efficient resource allocation and program management.
+                    Promote of Agricultural and Fishery Development through
+                    enchancement of Skills of Farmer and Fishermen and
+                    adaptation of Enviromentally Friendly Technology as one of
+                    the technical arms of the chief executive, the office is
+                    given responsibility of Agri-Fishery production,Food
+                    Security and Profitability and fishery Income.
                   </motion.p>
                   <div className="mt-12 grid gap-8 md:grid-cols-3">
                     {[
@@ -777,15 +775,10 @@ export default function AgreBaseLanding() {
                     transition={{ delay: 1 }}
                     className="mb-12 text-center text-xl leading-relaxed text-gray-700"
                   >
-                    To become the leading digital platform for agricultural and
-                    fisheries management in the Philippines, creating a future
-                    where every farmer and fisherfolk has access to modern
-                    technology, accurate information, and fair opportunities for
-                    growth. We envision a digitally-empowered agri-fisheries
-                    sector where sustainable practices are the norm, data-driven
-                    decisions lead to increased productivity, and rural and
-                    coastal communities thrive through technological advancement
-                    and equitable resource distribution.
+                    Promote Agriculture Development in the Municipality
+                    Promotion of Agriculture development upland barangays in the
+                    Municipality improved of Agricultural and Fishery production
+                    to increase farmers and fisherfolks income.
                   </motion.p>
                   <div className="mt-12 grid gap-12 md:grid-cols-2">
                     <motion.div

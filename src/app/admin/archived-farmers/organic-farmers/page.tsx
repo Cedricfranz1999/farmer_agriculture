@@ -55,10 +55,10 @@ const FarmerApplicantsPage = () => {
     data: farmersData,
     isLoading,
     refetch,
-  } = api.farmers.getApplicants.useQuery({
+  } = api.organicFarmersData.getApplicants.useQuery({
     page: currentPage,
     limit: limit,
-    status: "APPLICANTS",
+    status: "ARCHIVED",
     search: searchTerm,
   });
   const debounce = (func: (...args: any[]) => void, delay: number) => {
@@ -306,6 +306,15 @@ const FarmerApplicantsPage = () => {
                     <UserX className="mr-2 h-4 w-4" />
                     Reject
                   </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      handleStatusUpdate(farmer.id, fullName, "ARCHIVED")
+                    }
+                    className="cursor-pointer text-yellow-600 hover:text-yellow-700"
+                  >
+                    <UserX className="mr-2 h-4 w-4" />
+                    ARCHIVE
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -473,10 +482,6 @@ const FarmerApplicantsPage = () => {
                                     alt={`${farmer.firstname} ${farmer.surname}`}
                                     fill
                                     className="object-cover"
-                                    onError={(e) => {
-                                      const target =
-                                        e.target as HTMLImageElement;
-                                    }}
                                     unoptimized
                                   />
                                 </div>
@@ -571,20 +576,6 @@ const FarmerApplicantsPage = () => {
                                       >
                                         <UserX className="mr-2 h-4 w-4" />
                                         Reject
-                                      </DropdownMenuItem>
-
-                                      <DropdownMenuItem
-                                        onClick={() =>
-                                          handleStatusUpdate(
-                                            farmer.id,
-                                            fullName,
-                                            "ARCHIVED",
-                                          )
-                                        }
-                                        className="cursor-pointer text-yellow-600 hover:text-yellow-700"
-                                      >
-                                        <UserX className="mr-2 h-4 w-4" />
-                                        ARCHIVE
                                       </DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>

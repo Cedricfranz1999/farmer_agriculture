@@ -58,7 +58,7 @@ const FarmerApplicantsPage = () => {
   } = api.farmers.getApplicants.useQuery({
     page: currentPage,
     limit: limit,
-    status: "APPLICANTS",
+    status: "ARCHIVED",
     search: searchTerm,
   });
   const debounce = (func: (...args: any[]) => void, delay: number) => {
@@ -473,10 +473,6 @@ const FarmerApplicantsPage = () => {
                                     alt={`${farmer.firstname} ${farmer.surname}`}
                                     fill
                                     className="object-cover"
-                                    onError={(e) => {
-                                      const target =
-                                        e.target as HTMLImageElement;
-                                    }}
                                     unoptimized
                                   />
                                 </div>
@@ -572,7 +568,6 @@ const FarmerApplicantsPage = () => {
                                         <UserX className="mr-2 h-4 w-4" />
                                         Reject
                                       </DropdownMenuItem>
-
                                       <DropdownMenuItem
                                         onClick={() =>
                                           handleStatusUpdate(

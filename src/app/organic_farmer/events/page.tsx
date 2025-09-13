@@ -322,20 +322,21 @@ const EventsCalendarPage = () => {
 
   // Upcoming Events Component
   const UpcomingEventsList = () => {
-    const { data: upcomingEvents, isLoading } = api.events.getUpcomingEvents.useQuery({
-      limit: 5,
-    });
-  
+    const { data: upcomingEvents, isLoading } =
+      api.events.getUpcomingEvents.useQuery({
+        limit: 5,
+      });
+
     if (isLoading) {
       return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
           {Array.from({ length: 5 }).map((_, i) => (
             <Card key={i} className="border-emerald-100 bg-white/80">
               <CardContent className="p-4">
-                <Skeleton className="h-4 w-3/4 mb-2" />
-                <Skeleton className="h-3 w-1/2 mb-3" />
-                <Skeleton className="h-20 w-full mb-3" />
-                <Skeleton className="h-3 w-full mb-1" />
+                <Skeleton className="mb-2 h-4 w-3/4" />
+                <Skeleton className="mb-3 h-3 w-1/2" />
+                <Skeleton className="mb-3 h-20 w-full" />
+                <Skeleton className="mb-1 h-3 w-full" />
                 <Skeleton className="h-3 w-2/3" />
               </CardContent>
             </Card>
@@ -343,67 +344,74 @@ const EventsCalendarPage = () => {
         </div>
       );
     }
-  
+
     if (!upcomingEvents || upcomingEvents.length === 0) {
       return (
-        <div className="text-center py-6 bg-white/50 rounded-lg border border-dashed border-emerald-200 bg">
-          <CalendarIcon className="mx-auto h-12 w-12 text-emerald-300 mb-3" />
+        <div className="bg rounded-lg border border-dashed border-emerald-200 bg-white/50 py-6 text-center">
+          <CalendarIcon className="mx-auto mb-3 h-12 w-12 text-emerald-300" />
           <p className="text-emerald-700">No upcoming events scheduled</p>
         </div>
       );
     }
-  
+
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
         {upcomingEvents.map((event) => (
-          <Card key={event.id} className="border-emerald-200 bg-white/80 hover:shadow-md transition-shadow">
+          <Card
+            key={event.id}
+            className="border-emerald-200 bg-white/80 transition-shadow hover:shadow-md"
+          >
             <CardContent className="p-4">
               {event.Image && (
-                <div className="relative h-32 w-full mb-3 overflow-hidden rounded-md">
+                <div className="relative mb-3 h-32 w-full overflow-hidden rounded-md">
                   <Image
-                    src={event.Image || "/placeholder.svg"}
+                    src={event.Image}
                     alt={event.What}
                     fill
                     className="object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "/placeholder.svg?height=128&width=256";
-                    }}
                     unoptimized
                   />
                 </div>
               )}
-              
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-semibold text-emerald-800 line-clamp-2">{event.What}</h3>
+
+              <div className="mb-2 flex items-start justify-between">
+                <h3 className="line-clamp-2 font-semibold text-emerald-800">
+                  {event.What}
+                </h3>
               </div>
-              
-              <div className="flex items-center text-sm text-gray-600 mb-2">
-                <CalendarIcon className="h-4 w-4 mr-1" />
+
+              <div className="mb-2 flex items-center text-sm text-gray-600">
+                <CalendarIcon className="mr-1 h-4 w-4" />
                 {new Date(event.Eventdate).toLocaleDateString()}
               </div>
-              
-              <div className="flex items-center text-sm text-gray-600 mb-3">
-                <Clock className="h-4 w-4 mr-1" />
-                {new Date(event.Eventdate).toLocaleTimeString([], { 
-                  hour: '2-digit', 
-                  minute: '2-digit' 
+
+              <div className="mb-3 flex items-center text-sm text-gray-600">
+                <Clock className="mr-1 h-4 w-4" />
+                {new Date(event.Eventdate).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
                 })}
               </div>
-              
-              <div className="flex items-center text-sm text-gray-600 mb-3">
-                <MapPin className="h-4 w-4 mr-1" />
+
+              <div className="mb-3 flex items-center text-sm text-gray-600">
+                <MapPin className="mr-1 h-4 w-4" />
                 <span className="line-clamp-1">{event.Where}</span>
               </div>
-              
+
               <div className="flex flex-wrap gap-1">
                 {event.forFarmersOnly && (
-                  <Badge variant="outline" className="text-xs py-0 px-2 bg-amber-50">
+                  <Badge
+                    variant="outline"
+                    className="bg-amber-50 px-2 py-0 text-xs"
+                  >
                     Farmers
                   </Badge>
                 )}
                 {event.forOgranicsFarmersOnly && (
-                  <Badge variant="outline" className="text-xs py-0 px-2 bg-green-50">
+                  <Badge
+                    variant="outline"
+                    className="bg-green-50 px-2 py-0 text-xs"
+                  >
                     Organic
                   </Badge>
                 )}
@@ -430,7 +438,9 @@ const EventsCalendarPage = () => {
 
         {/* Upcoming Events Section */}
         <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-emerald-800 mb-4">Upcoming Events</h2>
+          <h2 className="mb-4 text-2xl font-semibold text-emerald-800">
+            Upcoming Events
+          </h2>
           <UpcomingEventsList />
         </div>
 
@@ -648,7 +658,7 @@ const EventsCalendarPage = () => {
                         {imagePreview && (
                           <div className="relative h-32 w-full overflow-hidden rounded-lg border">
                             <Image
-                              src={imagePreview || "/placeholder.svg"}
+                              src={imagePreview}
                               alt="Event preview"
                               fill
                               className="object-cover"
@@ -845,15 +855,10 @@ const EventsCalendarPage = () => {
                           {event.Image && (
                             <div className="relative mb-3 h-32 w-full overflow-hidden rounded-lg">
                               <Image
-                                src={event.Image || "/placeholder.svg"}
+                                src={event.Image}
                                 alt={event.What}
                                 fill
                                 className="object-cover"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.src =
-                                    "/placeholder.svg?height=128&width=256";
-                                }}
                                 unoptimized
                               />
                             </div>

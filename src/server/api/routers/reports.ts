@@ -7,6 +7,7 @@ export const reportsRouter = createTRPCRouter({
     .input(
       z.object({
         startDate: z.date().optional(),
+        status: z.any().optional(),
         endDate: z.date().optional(),
         reportType: z.enum(["farmers", "events", "concerns", "overview"]),
         search: z.string().optional(),
@@ -41,8 +42,18 @@ export const reportsRouter = createTRPCRouter({
           newConcernsThisMonth,
         ] = await Promise.all([
           // Total counts
-          ctx.db.farmer.count({ where: dateFilter }),
-          ctx.db.organic_Farmer.count({ where: dateFilter }),
+          ctx.db.farmer.count({
+            where: {
+              status: input.status !== "ALL" ? input.status : undefined,
+              ...dateFilter,
+            },
+          }),
+          ctx.db.organic_Farmer.count({
+            where: {
+              status: input.status !== "ALL" ? input.status : undefined,
+              ...dateFilter,
+            },
+          }),
           ctx.db.events.count({ where: dateFilter }),
           (await ctx.db.farmerConcern.count({ where: dateFilter })) +
             (await ctx.db.organicFarmerConcern.count({ where: dateFilter })),
@@ -50,6 +61,7 @@ export const reportsRouter = createTRPCRouter({
           // This month counts
           ctx.db.farmer.count({
             where: {
+              status: input.status !== "ALL" ? input.status : undefined,
               createdAt: {
                 gte: startOfMonth(new Date()),
                 lte: endOfMonth(new Date()),
@@ -58,6 +70,7 @@ export const reportsRouter = createTRPCRouter({
           }),
           ctx.db.organic_Farmer.count({
             where: {
+              status: input.status !== "ALL" ? input.status : undefined,
               createdAt: {
                 gte: startOfMonth(new Date()),
                 lte: endOfMonth(new Date()),
@@ -99,6 +112,7 @@ export const reportsRouter = createTRPCRouter({
           const [farmers, organicFarmers] = await Promise.all([
             ctx.db.farmer.count({
               where: {
+                status: input.status !== "ALL" ? input.status : undefined,
                 createdAt: {
                   gte: monthStart,
                   lte: monthEnd,
@@ -107,6 +121,7 @@ export const reportsRouter = createTRPCRouter({
             }),
             ctx.db.organic_Farmer.count({
               where: {
+                status: input.status !== "ALL" ? input.status : undefined,
                 createdAt: {
                   gte: monthStart,
                   lte: monthEnd,
@@ -230,6 +245,7 @@ export const reportsRouter = createTRPCRouter({
         const [farmers, organicFarmers] = await Promise.all([
           ctx.db.farmer.findMany({
             where: {
+              status: input.status !== "ALL" ? input.status : undefined,
               ...dateFilter,
               ...searchFilter,
             },
@@ -247,6 +263,7 @@ export const reportsRouter = createTRPCRouter({
           }),
           ctx.db.organic_Farmer.findMany({
             where: {
+              status: input.status !== "ALL" ? input.status : undefined,
               ...dateFilter,
               ...searchFilter,
             },
