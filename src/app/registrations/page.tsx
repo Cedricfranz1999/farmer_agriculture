@@ -458,10 +458,8 @@ const FarmerSignupPage = () => {
     let isValid = false;
 
     if (activeStep === 1) {
+      // Remove username/password validation from step 1
       isValid = await trigger([
-        "username",
-        "password",
-        "confirmPassword",
         "surname",
         "firstname",
         "sex",
@@ -522,6 +520,12 @@ const FarmerSignupPage = () => {
           "agriYouthFishVending",
         ]);
       }
+    } else if (activeStep === 4) {
+      // Add validation for step 4 if needed
+      isValid = true; // Or add specific validation for household/farm details
+    } else if (activeStep === 5) {
+      // Validate credentials in step 5
+      isValid = await trigger(["username", "password", "confirmPassword"]);
     }
 
     if (isValid) {
@@ -620,7 +624,7 @@ const FarmerSignupPage = () => {
         {/* Progress bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            {[1, 2, 3, 4].map((step) => (
+            {[1, 2, 3, 4, 5].map((step) => (
               <React.Fragment key={step}>
                 <div
                   className={`flex h-8 w-8 items-center justify-center rounded-full ${
@@ -631,7 +635,7 @@ const FarmerSignupPage = () => {
                 >
                   {step}
                 </div>
-                {step < 4 && (
+                {step < 5 && (
                   <div
                     className={`flex-1 border-t-2 ${activeStep > step ? "border-blue-600" : "border-gray-200"}`}
                   ></div>
@@ -656,68 +660,8 @@ const FarmerSignupPage = () => {
 
               {/* Credentials Section */}
               <div className="rounded-lg bg-gray-50 p-4">
-                <h3 className="mb-4 text-lg font-medium text-gray-700">
-                  {!isWaray
-                    ? "Account Credentials"
-                    : "Mga Kredensyal han Account"}
-                </h3>
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
-                      {!isWaray ? "Username*" : "Username*"}
-                    </label>
-                    <input
-                      type="text"
-                      className={`block w-full rounded-md border p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                        errors.username ? "border-red-500" : "border-gray-300"
-                      }`}
-                      {...register("username")}
-                    />
-                    {errors.username && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.username.message}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
-                      {!isWaray ? "Password*" : "Password*"}
-                    </label>
-                    <input
-                      type="password"
-                      className={`block w-full rounded-md border p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                        errors.password ? "border-red-500" : "border-gray-300"
-                      }`}
-                      {...register("password")}
-                    />
-                    {errors.password && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.password.message}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
-                      {!isWaray
-                        ? "Confirm Password*"
-                        : "Ikonpirma an Password*"}
-                    </label>
-                    <input
-                      type="password"
-                      className={`block w-full rounded-md border p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                        errors.confirmPassword
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
-                      {...register("confirmPassword")}
-                    />
-                    {errors.confirmPassword && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.confirmPassword.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
+                <h3 className="mb-4 text-lg font-medium text-gray-700"></h3>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-3"></div>
               </div>
 
               {/* Name Section */}
@@ -2331,13 +2275,103 @@ const FarmerSignupPage = () => {
                   </div>
                 ))}
 
-                <button
-                  type="button"
-                  onClick={addFarm}
-                  className="mt-4 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-                >
-                  {!isWaray ? "Add Another Farm" : "Dugangi pa hin Uma"}
-                </button>
+                <div className="flex justify-between">
+                  <button
+                    type="button"
+                    onClick={prevStep}
+                    className="rounded-md bg-gray-300 px-4 py-2 text-gray-800 hover:bg-gray-400"
+                  >
+                    {!isWaray ? "Back" : "Balik"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                  >
+                    {!isWaray ? "Next" : "Sunod"}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeStep === 5 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-6"
+            >
+              <h2 className="border-b pb-2 text-2xl font-bold text-gray-800">
+                {!isWaray
+                  ? "Account Credentials"
+                  : "Mga Kredensyal han Account"}
+              </h2>
+
+              {/* Credentials Section */}
+              <div className="rounded-lg bg-gray-50 p-4">
+                <h3 className="mb-4 text-lg font-medium text-gray-700">
+                  {!isWaray
+                    ? "Account Credentials"
+                    : "Mga Kredensyal han Account"}
+                </h3>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      {!isWaray ? "Username*" : "Username*"}
+                    </label>
+                    <input
+                      type="text"
+                      className={`block w-full rounded-md border p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                        errors.username ? "border-red-500" : "border-gray-300"
+                      }`}
+                      {...register("username")}
+                    />
+                    {errors.username && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.username.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      {!isWaray ? "Password*" : "Password*"}
+                    </label>
+                    <input
+                      type="password"
+                      className={`block w-full rounded-md border p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                        errors.password ? "border-red-500" : "border-gray-300"
+                      }`}
+                      {...register("password")}
+                    />
+                    {errors.password && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.password.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      {!isWaray
+                        ? "Confirm Password*"
+                        : "Ikonpirma an Password*"}
+                    </label>
+                    <input
+                      type="password"
+                      className={`block w-full rounded-md border p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                        errors.confirmPassword
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      }`}
+                      {...register("confirmPassword")}
+                    />
+                    {errors.confirmPassword && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.confirmPassword.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div className="flex justify-between">

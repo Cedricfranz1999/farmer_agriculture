@@ -171,6 +171,7 @@ type OrganicFarmerSignupForm = z.infer<typeof organicFarmerSignupSchema>;
 
 const OrganicFarmerSignupPage = () => {
   const [isWaray, setIsWaray] = useState(false);
+  const [displayError, setDisplayError] = useState(false);
 
   const {
     register,
@@ -240,7 +241,7 @@ const OrganicFarmerSignupPage = () => {
   });
 
   const onSubmit = (data: OrganicFarmerSignupForm) => {
-    console.log("TEST");
+    setDisplayError(errors as any);
     const submitData = {
       ...data,
       dateOfBirth: new Date(data.dateOfBirth),
@@ -256,9 +257,6 @@ const OrganicFarmerSignupPage = () => {
     let isValid = false;
     if (activeStep === 1) {
       isValid = await trigger([
-        "username",
-        "password",
-        "confirmPassword",
         "surname",
         "firstname",
         "sex",
@@ -308,7 +306,12 @@ const OrganicFarmerSignupPage = () => {
       ]);
     } else if (activeStep === 6) {
       isValid = true;
+    } else if (activeStep === 7 && Object.keys(errors).length === 0) {
+      isValid = true;
+    } else if (activeStep === 8) {
+      isValid = await trigger(["username", "password", "confirmPassword"]);
     }
+    console.log("IS VALID", errors);
 
     if (isValid) {
       setActiveStep((prev) => prev + 1);
@@ -382,7 +385,7 @@ const OrganicFarmerSignupPage = () => {
         {/* Progress bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            {[1, 2, 3, 4, 5, 6, 7].map((step) => (
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((step) => (
               <React.Fragment key={step}>
                 <div
                   className={`flex h-8 w-8 items-center justify-center rounded-full text-sm ${
@@ -393,7 +396,7 @@ const OrganicFarmerSignupPage = () => {
                 >
                   {step}
                 </div>
-                {step < 7 && (
+                {step < 8 && (
                   <div
                     className={`flex-1 border-t-2 ${activeStep > step ? "border-green-600" : "border-gray-200"}`}
                   ></div>
@@ -445,63 +448,7 @@ const OrganicFarmerSignupPage = () => {
                     ? "Account Credentials"
                     : "Mga Kredensyal han Account"}
                 </h3>
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
-                      {!isWaray ? "Username*" : "Username*"}
-                    </label>
-                    <input
-                      type="text"
-                      className={`block w-full rounded-md border p-2 shadow-sm focus:border-green-500 focus:ring-green-500 ${
-                        errors.username ? "border-red-500" : "border-gray-300"
-                      }`}
-                      {...register("username")}
-                    />
-                    {errors.username && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.username.message}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
-                      {!isWaray ? "Password*" : "Password*"}
-                    </label>
-                    <input
-                      type="password"
-                      className={`block w-full rounded-md border p-2 shadow-sm focus:border-green-500 focus:ring-green-500 ${
-                        errors.password ? "border-red-500" : "border-gray-300"
-                      }`}
-                      {...register("password")}
-                    />
-                    {errors.password && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.password.message}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
-                      {!isWaray
-                        ? "Confirm Password*"
-                        : "Ikonpirma an Password*"}
-                    </label>
-                    <input
-                      type="password"
-                      className={`block w-full rounded-md border p-2 shadow-sm focus:border-green-500 focus:ring-green-500 ${
-                        errors.confirmPassword
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
-                      {...register("confirmPassword")}
-                    />
-                    {errors.confirmPassword && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.confirmPassword.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-3"></div>
               </div>
 
               {/* Name Section */}
@@ -2007,12 +1954,104 @@ const OrganicFarmerSignupPage = () => {
                   ))}
                 </div>
               </div>
+              <div className="flex justify-between">
+                <button
+                  type="button"
+                  onClick={prevStep}
+                  className="rounded-md bg-gray-300 px-4 py-2 text-gray-800 hover:bg-gray-400"
+                >
+                  {!isWaray ? "Back" : "Balik"}
+                </button>
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+                >
+                  {!isWaray ? "Next" : "Sunod"}
+                </button>
+              </div>
+            </motion.div>
+          )}
 
-              <p className="text-end text-red-400">
-                {errors
-                  ? "Please review all required fields in the previous steps "
-                  : ""}
-              </p>
+          {activeStep === 8 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-6"
+            >
+              <h2 className="border-b pb-2 text-2xl font-bold text-gray-800">
+                {!isWaray
+                  ? "Account Credentials"
+                  : "Mga Kredensyal han Account"}
+              </h2>
+
+              {/* Credentials Section */}
+              <div className="rounded-lg bg-gray-50 p-4">
+                <h3 className="mb-4 text-lg font-medium text-gray-700">
+                  {!isWaray
+                    ? "Account Credentials"
+                    : "Mga Kredensyal han Account"}
+                </h3>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      {!isWaray ? "Username*" : "Username*"}
+                    </label>
+                    <input
+                      type="text"
+                      className={`block w-full rounded-md border p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                        errors.username ? "border-red-500" : "border-gray-300"
+                      }`}
+                      {...register("username")}
+                    />
+                    {errors.username && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.username.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      {!isWaray ? "Password*" : "Password*"}
+                    </label>
+                    <input
+                      type="password"
+                      className={`block w-full rounded-md border p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                        errors.password ? "border-red-500" : "border-gray-300"
+                      }`}
+                      {...register("password")}
+                    />
+                    {errors.password && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.password.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      {!isWaray
+                        ? "Confirm Password*"
+                        : "Ikonpirma an Password*"}
+                    </label>
+                    <input
+                      type="password"
+                      className={`block w-full rounded-md border p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                        errors.confirmPassword
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      }`}
+                      {...register("confirmPassword")}
+                    />
+                    {errors.confirmPassword && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.confirmPassword.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="flex justify-between">
                 <button
                   type="button"
@@ -2023,7 +2062,7 @@ const OrganicFarmerSignupPage = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmitting || signupMutation.isPending}
+                  disabled={displayError || signupMutation.isPending}
                   className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-50"
                 >
                   {isSubmitting || signupMutation.isPending
@@ -2031,10 +2070,15 @@ const OrganicFarmerSignupPage = () => {
                       ? "Submitting..."
                       : "Ginpapadara..."
                     : !isWaray
-                      ? "Submit Registration"
-                      : "Isumite an Pagrehistro"}
+                      ? "Submit"
+                      : "Isumite"}
                 </button>
               </div>
+              <p className="text-end text-red-400">
+                {errors
+                  ? "Please review all required fields in the previous steps "
+                  : ""}
+              </p>
             </motion.div>
           )}
         </form>
