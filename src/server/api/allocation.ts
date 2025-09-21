@@ -7,7 +7,7 @@ export const allocationRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const farmer = await ctx.db.farmer.findUnique({
-        where: { id: parseInt(input.id) },
+        where: { id: parseInt(input.id), status: "REGISTERED" },
       });
       if (!farmer) {
         return null;
@@ -20,7 +20,7 @@ export const allocationRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const organicFarmer = await ctx.db.organic_Farmer.findUnique({
-        where: { id: parseInt(input.id) },
+        where: { id: parseInt(input.id), status: "REGISTERED" },
       });
       if (!organicFarmer) {
         return null;
