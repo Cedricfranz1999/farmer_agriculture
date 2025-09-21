@@ -23,6 +23,7 @@ import {
   Menu,
   X,
   ChevronDown,
+  QrCode,
 } from "lucide-react";
 import { Skeleton } from "~/components/ui/skeleton";
 import {
@@ -334,10 +335,10 @@ const FarmerApplicantsPage = () => {
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div>
               <h1 className="bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-2xl font-bold text-transparent sm:text-4xl">
-                Farmer Applicants
+                Farmer Registered
               </h1>
               <p className="mt-2 text-base text-slate-600 sm:text-lg">
-                Review and manage farmer applications
+                Review and manage farmer registered
               </p>
             </div>
 
@@ -570,17 +571,32 @@ const FarmerApplicantsPage = () => {
                                         Approve
                                       </DropdownMenuItem>
                                       <DropdownMenuItem
-                                        onClick={() =>
-                                          handleStatusUpdate(
-                                            farmer.id,
-                                            fullName,
-                                            "NOT_QUALIFIED",
-                                          )
-                                        }
-                                        className="cursor-pointer text-red-600 hover:text-red-700"
+                                        onClick={() => {
+                                          const canvas =
+                                            document.createElement("canvas");
+                                          // dynamic import to keep it inline
+                                          import("qrcode").then((QRCode) => {
+                                            QRCode.toCanvas(
+                                              canvas,
+                                              farmer.id.toString(),
+                                              { width: 200 },
+                                              (err) => {
+                                                if (err)
+                                                  return console.error(err);
+                                                const link =
+                                                  document.createElement("a");
+                                                link.href =
+                                                  canvas.toDataURL("image/png");
+                                                link.download = `farmer-${farmer.id}-qrcode.png`;
+                                                link.click();
+                                              },
+                                            );
+                                          });
+                                        }}
+                                        className="cursor-pointer text-blue-600 hover:text-blue-700"
                                       >
-                                        <UserX className="mr-2 h-4 w-4" />
-                                        Reject
+                                        <QrCode className="mr-2 h-4 w-4" />
+                                        Download qr code
                                       </DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>

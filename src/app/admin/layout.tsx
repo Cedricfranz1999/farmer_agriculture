@@ -14,25 +14,23 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
   const [mounted, setMounted] = useState(false);
 
-  // useEffect(() => {
-  //   setMounted(true);
-  // }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  // useEffect(() => {
-  //   if (!mounted) return;
+  useEffect(() => {
+    if (!mounted) return;
 
-  //   if (role === "ADMIN") {
-  //     router.push("/admin/dashboard");
-  //   } else {
-  //     router.push("/admin-sign-in");
-  //   }
-  // }, [mounted, role, router]);
+    if (role === "ADMIN") {
+      router.push("/admin/dashboard");
+    } else {
+      router.push("/admin-sign-in");
+    }
+  }, [mounted, role, router]);
 
-  // if (!mounted) {
-  //   // prevent hydration mismatch
-  //   return null;
-  // }
-
+  if (!mounted) {
+    return null;
+  }
   return (
     <motion.div
       initial={{ opacity: 0 }}

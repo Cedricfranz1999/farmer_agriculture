@@ -325,10 +325,10 @@ const FarmerApplicantsPage = () => {
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div>
               <h1 className="bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-2xl font-bold text-transparent sm:text-4xl">
-                Farmer Applicants
+                Farmer Archived
               </h1>
               <p className="mt-2 text-base text-slate-600 sm:text-lg">
-                Review and manage farmer applications
+                Review and manage farmer archived
               </p>
             </div>
 

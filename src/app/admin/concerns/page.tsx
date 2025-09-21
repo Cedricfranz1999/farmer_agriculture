@@ -47,13 +47,14 @@ const Page = () => {
   } = api.messages.getConcerns.useQuery(
     {
       userType: authDAta?.type as "FARMER" | "ADMIN" | "ORGANIC_FARMER",
-      userId: authDAta?.id as number,
+      userId: Number(authDAta?.id),
       search: searchTerm,
     },
     {
       enabled: !!authDAta?.type,
     },
   );
+  console.log("auth", authDAta?.id);
 
   // Fetch messages for selected concern
   const {
