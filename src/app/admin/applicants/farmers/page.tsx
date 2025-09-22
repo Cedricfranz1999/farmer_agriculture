@@ -34,6 +34,9 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FarmerRegistrationsStatus } from "@prisma/client";
+import { email } from "node_modules/zod/v4/core/regexes.cjs";
+import { sendVerifyEmailAction } from "~/lib/actions";
+import { as } from "node_modules/@faker-js/faker/dist/airline-CLphikKp";
 
 const FarmerApplicantsPage = () => {
   const router = useRouter();
@@ -42,11 +45,17 @@ const FarmerApplicantsPage = () => {
     id: number;
     name: string;
     newStatus: FarmerRegistrationsStatus;
+    email: string;
+    contactNumber: string;
   } | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [viewMode, setViewMode] = useState<"table" | "cards">("cards");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [numbers, setNumbers] = useState("");
+  const [message, setMessage] = useState("");
+  const [response, setResponse] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
   const limit = 10;
 
@@ -115,22 +124,80 @@ const FarmerApplicantsPage = () => {
     farmerId: number,
     farmerName: string,
     newStatus: "APPLICANTS" | "NOT_QUALIFIED" | "REGISTERED" | "ARCHIVED",
+    email: string,
+    contactNumber: string,
   ) => {
     setSelectedFarmer({
       id: farmerId,
       name: farmerName,
       newStatus,
+      email: email,
+      contactNumber: contactNumber,
     });
     setShowConfirmDialog(true);
   };
 
   // Confirm status update
-  const confirmStatusUpdate = () => {
-    if (selectedFarmer) {
-      updateStatusMutation.mutate({
-        id: selectedFarmer.id,
-        status: selectedFarmer.newStatus || null,
-      });
+  const confirmStatusUpdate = async () => {
+    if (!selectedFarmer) return;
+
+    // Update status first
+    updateStatusMutation.mutate({
+      id: selectedFarmer.id,
+      status: selectedFarmer.newStatus || null,
+    });
+
+    if (selectedFarmer.email) {
+      try {
+        await sendVerifyEmailAction(
+          selectedFarmer.email,
+          selectedFarmer.newStatus,
+          selectedFarmer.name,
+        );
+      } catch (err) {
+        console.error("Email failed:", err);
+      }
+    }
+
+    const contact = selectedFarmer.contactNumber?.trim();
+    const isValidContact =
+      contact && contact.length === 11 && contact.startsWith("09");
+
+    if (isValidContact) {
+      try {
+        const res = await fetch(
+          `https://api.textbee.dev/api/v1/gateway/devices/${process.env.NEXT_PUBLIC_TEXTBEE_DEVICE_ID}/send-sms`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": process.env.NEXT_PUBLIC_TEXTBEE_API_KEY as string,
+            },
+            body: JSON.stringify({
+              to: contact,
+              message: `Hello ${selectedFarmer.name},
+
+Thank you for applying to the Farmer Management System.
+Your current application status is: ${selectedFarmer.newStatus}
+
+We will notify you of further updates.
+
+Best regards,
+Farmer Management Team`,
+            }),
+          },
+        );
+
+        const data = await res.json();
+        setResponse(data);
+      } catch (err) {
+        setResponse({ error: "Failed to send SMS" });
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      console.warn("Invalid or missing contact number");
+      setLoading(false);
     }
   };
 
@@ -292,7 +359,13 @@ const FarmerApplicantsPage = () => {
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() =>
-                      handleStatusUpdate(farmer.id, fullName, "REGISTERED")
+                      handleStatusUpdate(
+                        farmer.id,
+                        fullName,
+                        "REGISTERED",
+                        farmer.email_address,
+                        farmer.contactNumber,
+                      )
                     }
                     className="cursor-pointer text-green-600 hover:text-green-700"
                   >
@@ -301,7 +374,13 @@ const FarmerApplicantsPage = () => {
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() =>
-                      handleStatusUpdate(farmer.id, fullName, "NOT_QUALIFIED")
+                      handleStatusUpdate(
+                        farmer.id,
+                        fullName,
+                        "NOT_QUALIFIED",
+                        farmer.email_address,
+                        farmer.contactNumber,
+                      )
                     }
                     className="cursor-pointer text-red-600 hover:text-red-700"
                   >
@@ -557,6 +636,8 @@ const FarmerApplicantsPage = () => {
                                             farmer.id,
                                             fullName,
                                             "REGISTERED",
+                                            farmer.email_address,
+                                            farmer.contactNumber,
                                           )
                                         }
                                         className="cursor-pointer text-green-600 hover:text-green-700"
@@ -570,6 +651,8 @@ const FarmerApplicantsPage = () => {
                                             farmer.id,
                                             fullName,
                                             "NOT_QUALIFIED",
+                                            farmer.email_address,
+                                            farmer.contactNumber,
                                           )
                                         }
                                         className="cursor-pointer text-red-600 hover:text-red-700"
@@ -584,6 +667,8 @@ const FarmerApplicantsPage = () => {
                                             farmer.id,
                                             fullName,
                                             "ARCHIVED",
+                                            farmer.email_address,
+                                            farmer.contactNumber,
                                           )
                                         }
                                         className="cursor-pointer text-yellow-600 hover:text-yellow-700"

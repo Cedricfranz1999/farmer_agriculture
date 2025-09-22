@@ -24,23 +24,29 @@ export const sendMail = async (data: MailerType) => {
   });
 };
 
-export const sendVerifyEmail = async (to: string) => {
+export const sendVerifyEmail = async (
+  to: string,
+  status: string,
+  name: string,
+) => {
   const html = `
-    <div>
-        <h3>WASTE TRACKER SYSTEM</h3>
-        <h3>Verification Code</h3>
-        <p>Enter the following verification code when prompted:</p>
-        <p>To protect your account, do not share this code.</p>
-        <p>
-          Didn't request this?<br/>
-          This code was generated for this email during signup at ${process.env.BASE_URL}.
-          If you didn't make this request, you can safely ignore this email.
-        </p>
-    </div>`;
+    <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
+      <h2 style="color: #2d6a4f;">Farmer Management System</h2>
+      <h3>Hello ${name},</h3>
+      <p>Thank you for applying to the <strong>Farmer Management System</strong>.</p>
+      <p>Your current application status is: <strong>${status}</strong>.</p>
+      <p>Please keep this email for your records. If your status changes, you will receive another notification from us.</p>
+      <hr style="margin: 20px 0;"/>
+      <p style="font-size: 14px; color: #666;">
+        This email was sent by the Farmer Management System at ${process.env.BASE_URL}.<br/>
+        If you did not apply, you can safely ignore this message.
+      </p>
+    </div>
+  `;
 
   return sendMail({
     to,
-    subject: "Your Verification Code",
+    subject: "Farmer Management System - Application Status",
     html,
   });
 };

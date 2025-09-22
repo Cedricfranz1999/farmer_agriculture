@@ -63,6 +63,8 @@ export const farmersRouter = createTRPCRouter({
             municipalityOrCity: true,
             dateOfBirth: true,
             farmerImage: true,
+            email_address: true,
+            contactNumber: true,
             status: true,
             createdAt: true,
           },
@@ -106,7 +108,7 @@ export const farmersRouter = createTRPCRouter({
 
       return updatedFarmer;
     }),
-    getFarmerById: publicProcedure
+  getFarmerById: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ input, ctx }) => {
       const farmer = await ctx.db.farmer.findUnique({
@@ -119,17 +121,16 @@ export const farmersRouter = createTRPCRouter({
           houseHead: true,
           farmDetails: {
             include: {
-              lotDetails: true
-            }
-          }
-        }
-      })
-      
+              lotDetails: true,
+            },
+          },
+        },
+      });
+
       if (!farmer) {
-        throw new Error('Farmer not found')
+        throw new Error("Farmer not found");
       }
-      
-      return farmer
+
+      return farmer;
     }),
-    
 });

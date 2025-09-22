@@ -408,6 +408,7 @@ export const signupRouter = createTRPCRouter({
             { username: usernameOrEmail },
             { email_address: usernameOrEmail },
           ],
+          status: "REGISTERED",
         },
       });
 
