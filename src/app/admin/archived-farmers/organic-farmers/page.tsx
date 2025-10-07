@@ -388,7 +388,7 @@ const FarmerApplicantsPage = () => {
             <CardTitle className="flex flex-col space-y-2 text-emerald-700 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
               <div className="flex items-center">
                 <Clock className="mr-2 h-5 w-5" />
-                Pending Applications
+                archived Applications
               </div>
               {farmersData && (
                 <div className="text-sm font-normal text-gray-600">

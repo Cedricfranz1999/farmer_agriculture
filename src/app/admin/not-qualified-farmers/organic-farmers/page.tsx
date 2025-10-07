@@ -239,7 +239,9 @@ const FarmerApplicantsPage = () => {
                   <Calendar className="mr-2 h-4 w-4 text-emerald-500" />
                   <div>
                     <div className="font-medium">Age</div>
-                    <div className="text-gray-800">{age} years</div>
+                    <div className="text-gray-800">{age} years
+                      
+                    </div>
                   </div>
                 </div>
               </div>
@@ -259,6 +261,7 @@ const FarmerApplicantsPage = () => {
                     <div className="font-medium">Applied</div>
                     <div className="text-gray-800">
                       {new Date(farmer.createdAt).toLocaleDateString()}
+                      
                     </div>
                   </div>
                 </div>
@@ -388,7 +391,7 @@ const FarmerApplicantsPage = () => {
             <CardTitle className="flex flex-col space-y-2 text-emerald-700 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
               <div className="flex items-center">
                 <Clock className="mr-2 h-5 w-5" />
-                Pending Applications
+                not qualiad farmers 
               </div>
               {farmersData && (
                 <div className="text-sm font-normal text-gray-600">
@@ -454,9 +457,13 @@ const FarmerApplicantsPage = () => {
                           <th className="p-4 text-left font-semibold text-gray-700">
                             Applied
                           </th>
+                              <th className="p-4 text-center font-semibold text-gray-700">
+                            reason
+                          </th>
                           <th className="p-4 text-center font-semibold text-gray-700">
                             Actions
                           </th>
+                        
                         </tr>
                       </thead>
                       <tbody>
@@ -517,6 +524,9 @@ const FarmerApplicantsPage = () => {
                                 <div className="flex items-center">
                                   <Calendar className="mr-1 h-4 w-4 text-gray-400" />
                                   {age} years
+
+
+                                  
                                 </div>
                               </td>
                               <td className="p-4">
@@ -524,6 +534,11 @@ const FarmerApplicantsPage = () => {
                                   {new Date(
                                     farmer.createdAt,
                                   ).toLocaleDateString()}
+                                </div>
+                              </td>
+                               <td className="p-4">
+                                <div className="text-sm text-gray-500">
+                                  {farmer.not_qualifiedreason}
                                 </div>
                               </td>
                               <td className="p-4">

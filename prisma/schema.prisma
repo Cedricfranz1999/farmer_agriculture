@@ -2,6 +2,10 @@ generator client {
     provider = "prisma-client-js"
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "test.svg"
+}
 datasource db {
     provider = "postgresql"
     url      = env("DATABASE_URL")
@@ -26,6 +30,7 @@ model Admin {
 model Farmer {
   id Int @id @default(autoincrement())
   status FarmerRegistrationsStatus @default(APPLICANTS)
+  not_qualifiedreason String?
   username String
   password String
   email_address String?
@@ -51,6 +56,7 @@ model Farmer {
   mothersName String?
   fathersName String?
   govermentId String
+  govermentIdType String?
   personToContactIncaseOfEmerceny String?
   personContactNumberIncaseOfEmergency String?
   grossAnualIncomeLastYearFarming Int
@@ -181,6 +187,7 @@ model FarmerConcern {
 model Organic_Farmer {
   id Int @id @default(autoincrement())
   status organicFarmerRegistrationsStatus @default(APPLICANTS)
+  not_qualifiedreason String?
   username String
   password String
   email_address String?
@@ -205,6 +212,7 @@ model Organic_Farmer {
   mothersName String?
   fathersName String?
   govermentId String
+  govermentIdType String?
   personToContactIncaseOfEmerceny String?
   personContactNumberIncaseOfEmergency String?
   grossAnualIncomeLastYearFarming Int

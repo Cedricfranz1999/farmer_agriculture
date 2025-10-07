@@ -52,6 +52,7 @@ export const farmersRouter = createTRPCRouter({
       const [farmers, total] = await Promise.all([
         ctx.db.farmer.findMany({
           where: whereClause,
+          
           select: {
             id: true,
             firstname: true,
@@ -63,6 +64,7 @@ export const farmersRouter = createTRPCRouter({
             municipalityOrCity: true,
             dateOfBirth: true,
             farmerImage: true,
+            not_qualifiedreason:true,
             email_address: true,
             contactNumber: true,
             status: true,
@@ -88,26 +90,30 @@ export const farmersRouter = createTRPCRouter({
     }),
 
   // Update farmer status
-  updateStatus: publicProcedure
-    .input(
-      z.object({
-        id: z.number(),
-        status: z.nativeEnum(FarmerRegistrationsStatus),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const updatedFarmer = await ctx.db.farmer.update({
-        where: {
-          id: input.id,
-        },
-        data: {
-          status: input.status,
-          updatedAt: new Date(),
-        },
-      });
-
-      return updatedFarmer;
+updateStatus: publicProcedure
+  .input(
+    z.object({
+      id: z.number(),
+      status: z.nativeEnum(FarmerRegistrationsStatus),
+      rejectionReason: z.string().optional(),
     }),
+  )
+  .mutation(async ({ ctx, input }) => {
+    const updatedFarmer = await ctx.db.farmer.update({
+      where: {
+        id: input.id,
+      },
+      data: {
+        status: input.status,
+        not_qualifiedreason: input.rejectionReason,
+        updatedAt: new Date(),
+      },
+    });
+    return updatedFarmer;
+  }),
+
+
+    
   getFarmerById: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ input, ctx }) => {

@@ -56,6 +56,8 @@ const FarmerApplicantsPage = () => {
   const [message, setMessage] = useState("");
   const [response, setResponse] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [rejectionMessage, setRejectionMessage] = useState("");
+
 
   const limit = 10;
 
@@ -120,86 +122,86 @@ const FarmerApplicantsPage = () => {
   };
 
   // Handle status update
-  const handleStatusUpdate = (
-    farmerId: number,
-    farmerName: string,
-    newStatus: "APPLICANTS" | "NOT_QUALIFIED" | "REGISTERED" | "ARCHIVED",
-    email: string,
-    contactNumber: string,
-  ) => {
-    setSelectedFarmer({
-      id: farmerId,
-      name: farmerName,
-      newStatus,
-      email: email,
-      contactNumber: contactNumber,
-    });
-    setShowConfirmDialog(true);
-  };
+const handleStatusUpdate = (
+  farmerId: number,
+  farmerName: string,
+  newStatus: "APPLICANTS" | "NOT_QUALIFIED" | "REGISTERED" | "ARCHIVED",
+  email: string,
+  contactNumber: string,
+) => {
+  setSelectedFarmer({
+    id: farmerId,
+    name: farmerName,
+    newStatus,
+    email: email,
+    contactNumber: contactNumber,
+  });
+  setShowConfirmDialog(true);
+  setRejectionMessage(""); // Reset rejection message
+};
 
   // Confirm status update
-  const confirmStatusUpdate = async () => {
-    if (!selectedFarmer) return;
-
-    // Update status first
-    updateStatusMutation.mutate({
-      id: selectedFarmer.id,
-      status: selectedFarmer.newStatus || null,
-    });
-
-    if (selectedFarmer.email) {
-      try {
-        await sendVerifyEmailAction(
-          selectedFarmer.email,
-          selectedFarmer.newStatus,
-          selectedFarmer.name,
-        );
-      } catch (err) {
-        console.error("Email failed:", err);
-      }
+const confirmStatusUpdate = async () => {
+  if (!selectedFarmer) return;
+  // Update status first
+  updateStatusMutation.mutate({
+    id: selectedFarmer.id,
+    status: selectedFarmer.newStatus || null,
+    rejectionReason:rejectionMessage
+  });
+  if (selectedFarmer.email) {
+    try {
+      await sendVerifyEmailAction(
+        selectedFarmer.email,
+        selectedFarmer.newStatus,
+        selectedFarmer.name,
+        rejectionMessage,
+      );
+    } catch (err) {
+      console.error("Email failed:", err);
     }
-
-    const contact = selectedFarmer.contactNumber?.trim();
-    const isValidContact =
-      contact && contact.length === 11 && contact.startsWith("09");
-
-    if (isValidContact) {
-      try {
-        const res = await fetch(
-          `https://api.textbee.dev/api/v1/gateway/devices/${process.env.NEXT_PUBLIC_TEXTBEE_DEVICE_ID}/send-sms`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-api-key": process.env.NEXT_PUBLIC_TEXTBEE_API_KEY as string,
-            },
-            body: JSON.stringify({
-              to: contact,
-              message: `Hello ${selectedFarmer.name},
-
+  }
+  const contact = selectedFarmer.contactNumber?.trim();
+  const isValidContact =
+    contact && contact.length === 11 && contact.startsWith("09");
+  if (isValidContact) {
+    try {
+      const message = `Hello ${selectedFarmer.name},
 Thank you for applying to the Farmer Management System.
 Your current application status is: ${selectedFarmer.newStatus}
-
+${rejectionMessage ? `Reason: ${rejectionMessage}` : ""}
 We will notify you of further updates.
-
 Best regards,
-Farmer Management Team`,
-            }),
+Farmer Management Team`;
+      const res = await fetch(
+        `https://api.textbee.dev/api/v1/gateway/devices/${process.env.NEXT_PUBLIC_TEXTBEE_DEVICE_ID}/send-sms`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": process.env.NEXT_PUBLIC_TEXTBEE_API_KEY as string,
           },
-        );
-
-        const data = await res.json();
-        setResponse(data);
-      } catch (err) {
-        setResponse({ error: "Failed to send SMS" });
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      console.warn("Invalid or missing contact number");
+          body: JSON.stringify({
+            to: contact,
+            message: message,
+          }),
+        },
+      );
+      const data = await res.json();
+      setResponse(data);
+    } catch (err) {
+      setResponse({ error: "Failed to send SMS" });
+    } finally {
       setLoading(false);
+      setRejectionMessage("");
     }
-  };
+  } else {
+    console.warn("Invalid or missing contact number");
+    setLoading(false);
+    setRejectionMessage("");
+  }
+};
+
 
   // Pagination handlers
   const goToPage = (page: number) => {
@@ -791,92 +793,105 @@ Farmer Management Team`,
         </Card>
 
         {/* Enhanced Mobile-Optimized Confirmation Dialog */}
-        {showConfirmDialog && selectedFarmer && (
-          <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4">
-            <div className="w-full max-w-md rounded-lg bg-white shadow-xl">
-              <div className="p-6">
-                <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    Confirm Status Update
-                  </h3>
-                  <button
-                    onClick={() => {
-                      setShowConfirmDialog(false);
-                      setSelectedFarmer(null);
-                    }}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-
-                <div className="mb-6">
-                  <p className="mb-3 text-gray-600">
-                    Are you sure you want to{" "}
-                    <span
-                      className={`font-semibold ${
-                        selectedFarmer.newStatus === "REGISTERED"
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {selectedFarmer.newStatus === "REGISTERED"
-                        ? "approve and register"
-                        : "reject"}
-                    </span>{" "}
-                    this farmer?
-                  </p>
-
-                  <div className="mb-3 rounded-lg bg-gray-50 p-3">
-                    <p className="font-medium text-gray-900">
-                      {selectedFarmer.name}
-                    </p>
-                  </div>
-
-                  {selectedFarmer.newStatus === "NOT_QUALIFIED" && (
-                    <div className="rounded-lg border border-red-200 bg-red-50 p-3">
-                      <p className="text-sm text-red-700">
-                        ⚠️ This action will mark the farmer as not qualified and
-                        they will be removed from the applicants list.
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowConfirmDialog(false);
-                      setSelectedFarmer(null);
-                    }}
-                    className="order-2 flex-1 sm:order-1"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={confirmStatusUpdate}
-                    className={`order-1 flex-1 sm:order-2 ${
-                      selectedFarmer.newStatus === "REGISTERED"
-                        ? "bg-green-600 hover:bg-green-700"
-                        : "bg-red-600 hover:bg-red-700"
-                    }`}
-                    disabled={updateStatusMutation.isPending}
-                  >
-                    {updateStatusMutation.isPending ? (
-                      <>
-                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
-                        Updating...
-                      </>
-                    ) : (
-                      "Confirm"
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
+      {showConfirmDialog && selectedFarmer && (
+  <div className="bg-opacity-30 fixed inset-0 z-50 flex items-center justify-center bg-red p-4">
+    <div className="w-full max-w-md rounded-lg bg-white shadow-xl">
+      <div className="p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Confirm Status Update
+          </h3>
+          <button
+            onClick={() => {
+              setShowConfirmDialog(false);
+              setSelectedFarmer(null);
+              setRejectionMessage("");
+            }}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="mb-6">
+          <p className="mb-3 text-gray-600">
+            Are you sure you want to{" "}
+            <span
+              className={`font-semibold ${
+                selectedFarmer.newStatus === "REGISTERED"
+                  ? "text-green-600"
+                  : "text-red-600"
+              }`}
+            >
+              {selectedFarmer.newStatus === "REGISTERED"
+                ? "approve and register"
+                : "reject"}
+            </span>{" "}
+            this farmer?
+          </p>
+          <div className="mb-3 rounded-lg bg-gray-50 p-3">
+            <p className="font-medium text-gray-900">
+              {selectedFarmer.name}
+            </p>
           </div>
-        )}
+          {selectedFarmer.newStatus === "NOT_QUALIFIED" && (
+            <>
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+                <p className="text-sm text-red-700">
+                  ⚠️ This action will mark the farmer as not qualified and
+                  they will be removed from the applicants list.
+                </p>
+              </div>
+              <div className="mt-3">
+                <label className="block text-sm font-medium text-gray-700">
+                  Reason for Rejection (optional)
+                </label>
+                <textarea
+                  value={rejectionMessage}
+                  onChange={(e) => setRejectionMessage(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
+                  rows={3}
+                  placeholder="Enter the reason for rejection..."
+                />
+              </div>
+            </>
+          )}
+        </div>
+        <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setShowConfirmDialog(false);
+              setSelectedFarmer(null);
+              setRejectionMessage("");
+            }}
+            className="order-2 flex-1 sm:order-1"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={confirmStatusUpdate}
+            className={`order-1 flex-1 sm:order-2 ${
+              selectedFarmer.newStatus === "REGISTERED"
+                ? "bg-green-600 hover:bg-green-700"
+                : "bg-red-600 hover:bg-red-700"
+            }`}
+            disabled={updateStatusMutation.isPending}
+          >
+            {updateStatusMutation.isPending ? (
+              <>
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
+                Updating...
+              </>
+            ) : (
+              "Confirm"
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
       </div>
     </div>
   );

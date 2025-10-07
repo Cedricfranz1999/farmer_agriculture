@@ -346,10 +346,14 @@ const FarmerProfilePrintGenerator = () => {
           {/* Enhanced Header with QR Code */}
           <div className="header-section document-header keep-with-next mb-6 pb-4">
             <div className="flex items-start justify-between">
+                             <QRCodeCanvas value={String(farmer.id)} size={70} />
+
               <div className="flex-1 text-center">
+
                 <h1 className="mb-2 text-2xl font-bold text-gray-900 print:text-xl">
                   FARMER REGISTRATION PROFILE
                 </h1>
+
                 <div className="mx-auto mb-3 h-1 w-32 bg-green-500 print:bg-black"></div>
                 <p className="text-xs font-medium tracking-wide text-gray-600 uppercase">
                   Republic of the Philippines | Department of Agriculture
@@ -1202,8 +1206,7 @@ const FarmerProfilePrintGenerator = () => {
             </section>
           )}
 
-          {/* Footer with Signatures */}
-          <div className="page-break mt-12 border-t-2 border-black pt-6">
+          {/* <div className="page-break mt-12 border-t-2 border-black pt-6">
             <div className="mb-8 text-center">
               <p className="mb-1 text-base font-semibold text-gray-800">
                 Document Generated:{" "}
@@ -1220,7 +1223,6 @@ const FarmerProfilePrintGenerator = () => {
             </div>
 
             <div className="mt-12 grid grid-cols-1 gap-12 md:grid-cols-2">
-              {/* Farmer Signature */}
               <div className="text-center">
                 <div className="mb-3 flex h-12 items-end justify-center border-b-2 border-black">
                   <span className="pb-1 text-xs text-gray-400">
@@ -1241,7 +1243,6 @@ const FarmerProfilePrintGenerator = () => {
                 </div>
               </div>
 
-              {/* Officer Signature */}
               <div className="text-center">
                 <div className="mb-3 flex h-12 items-end justify-center border-b-2 border-black">
                   <span className="pb-1 text-xs text-gray-400">
@@ -1264,7 +1265,7 @@ const FarmerProfilePrintGenerator = () => {
               <p>Republic of the Philippines | Department of Agriculture</p>
               <p>Farmer Registration Profile - Official Document</p>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </>

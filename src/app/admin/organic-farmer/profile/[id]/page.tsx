@@ -257,10 +257,10 @@ const FarmerProfilePrintView = () => {
         </div>
       )}
 
-      <div className="min-h-screen bg-gray-200 print:bg-white">
+      <div className="min-h-screen bg-gray-200 print:bg-white ">
         <div
           ref={printRef}
-          className="print-container print-preview"
+          className="print-container print-preview  "
           style={{
             breakInside: "avoid",
             breakAfter: "avoid",
@@ -271,6 +271,8 @@ const FarmerProfilePrintView = () => {
           {/* Enhanced Header with QR Code */}
           <div className="header-section document-header avoid-break mb-6 pb-4">
             <div className="flex items-start justify-between">
+                 <QRCodeCanvas value={String(farmer.id)} size={70} />
+
               <div className="flex-1 text-center">
                 <h1 className="avoid-break mb-2 text-2xl font-bold text-gray-900 print:text-xl">
                   ORGANIC AGRICULTURE PROFILE
@@ -281,10 +283,7 @@ const FarmerProfilePrintView = () => {
                 </p>
               </div>
               <div className="avoid-break ml-6 text-center">
-                <div className="avoid-break mb-1 rounded-lg border-2 border-gray-300 p-1">
-                  <QRCodeCanvas value={qrCodeData} size={60} />
-                </div>
-                <p className="avoid-break text-xs text-gray-500">Profile QR</p>
+              
               </div>
             </div>
           </div>
@@ -963,8 +962,7 @@ const FarmerProfilePrintView = () => {
             )}
           </section>
 
-          {/* Footer with Signatures */}
-          <div className="page-break mt-12 border-t-2 border-black pt-6">
+          {/* <div className="page-break mt-12 border-t-2 border-black pt-6">
             <div className="mb-8 text-center">
               <p className="mb-1 text-base font-semibold text-gray-800">
                 Document Generated:{" "}
@@ -981,7 +979,6 @@ const FarmerProfilePrintView = () => {
             </div>
 
             <div className="mt-12 grid grid-cols-1 gap-12 md:grid-cols-2">
-              {/* Farmer Signature */}
               <div className="text-center">
                 <div className="mb-3 flex h-12 items-end justify-center border-b-2 border-black">
                   <span className="pb-1 text-xs text-gray-400">
@@ -1002,7 +999,6 @@ const FarmerProfilePrintView = () => {
                 </div>
               </div>
 
-              {/* Officer Signature */}
               <div className="text-center">
                 <div className="mb-3 flex h-12 items-end justify-center border-b-2 border-black">
                   <span className="pb-1 text-xs text-gray-400">
@@ -1025,7 +1021,7 @@ const FarmerProfilePrintView = () => {
               <p>Republic of the Philippines | Department of Agriculture</p>
               <p>Organic Agriculture Profile - Official Document</p>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </>

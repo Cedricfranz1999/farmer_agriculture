@@ -276,7 +276,7 @@ const Page = () => {
                         }`}
                       >
                         <div className="mb-2 flex items-start justify-between">
-                          <h4 className="line-clamp-1 text-sm font-semibold text-gray-900">
+                          <h4 className="line-clamp-1 text-sm font-semibold text-gray-900 b">
                             {concern.title}
                           </h4>
                           <Badge
@@ -290,9 +290,8 @@ const Page = () => {
                         </p>
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <div className="flex items-center">
-                            {getUserIcon(
-                              concern.farmer ? "FARMER" : "ORGANIC_FARMER",
-                            )}
+                          <img   width={50}  height={50} src=  {concern.farmer?.farmerImage} />
+                           
                             <span className="ml-1">
                               {concern.farmer
                                 ? `${concern.farmer.firstname} ${concern.farmer.surname}`

@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { CircleUser, Menu, Calendar, AlertCircle, Leaf } from "lucide-react";
+import { CircleUser, Menu, Calendar, AlertCircle, Leaf, User } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -27,11 +27,6 @@ const Header = () => {
     router.push("/sign-in");
   };
 
-  console.log(
-    "USER",
-    useAuthStore((state) => state),
-  );
-
   return (
     <motion.header
       initial={{ y: -100 }}
@@ -54,7 +49,7 @@ const Header = () => {
           </SheetTrigger>
           <SheetContent
             side="left"
-            className="flex flex-col bg-gradient-to-b from-white via-emerald-50/30 to-white"
+            className="flex flex-col bg-white"
           >
             <VisuallyHidden>
               <DialogTitle>Navigation Menu</DialogTitle>
@@ -75,7 +70,6 @@ const Header = () => {
                   AgreBase
                 </span>
               </Link>
-
               {/* Events */}
               <Link
                 href="/farmer/events"
@@ -84,7 +78,6 @@ const Header = () => {
                 <Calendar className="h-5 w-5" />
                 Events
               </Link>
-
               {/* Concerns */}
               <Link
                 href="/farmer/concerns"
@@ -93,12 +86,18 @@ const Header = () => {
                 <AlertCircle className="h-5 w-5" />
                 Concerns
               </Link>
+              {/* Profile */}
+              <Link
+                href="/farmer/profile"
+                className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-emerald-700 transition-all hover:bg-emerald-100 hover:text-emerald-800"
+              >
+                <User className="h-5 w-5" />
+                Profile
+              </Link>
             </nav>
           </SheetContent>
         </Sheet>
-
         <div className="w-full flex-1" />
-
         {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

@@ -58,6 +58,8 @@ const signupSchema = z
     FourPS_Benificiaty: z.string().optional(),
     mothersName: z.string().optional(),
     fathersName: z.string().optional(),
+    govermentIdType: z.string().optional(),
+
     govermentId: z.string(),
     personToContactIncaseOfEmerceny: z.string().optional(),
     personContactNumberIncaseOfEmergency: z.string().optional(),
@@ -909,6 +911,21 @@ const FarmerSignupPage = () => {
                       {...register("fathersName")}
                     />
                   </div>
+
+                <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  {!isWaray ? "4Ps Beneficiary" : "Api sa 4Ps"}
+                </label>
+                <select
+                  className="block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  {...register("FourPS_Benificiaty")}
+                >
+                  <option value="">Select</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+
                 </div>
               </div>
 
@@ -951,6 +968,35 @@ const FarmerSignupPage = () => {
                     </p>
                   )}
                 </div>
+
+                  <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700 mt-3">
+                    {!isWaray ? "Government ID Type" : "Gobyerno ID"}
+                  </label>
+                  <select
+                    className="block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    {...register("govermentIdType")}
+                  >
+                    <option value="">Select ID Type</option>
+                    <option value="Philippine Passport">Philippine Passport</option>
+                    <option value="Driver's License">Driver's License</option>
+                    <option value="UMID">UMID</option>
+                    <option value="PhilHealth ID">PhilHealth ID</option>
+                    <option value="SSS ID">SSS ID</option>
+                    <option value="GSIS ID">GSIS ID</option>
+                    <option value="Postal ID">Postal ID</option>
+                    <option value="Voter's ID">Voter's ID</option>
+                    <option value="TIN ID">TIN ID</option>
+                    <option value="PRC ID">PRC ID</option>
+                    <option value="Senior Citizen ID">Senior Citizen ID</option>
+                    <option value="PWD ID">PWD ID</option>
+                    <option value="Philippine National ID (PhilSys)">Philippine National ID (PhilSys)</option>
+                    <option value="NBI Clearance">NBI Clearance</option>
+                    <option value="Police Clearance">Police Clearance</option>
+                    <option value="Barangay ID">Barangay ID</option>
+                  </select>
+                </div>
+
 
                 <div className="mt-4">
                   <label className="mb-1 block text-sm font-medium text-gray-700">

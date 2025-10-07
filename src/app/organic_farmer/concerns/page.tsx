@@ -289,9 +289,8 @@ const Page = () => {
                         </p>
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <div className="flex items-center">
-                            {getUserIcon(
-                              concern.farmer ? "FARMER" : "ORGANIC_FARMER",
-                            )}
+                                                    <img   width={50}  height={50} src=  {concern.organicFarmer?.farmerImage} />
+
                             <span className="ml-1">
                               {concern.farmer
                                 ? `${concern.farmer.firstname} ${concern.farmer.surname}`

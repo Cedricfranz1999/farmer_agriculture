@@ -291,24 +291,7 @@ const FarmerApplicantsPage = () => {
                     <Eye className="mr-2 h-4 w-4" />
                     View Details
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() =>
-                      handleStatusUpdate(farmer.id, fullName, "REGISTERED")
-                    }
-                    className="cursor-pointer text-green-600 hover:text-green-700"
-                  >
-                    <UserCheck className="mr-2 h-4 w-4" />
-                    Approve
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() =>
-                      handleStatusUpdate(farmer.id, fullName, "NOT_QUALIFIED")
-                    }
-                    className="cursor-pointer text-red-600 hover:text-red-700"
-                  >
-                    <UserX className="mr-2 h-4 w-4" />
-                    Reject
-                  </DropdownMenuItem>
+                
                   <DropdownMenuItem
                     onClick={() =>
                       handleStatusUpdate(farmer.id, fullName, "ARCHIVED")
@@ -389,7 +372,7 @@ const FarmerApplicantsPage = () => {
             <CardTitle className="flex flex-col space-y-2 text-emerald-700 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
               <div className="flex items-center">
                 <Clock className="mr-2 h-5 w-5" />
-                Pending Applications
+                registered  farmer
               </div>
               {farmersData && (
                 <div className="text-sm font-normal text-gray-600">
@@ -530,76 +513,50 @@ const FarmerApplicantsPage = () => {
                               <td className="p-4">
                                 <div className="flex items-center justify-center">
                                   <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        disabled={
-                                          updateStatusMutation.isPending
-                                        }
-                                      >
-                                        <MoreHorizontal className="h-4 w-4" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent
-                                      align="end"
-                                      className="w-48"
-                                    >
-                                      <DropdownMenuItem
-                                        onClick={() =>
-                                          router.push(
-                                            "/admin/organic-farmer/profile/" +
-                                              farmer.id,
-                                          )
-                                        }
-                                        className="cursor-pointer"
-                                      >
-                                        <Eye className="mr-2 h-4 w-4" />
-                                        View Details
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        onClick={() =>
-                                          handleStatusUpdate(
-                                            farmer.id,
-                                            fullName,
-                                            "REGISTERED",
-                                          )
-                                        }
-                                        className="cursor-pointer text-green-600 hover:text-green-700"
-                                      >
-                                        <UserCheck className="mr-2 h-4 w-4" />
-                                        Approve
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        onClick={() => {
-                                          const canvas =
-                                            document.createElement("canvas");
-                                          // dynamic import to keep it inline
-                                          import("qrcode").then((QRCode) => {
-                                            QRCode.toCanvas(
-                                              canvas,
-                                              farmer.id.toString(),
-                                              { width: 200 },
-                                              (err) => {
-                                                if (err)
-                                                  return console.error(err);
-                                                const link =
-                                                  document.createElement("a");
-                                                link.href =
-                                                  canvas.toDataURL("image/png");
-                                                link.download = `farmer-${farmer.id}-qrcode.png`;
-                                                link.click();
-                                              },
-                                            );
-                                          });
-                                        }}
-                                        className="cursor-pointer text-blue-600 hover:text-blue-700"
-                                      >
-                                        <QrCode className="mr-2 h-4 w-4" />
-                                        Download qr code
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
+                                                                                               <DropdownMenuTrigger asChild>
+                                                                                                 <Button
+                                                                                                   variant="outline"
+                                                                                                   size="sm"
+                                                                                                   disabled={
+                                                                                                     updateStatusMutation.isPending
+                                                                                                   }
+                                                                                                 >
+                                                                                                   <MoreHorizontal className="h-4 w-4" />
+                                                                                                 </Button>
+                                                                                               </DropdownMenuTrigger>
+                                                                                               <DropdownMenuContent
+                                                                                                 align="end"
+                                                                                                 className="w-48"
+                                                                                               >
+                                                                                                 <DropdownMenuItem
+                                                                                                   onClick={() =>
+                                                                                                     router.push(
+                                                                                                       "/admin/organic-farmer/profile/" +
+                                                                                                         farmer.id,
+                                                                                                     )
+                                                                                                   }
+                                                                                                   className="cursor-pointer"
+                                                                                                 >
+                                                                                                   <Eye className="mr-2 h-4 w-4" />
+                                                                                                   View Details
+                                                                                                 </DropdownMenuItem>
+                                                                                               
+                                                                                               
+                                                                                                 <DropdownMenuItem
+                                                                                                   onClick={() =>
+                                                                                                     handleStatusUpdate(
+                                                                                                       farmer.id,
+                                                                                                       fullName,
+                                                                                                       "ARCHIVED",
+                                                                                                     )
+                                                                                                   }
+                                                                                                   className="cursor-pointer text-yellow-600 hover:text-yellow-700"
+                                                                                                 >
+                                                                                                   <UserX className="mr-2 h-4 w-4" />
+                                                                                                   ARCHIVE
+                                                                                                 </DropdownMenuItem>
+                                                                                               </DropdownMenuContent>
+                                                                   </DropdownMenu>
                                 </div>
                               </td>
                             </tr>
@@ -714,7 +671,7 @@ const FarmerApplicantsPage = () => {
 
         {/* Enhanced Mobile-Optimized Confirmation Dialog */}
         {showConfirmDialog && selectedFarmer && (
-          <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4">
+<div className="bg-opacity-30 fixed inset-0 z-50 flex items-center justify-center bg-red p-4">
             <div className="w-full max-w-md rounded-lg bg-white shadow-xl">
               <div className="p-6">
                 <div className="mb-4 flex items-center justify-between">

@@ -64,7 +64,9 @@ export const OrganicfarmersRouterData = createTRPCRouter({
             dateOfBirth: true,
             farmerImage: true,
             status: true,
+            not_qualifiedreason:true,
             createdAt: true,
+            
           },
           orderBy: {
             createdAt: "desc",
@@ -86,26 +88,28 @@ export const OrganicfarmersRouterData = createTRPCRouter({
     }),
 
   // Update farmer status
-  updateStatus: publicProcedure
-    .input(
-      z.object({
-        id: z.number(),
-        status: z.nativeEnum(organicFarmerRegistrationsStatus), // Changed to organicFarmerRegistrationsStatus
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const updatedFarmer = await ctx.db.organic_Farmer.update({
-        where: {
-          id: input.id,
-        },
-        data: {
-          status: input.status,
-          updatedAt: new Date(),
-        },
-      });
-
-      return updatedFarmer;
+updateStatus: publicProcedure
+  .input(
+    z.object({
+      id: z.number(),
+      status: z.nativeEnum(FarmerRegistrationsStatus),
+      rejectionReason: z.string().optional(),
     }),
+  )
+  .mutation(async ({ ctx, input }) => {
+    const updatedFarmer = await ctx.db.organic_Farmer.update({
+      where: {
+        id: input.id,
+      },
+      data: {
+        status: input.status,
+        not_qualifiedreason: input.rejectionReason,
+        updatedAt: new Date(),
+      },
+    });
+    return updatedFarmer;
+  }),
+
      getOrganicFarmerById: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ input, ctx }) => {
