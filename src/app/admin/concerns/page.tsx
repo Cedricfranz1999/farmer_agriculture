@@ -1,7 +1,5 @@
 "use client";
-
 import type React from "react";
-
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
@@ -19,14 +17,21 @@ import {
   Search,
   Plus,
   X,
+  Calendar as CalendarIcon,
 } from "lucide-react";
 import { Skeleton } from "~/components/ui/skeleton";
 import Image from "next/image";
 import { useAuthStore } from "~/app/store/authStore";
+import { format } from "date-fns";
+import { Calendar } from "~/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
 
 const Page = () => {
   const authDAta = useAuthStore((state) => state?.user);
-
   const [selectedConcern, setSelectedConcern] = useState<number | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,10 +41,13 @@ const Page = () => {
     description: "",
     image: "",
   });
+  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
+    from: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+    to: new Date(),
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch concerns based on user type
   const {
     data: concerns,
     isLoading: concernsLoading,
@@ -54,9 +62,7 @@ const Page = () => {
       enabled: !!authDAta?.type,
     },
   );
-  console.log("auth", authDAta?.id);
 
-  // Fetch messages for selected concern
   const {
     data: messages,
     isLoading: messagesLoading,
@@ -70,8 +76,6 @@ const Page = () => {
     { enabled: !!selectedConcern && !!authDAta?.type },
   );
 
-  console.log("MESSAGE", messages, "CONCERNS", concerns);
-  // Send message mutation
   const sendMessageMutation = api.messages.sendMessage.useMutation({
     onSuccess: () => {
       setNewMessage("");
@@ -83,7 +87,6 @@ const Page = () => {
     },
   });
 
-  // Create concern mutation (for farmers/organic farmers)
   const createConcernMutation = api.messages.createConcern.useMutation({
     onSuccess: (newConcern) => {
       setShowNewConcernForm(false);
@@ -97,7 +100,6 @@ const Page = () => {
     },
   });
 
-  // Update concern status (admin only)
   const updateConcernStatusMutation =
     api.messages.updateConcernStatus.useMutation({
       onSuccess: () => {
@@ -109,15 +111,12 @@ const Page = () => {
       },
     });
 
-  // Auto scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Handle send message
   const handleSendMessage = () => {
     if (!newMessage.trim() || !selectedConcern) return;
-
     sendMessageMutation.mutate({
       concernId: selectedConcern,
       content: newMessage,
@@ -126,13 +125,11 @@ const Page = () => {
     });
   };
 
-  // Handle create concern
   const handleCreateConcern = () => {
     if (!newConcernData.title.trim() || !newConcernData.description.trim()) {
       alert("Please fill in title and description");
       return;
     }
-
     createConcernMutation.mutate({
       title: newConcernData.title,
       description: newConcernData.description,
@@ -142,7 +139,6 @@ const Page = () => {
     });
   };
 
-  // Handle image upload
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -155,7 +151,6 @@ const Page = () => {
     }
   };
 
-  // Get user icon based on type
   const getUserIcon = (userType: string) => {
     switch (userType) {
       case "ADMIN":
@@ -167,7 +162,6 @@ const Page = () => {
     }
   };
 
-  // Get status color
   const getStatusColor = (status: string) => {
     switch (status) {
       case "OPEN":
@@ -183,18 +177,21 @@ const Page = () => {
     }
   };
 
-  // Filter concerns based on search
-  const filteredConcerns =
-    concerns?.filter(
-      (concern) =>
-        concern.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        concern.description.toLowerCase().includes(searchTerm.toLowerCase()),
-    ) || [];
+  const filteredConcerns = concerns?.filter((concern) => {
+    const concernDate = new Date(concern.createdAt);
+    const fromDate = new Date(dateRange.from);
+    const toDate = new Date(dateRange.to);
+    toDate.setHours(23, 59, 59, 999);
+    const isInDateRange = concernDate >= fromDate && concernDate <= toDate;
+    const matchesSearch =
+      concern.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      concern.description.toLowerCase().includes(searchTerm.toLowerCase());
+    return isInDateRange && matchesSearch;
+  }) || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50 p-4">
       <div className="container mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-4xl font-bold text-transparent">
             Messages & Concerns
@@ -205,18 +202,14 @@ const Page = () => {
               : "Communicate with administrators about your concerns"}
           </p>
         </div>
-
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Concerns List */}
           <div className="lg:col-span-1">
             <Card className="border-emerald-200 bg-white/90 shadow-xl backdrop-blur-sm">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center text-emerald-700">
                     <MessageSquare className="mr-2 h-5 w-5" />
-                    {authDAta?.type === "ADMIN"
-                      ? "All Concerns"
-                      : "My Concerns"}
+                    {authDAta?.type === "ADMIN" ? "All Concerns" : "My Concerns"}
                   </CardTitle>
                   {authDAta?.type !== "ADMIN" && (
                     <Button
@@ -228,25 +221,55 @@ const Page = () => {
                     </Button>
                   )}
                 </div>
-                {/* Search */}
-                <div className="relative">
-                  <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
-                  <Input
-                    placeholder="Search concerns..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
+                <div className="flex space-x-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+                    <Input
+                      placeholder="Search concerns..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-[280px] justify-start text-left font-normal"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dateRange.from ? (
+                          dateRange.to ? (
+                            <>
+                              {format(dateRange.from, "LLL dd, y")} -{" "}
+                              {format(dateRange.to, "LLL dd, y")}
+                            </>
+                          ) : (
+                            format(dateRange.from, "LLL dd, y")
+                          )
+                        ) : (
+                          <span>Pick a date range</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        initialFocus
+                        mode="range"
+                        defaultMonth={dateRange.from}
+                        selected={dateRange}
+                        onSelect={setDateRange as any}
+                        numberOfMonths={2}
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </CardHeader>
               <CardContent className="p-0">
                 {concernsLoading ? (
                   <div className="space-y-2 p-4">
                     {Array.from({ length: 5 }).map((_, i) => (
-                      <Skeleton
-                        key={`concern-skeleton-${i}`}
-                        className="h-20 w-full"
-                      />
+                      <Skeleton key={`concern-skeleton-${i}`} className="h-20 w-full" />
                     ))}
                   </div>
                 ) : filteredConcerns.length === 0 ? (
@@ -290,8 +313,11 @@ const Page = () => {
                         </p>
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <div className="flex items-center">
-                          <img   width={50}  height={50} src=  {concern.farmer?.farmerImage} />
-                           
+                            <img
+                              width={50}
+                              height={50}
+                              src={concern.farmer?.farmerImage}
+                            />
                             <span className="ml-1">
                               {concern.farmer
                                 ? `${concern.farmer.firstname} ${concern.farmer.surname}`
@@ -317,11 +343,8 @@ const Page = () => {
               </CardContent>
             </Card>
           </div>
-
-          {/* Messages Area */}
           <div className="lg:col-span-2">
             {showNewConcernForm ? (
-              /* New Concern Form */
               <Card className="border-emerald-200 bg-white/90 shadow-xl backdrop-blur-sm">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -420,7 +443,6 @@ const Page = () => {
                 </CardContent>
               </Card>
             ) : selectedConcern ? (
-              /* Messages View */
               <Card className="border-emerald-200 bg-white/90 shadow-xl backdrop-blur-sm">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -430,7 +452,9 @@ const Page = () => {
                       </CardTitle>
                       <div className="mt-1 flex items-center space-x-2">
                         <Badge
-                          className={`text-xs ${getStatusColor(concerns?.find((c) => c.id === selectedConcern)?.status || "")}`}
+                          className={`text-xs ${getStatusColor(
+                            concerns?.find((c) => c.id === selectedConcern)?.status || "",
+                          )}`}
                         >
                           {
                             concerns?.find((c) => c.id === selectedConcern)
@@ -470,7 +494,6 @@ const Page = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {/* Messages */}
                   <div className="mb-4 h-96 space-y-4 overflow-y-auto rounded-lg bg-gray-50 p-4">
                     {messagesLoading ? (
                       <div className="space-y-4">
@@ -494,7 +517,6 @@ const Page = () => {
                                 setNewMessage(
                                   "Hello, I have a concern about...",
                                 );
-                                // Auto-focus the input
                                 setTimeout(() => {
                                   const input = document.querySelector(
                                     'input[placeholder="Type your message..."]',
@@ -546,8 +568,6 @@ const Page = () => {
                     )}
                     <div ref={messagesEndRef} />
                   </div>
-
-                  {/* Message Input */}
                   <div className="flex space-x-2">
                     <Input
                       value={newMessage}
@@ -571,7 +591,6 @@ const Page = () => {
                 </CardContent>
               </Card>
             ) : (
-              /* No Selection */
               <Card className="border-emerald-200 bg-white/90 shadow-xl backdrop-blur-sm">
                 <CardContent className="flex h-96 items-center justify-center">
                   <div className="text-center">

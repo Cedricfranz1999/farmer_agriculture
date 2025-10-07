@@ -11,7 +11,6 @@ import {
   AlertCircle,
   Leaf,
 } from "lucide-react";
-import { Label } from "~/components/ui/label";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -20,11 +19,8 @@ const Sidebar = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
-    "/admin/applicants": true,
-    "/admin/registered-farmers": true,
-    "/admin/not-qualified-farmers": true,
-    "/admin/archived-farmers": true,
-    "/admin/allocations": true,
+    farmer: true,
+    organicFarmer: true,
   });
 
   const isActive = (path: string) => pathname.startsWith(path);
@@ -79,31 +75,35 @@ const Sidebar = () => {
               </div>
             </motion.div>
 
-            {/* Applicants */}
+            {/* FARMER */}
             <motion.div whileHover={{ scale: 1.02 }}>
               <div className="flex items-center justify-between">
                 <div
                   className={`flex flex-1 cursor-default items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-                    isActive("/admin/applicants")
+                    isActive("/admin/applicants/farmers") ||
+                    isActive("/admin/registered-farmers/farmers") ||
+                    isActive("/admin/not-qualified-farmers/farmers") ||
+                    isActive("/admin/archived-farmers/farmers") ||
+                    isActive("/admin/allocations/farmer")
                       ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
                       : "text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
                   }`}
                 >
-                  <ClipboardList className="h-4 w-4" />
-                  Applicants
+                  <Users className="h-4 w-4" />
+                  FARMER
                 </div>
                 <button
-                  onClick={() => toggleMenu("/admin/applicants")}
+                  onClick={() => toggleMenu("farmer")}
                   className="p-2 text-emerald-600 hover:text-emerald-800"
                 >
-                  {expandedMenus["/admin/applicants"] ? (
+                  {expandedMenus.farmer ? (
                     <ChevronUp className="h-4 w-4" />
                   ) : (
                     <ChevronDown className="h-4 w-4" />
                   )}
                 </button>
               </div>
-              {expandedMenus["/admin/applicants"] && (
+              {expandedMenus.farmer && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
@@ -117,61 +117,95 @@ const Sidebar = () => {
                         : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
                     }`}
                   >
-                    <span className="ml-4">Farmer</span>
+                    <span className="ml-4">Applicants</span>
                   </Link>
                   <Link
-                    href="/admin/applicants/organic-farmers"
+                    href="/admin/registered-farmers/farmers"
                     className={`flex items-center gap-3 rounded-lg px-3 py-2 text-xs transition-all ${
-                      isActive("/admin/applicants/organic-farmers")
+                      isActive("/admin/registered-farmers/farmers")
                         ? "bg-emerald-100 text-emerald-800"
                         : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
                     }`}
                   >
-                    <span className="ml-4">Organic Farmer</span>
+                    <span className="ml-4">Registered</span>
+                  </Link>
+                  <Link
+                    href="/admin/not-qualified-farmers/farmers"
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-xs transition-all ${
+                      isActive("/admin/not-qualified-farmers/farmers")
+                        ? "bg-emerald-100 text-emerald-800"
+                        : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+                    }`}
+                  >
+                    <span className="ml-4">Not Qualified</span>
+                  </Link>
+                  <Link
+                    href="/admin/archived-farmers/farmers"
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-xs transition-all ${
+                      isActive("/admin/archived-farmers/farmers")
+                        ? "bg-emerald-100 text-emerald-800"
+                        : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+                    }`}
+                  >
+                    <span className="ml-4">Archived</span>
+                  </Link>
+                  <Link
+                    href="/admin/allocations/farmer"
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-xs transition-all ${
+                      isActive("/admin/allocations/farmer")
+                        ? "bg-emerald-100 text-emerald-800"
+                        : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+                    }`}
+                  >
+                    <span className="ml-4">Allocations</span>
                   </Link>
                 </motion.div>
               )}
             </motion.div>
 
-            {/* Registered Farmers */}
+            {/* ORGANIC FARMER */}
             <motion.div whileHover={{ scale: 1.02 }}>
               <div className="flex items-center justify-between">
                 <div
                   className={`flex flex-1 cursor-default items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-                    isActive("/admin/registered-farmers")
+                    isActive("/admin/applicants/organic-farmers") ||
+                    isActive("/admin/registered-farmers/organic-farmers") ||
+                    isActive("/admin/not-qualified-farmers/organic-farmers") ||
+                    isActive("/admin/archived-farmers/organic-farmers") ||
+                    isActive("/admin/allocations/organic_farmer")
                       ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
                       : "text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
                   }`}
                 >
-                  <Users className="h-4 w-4" />
-                  Registered Farmers
+                  <Leaf className="h-4 w-4" />
+                  ORGANIC FARMER
                 </div>
                 <button
-                  onClick={() => toggleMenu("/admin/registered-farmers")}
+                  onClick={() => toggleMenu("organicFarmer")}
                   className="p-2 text-emerald-600 hover:text-emerald-800"
                 >
-                  {expandedMenus["/admin/registered-farmers"] ? (
+                  {expandedMenus.organicFarmer ? (
                     <ChevronUp className="h-4 w-4" />
                   ) : (
                     <ChevronDown className="h-4 w-4" />
                   )}
                 </button>
               </div>
-              {expandedMenus["/admin/registered-farmers"] && (
+              {expandedMenus.organicFarmer && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   className="ml-4 overflow-hidden"
                 >
                   <Link
-                    href="/admin/registered-farmers/farmers"
+                    href="/admin/applicants/organic-farmers"
                     className={`mt-3 flex items-center gap-3 rounded-lg px-3 py-2 text-xs transition-all ${
-                      isActive("/admin/registered-farmers/farmers")
+                      isActive("/admin/applicants/organic-farmers")
                         ? "bg-emerald-100 text-emerald-800"
                         : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
                     }`}
                   >
-                    <span className="ml-4">Farmers</span>
+                    <span className="ml-4">Applicants</span>
                   </Link>
                   <Link
                     href="/admin/registered-farmers/organic-farmers"
@@ -181,51 +215,7 @@ const Sidebar = () => {
                         : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
                     }`}
                   >
-                    <span className="ml-4">Organic</span>
-                  </Link>
-                </motion.div>
-              )}
-            </motion.div>
-
-            {/* Not Qualified Farmers */}
-            <motion.div whileHover={{ scale: 1.02 }}>
-              <div className="flex items-center justify-between">
-                <div
-                  className={`flex flex-1 cursor-default items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-                    isActive("/admin/not-qualified-farmers")
-                      ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
-                      : "text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
-                  }`}
-                >
-                  <Users className="h-4 w-4" />
-                  Not Qualified Farmers
-                </div>
-                <button
-                  onClick={() => toggleMenu("/admin/not-qualified-farmers")}
-                  className="p-2 text-emerald-600 hover:text-emerald-800"
-                >
-                  {expandedMenus["/admin/not-qualified-farmers"] ? (
-                    <ChevronUp className="h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              {expandedMenus["/admin/not-qualified-farmers"] && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  className="ml-4 overflow-hidden"
-                >
-                  <Link
-                    href="/admin/not-qualified-farmers/farmers"
-                    className={`mt-3 flex items-center gap-3 rounded-lg px-3 py-2 text-xs transition-all ${
-                      isActive("/admin/not-qualified-farmers/farmers")
-                        ? "bg-emerald-100 text-emerald-800"
-                        : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
-                    }`}
-                  >
-                    <span className="ml-4">Farmers</span>
+                    <span className="ml-4">Registered</span>
                   </Link>
                   <Link
                     href="/admin/not-qualified-farmers/organic-farmers"
@@ -235,51 +225,7 @@ const Sidebar = () => {
                         : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
                     }`}
                   >
-                    <span className="ml-4">Organic</span>
-                  </Link>
-                </motion.div>
-              )}
-            </motion.div>
-
-            {/* Archived Farmers */}
-            <motion.div whileHover={{ scale: 1.02 }}>
-              <div className="flex items-center justify-between">
-                <div
-                  className={`flex flex-1 cursor-default items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-                    isActive("/admin/archived-farmers")
-                      ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
-                      : "text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
-                  }`}
-                >
-                  <Users className="h-4 w-4" />
-                  Archived Farmer
-                </div>
-                <button
-                  onClick={() => toggleMenu("/admin/archived-farmers")}
-                  className="p-2 text-emerald-600 hover:text-emerald-800"
-                >
-                  {expandedMenus["/admin/archived-farmers"] ? (
-                    <ChevronUp className="h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              {expandedMenus["/admin/archived-farmers"] && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  className="ml-4 overflow-hidden"
-                >
-                  <Link
-                    href="/admin/archived-farmers/farmers"
-                    className={`mt-3 flex items-center gap-3 rounded-lg px-3 py-2 text-xs transition-all ${
-                      isActive("/admin/archived-farmers/farmers")
-                        ? "bg-emerald-100 text-emerald-800"
-                        : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
-                    }`}
-                  >
-                    <span className="ml-4">Farmers</span>
+                    <span className="ml-4">Not Qualified</span>
                   </Link>
                   <Link
                     href="/admin/archived-farmers/organic-farmers"
@@ -289,51 +235,7 @@ const Sidebar = () => {
                         : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
                     }`}
                   >
-                    <span className="ml-4">Organic</span>
-                  </Link>
-                </motion.div>
-              )}
-            </motion.div>
-
-            {/* Allocations */}
-            <motion.div whileHover={{ scale: 1.02 }}>
-              <div className="flex items-center justify-between">
-                <div
-                  className={`flex flex-1 cursor-default items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-                    isActive("/admin/allocations")
-                      ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
-                      : "text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
-                  }`}
-                >
-                  <FileText className="h-4 w-4" />
-                  Allocations
-                </div>
-                <button
-                  onClick={() => toggleMenu("/admin/allocations")}
-                  className="p-2 text-emerald-600 hover:text-emerald-800"
-                >
-                  {expandedMenus["/admin/allocations"] ? (
-                    <ChevronUp className="h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              {expandedMenus["/admin/allocations"] && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  className="ml-4 overflow-hidden"
-                >
-                  <Link
-                    href="/admin/allocations/farmer"
-                    className={`mt-3 flex items-center gap-3 rounded-lg px-3 py-2 text-xs transition-all ${
-                      isActive("/admin/allocations/farmer")
-                        ? "bg-emerald-100 text-emerald-800"
-                        : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
-                    }`}
-                  >
-                    <span className="ml-4">Farmer</span>
+                    <span className="ml-4">Archived</span>
                   </Link>
                   <Link
                     href="/admin/allocations/organic_farmer"
@@ -343,7 +245,7 @@ const Sidebar = () => {
                         : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
                     }`}
                   >
-                    <span className="ml-4">Organic Farmer</span>
+                    <span className="ml-4">Allocations</span>
                   </Link>
                 </motion.div>
               )}
