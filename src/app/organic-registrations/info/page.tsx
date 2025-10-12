@@ -292,7 +292,7 @@ const FarmerProfilePrintView = () => {
             <div className="flex items-start justify-between">
               <div className="flex-1 text-center">
                 <h1 className="avoid-break mb-2 text-2xl font-bold text-gray-900 print:text-xl">
-                  ORGANIC AGRICULTURE PROFILE
+                  ORGANIC FARMER PROFILE
                 </h1>
                 <div className="avoid-break mx-auto mb-3 h-1 w-32 bg-green-500 print:bg-black"></div>
                 <p className="avoid-break text-xs font-medium tracking-wide text-gray-600 uppercase">

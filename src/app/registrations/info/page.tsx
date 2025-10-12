@@ -74,7 +74,6 @@ interface FarmDetails {
   farmerId: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface FarmerData {
   id: number;
   username: string;

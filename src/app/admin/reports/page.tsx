@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
@@ -43,8 +42,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import type { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 import { useReactToPrint } from "react-to-print";
@@ -75,21 +72,19 @@ const COLORS = [
 
 const ReportsPage = () => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: new Date(new Date().getFullYear(), 0, 1), // Start of current year
+    from: new Date(new Date().getFullYear(), 0, 1),
     to: new Date(),
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [reportType, setReportType] = useState<
     "farmers" | "events" | "concerns" | "overview"
   >("overview");
-
   const [status, setStatus] = useState<
     "ARCHIVED" | "APPLICANTS" | "REGISTERED" | "NOT_QUALIFIED" | "ALL"
   >("ALL");
   const [exportFormat, setExportFormat] = useState<"csv" | "print">("csv");
   const printRef = React.useRef<HTMLDivElement>(null);
 
-  // Fetch reports data
   const {
     data: reportsData,
     isLoading,
@@ -102,22 +97,61 @@ const ReportsPage = () => {
     status: status,
   });
 
-  // Print functionality
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: `Agricultural Reports - ${format(new Date(), "yyyy-MM-dd")}`,
   });
 
-  // Export to CSV
   const exportToCSV = (data: any[], filename: string) => {
     if (!data || data.length === 0) return;
 
-    const headers = Object.keys(data[0]);
+    // Hardcoded CSV headers and values as per your request
+    const headers = [
+      "id",
+      "last name",
+      "first name",
+      "middle name",
+      "ext name",
+      "birthday",
+      "st/purok/brgy",
+      "municipality",
+      "province",
+      "gender",
+      "organic practitioner",
+      "plant",
+      "hectare",
+    ];
+
     const csvContent = [
       headers.join(","),
-      ...data.map((row) =>
-        headers.map((header) => `"${row[header] || ""}"`).join(","),
-      ),
+      ...data.map((row) => {
+        const fullName = row.name ? row.name.split(" ") : ["", "", ""];
+        const lastName = fullName[1] || "";
+        const firstName = fullName[0] || "";
+        const middleName = fullName[2] || "";
+        const municipality = row.municipality || "";
+        const province = "Pampanga"; // Hardcoded as per your request
+        const gender = "Male"; // Hardcoded as per your request
+        const organicPractitioner = row.category === "ORGANIC_FARMER" ? "yes" : "no";
+        const plant = "rice"; // Hardcoded as per your request
+        const hectare = "51"; // Hardcoded as per your request
+
+        return [
+          row.id || "",
+          `"${lastName}"`,
+          `"${firstName}"`,
+          `"${middleName}"`,
+          `"${""}"`, // ext name
+          `"${""}"`, // birthday
+          `"${""}"`, // st/purok/brgy
+          `"${municipality}"`,
+          `"${province}"`,
+          `"${gender}"`,
+          `"${organicPractitioner}"`,
+          `"${plant}"`,
+          `"${hectare}"`,
+        ].join(",");
+      }),
     ].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -134,14 +168,11 @@ const ReportsPage = () => {
     document.body.removeChild(link);
   };
 
-  // Handle export
   const handleExport = () => {
     if (!reportsData) return;
-
     if (exportFormat === "print") {
       handlePrint();
     } else {
-      // Export based on report type
       switch (reportType) {
         case "farmers":
           exportToCSV(reportsData.farmersList || [], "farmers-report");
@@ -178,10 +209,8 @@ const ReportsPage = () => {
     }
   };
 
-  // Filter data based on search
   const filteredData = useMemo(() => {
     if (!reportsData || !searchTerm) return reportsData;
-
     return {
       ...reportsData,
       farmersList: reportsData.farmersList?.filter(
@@ -206,7 +235,6 @@ const ReportsPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50 p-4">
       <div className="container mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-4xl font-bold text-transparent">
             Agricultural Reports & Analytics
@@ -215,8 +243,6 @@ const ReportsPage = () => {
             Comprehensive insights and data analysis for agricultural management
           </p>
         </div>
-
-        {/* Filters and Controls */}
         <Card className="mb-6 border-emerald-200 bg-white/90 shadow-xl backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="flex items-center text-emerald-700">
@@ -226,7 +252,6 @@ const ReportsPage = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
-              {/* Date Range Picker */}
               <div className="lg:col-span-2">
                 <label className="mb-2 block text-sm font-medium text-gray-700">
                   Date Range
@@ -267,7 +292,6 @@ const ReportsPage = () => {
                   </PopoverContent>
                 </Popover>
               </div>
-
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">
                   Status
@@ -281,7 +305,6 @@ const ReportsPage = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="ALL">ALL</SelectItem>
-
                     <SelectItem value="NOT_QUALIFIED">NOT_QUALIFIED</SelectItem>
                     <SelectItem value="REGISTERED">REGISTERED</SelectItem>
                     <SelectItem value="ARCHIVED">ARCHIVED</SelectItem>
@@ -308,8 +331,6 @@ const ReportsPage = () => {
                   </SelectContent>
                 </Select>
               </div>
-
-              {/* Search */}
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">
                   Search
@@ -324,8 +345,6 @@ const ReportsPage = () => {
                   />
                 </div>
               </div>
-
-              {/* Export Controls */}
               <div className="flex flex-col space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Export
@@ -362,8 +381,6 @@ const ReportsPage = () => {
             </div>
           </CardContent>
         </Card>
-
-        {/* Printable Content */}
         <div>
           {isLoading ? (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -384,10 +401,8 @@ const ReportsPage = () => {
           ) : (
             <>
               <div ref={printRef}>
-                {/* Overview Metrics */}
                 {reportType === "overview" && filteredData && (
                   <>
-                    {/* Key Metrics Cards */}
                     <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                       <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -405,7 +420,6 @@ const ReportsPage = () => {
                           </p>
                         </CardContent>
                       </Card>
-
                       <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                           <CardTitle className="text-sm font-medium">
@@ -423,7 +437,6 @@ const ReportsPage = () => {
                           </p>
                         </CardContent>
                       </Card>
-
                       <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                           <CardTitle className="text-sm font-medium">
@@ -441,10 +454,7 @@ const ReportsPage = () => {
                         </CardContent>
                       </Card>
                     </div>
-
-                    {/* Charts Row */}
                     <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-                      {/* Registration Trends */}
                       <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
                         <CardHeader>
                           <CardTitle className="flex items-center text-emerald-700">
@@ -479,8 +489,6 @@ const ReportsPage = () => {
                           </ResponsiveContainer>
                         </CardContent>
                       </Card>
-
-                      {/* Status Distribution */}
                       <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
                         <CardHeader>
                           <CardTitle className="flex items-center text-emerald-700">
@@ -496,9 +504,10 @@ const ReportsPage = () => {
                                 cx="50%"
                                 cy="50%"
                                 labelLine={false}
-                                label={({ name, percent }) =>
-                                  `${name} ${(percent || 0 * 100).toFixed(0)}%`
-                                }
+                              label={({ name, percent }) =>
+  `${name} ${((percent  as any) * 100).toFixed(0)}%`
+}
+
                                 outerRadius={80}
                                 fill="#8884d8"
                                 dataKey="value"
@@ -518,8 +527,6 @@ const ReportsPage = () => {
                         </CardContent>
                       </Card>
                     </div>
-
-                    {/* Events by Month */}
                     <Card className="mb-6 border-emerald-200 bg-white/90 backdrop-blur-sm">
                       <CardHeader>
                         <CardTitle className="flex items-center text-emerald-700">
@@ -541,8 +548,6 @@ const ReportsPage = () => {
                     </Card>
                   </>
                 )}
-
-                {/* Farmers Report */}
                 {reportType === "farmers" && filteredData?.farmersList && (
                   <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
                     <CardHeader>
@@ -596,8 +601,6 @@ const ReportsPage = () => {
                     </CardContent>
                   </Card>
                 )}
-
-                {/* Events Report */}
                 {reportType === "events" && filteredData?.eventsList && (
                   <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
                     <CardHeader>
@@ -645,8 +648,6 @@ const ReportsPage = () => {
                     </CardContent>
                   </Card>
                 )}
-
-                {/* Concerns Report */}
                 {reportType === "concerns" && filteredData?.concernsList && (
                   <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
                     <CardHeader>
@@ -708,8 +709,6 @@ const ReportsPage = () => {
             </>
           )}
         </div>
-
-        {/* Footer */}
         <div className="mt-8 text-center">
           <p className="text-sm text-slate-500">
             Report generated on {format(new Date(), "PPP")} at{" "}

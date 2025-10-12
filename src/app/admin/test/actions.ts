@@ -1,7 +1,7 @@
-"use server";
+// "use server";
 
-import { sendVerifyEmail } from "~/lib/mail";
+// import { sendVerifyEmail } from "~/lib/mail";
 
-export async function sendVerifyEmailAction(to: string) {
-  return await sendVerifyEmail(to);
-}
+// export async function sendVerifyEmailAction(to: string) {
+//   return await sendVerifyEmail(to);
+// }

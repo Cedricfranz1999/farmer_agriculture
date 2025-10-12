@@ -37,6 +37,7 @@ import { useRouter } from "next/navigation";
 import { FarmerRegistrationsStatus } from "@prisma/client";
 
 const FarmerApplicantsPage = () => {
+  
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedFarmer, setSelectedFarmer] = useState<{
@@ -62,6 +63,7 @@ const FarmerApplicantsPage = () => {
     status: "REGISTERED",
     search: searchTerm,
   });
+  refetch()
   const debounce = (func: (...args: any[]) => void, delay: number) => {
     let timeoutId: NodeJS.Timeout;
     return (...args: any[]) => {
@@ -549,10 +551,22 @@ const FarmerApplicantsPage = () => {
                                                                     align="end"
                                                                     className="w-48"
                                                                   >
+                                                                        <DropdownMenuItem
+                                                                      onClick={() =>
+                                                                        router.push(
+                                                                          "/admin/farmer/edit/" +
+                                                                            farmer.id,
+                                                                        )
+                                                                      }
+                                                                      className="cursor-pointer"
+                                                                    >
+                                                                      <Eye className="mr-2 h-4 w-4" />
+                                                                      Edit Details
+                                                                    </DropdownMenuItem>
                                                                     <DropdownMenuItem
                                                                       onClick={() =>
                                                                         router.push(
-                                                                          "/admin/farmer/profile/" +
+                                                                          "/admin/farmer/edit/" +
                                                                             farmer.id,
                                                                         )
                                                                       }
@@ -561,6 +575,8 @@ const FarmerApplicantsPage = () => {
                                                                       <Eye className="mr-2 h-4 w-4" />
                                                                       View Details
                                                                     </DropdownMenuItem>
+
+                                                                   
                                                                   
                                                                   
                                                                     <DropdownMenuItem

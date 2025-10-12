@@ -318,10 +318,10 @@ const FarmerApplicantsPage = () => {
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div>
               <h1 className="bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-2xl font-bold text-transparent sm:text-4xl">
-                Farmer Registered
+               Organic Farmer Registered
               </h1>
               <p className="mt-2 text-base text-slate-600 sm:text-lg">
-                Review and manage farmer registered
+                Review and manage  Orgarnic farmer registered
               </p>
             </div>
 
@@ -528,6 +528,19 @@ const FarmerApplicantsPage = () => {
                                                                                                  align="end"
                                                                                                  className="w-48"
                                                                                                >
+
+                                                                                                 <DropdownMenuItem
+                                                                                                   onClick={() =>
+                                                                                                     router.push(
+                                                                                                       "/admin/organic-farmer/edit/" +
+                                                                                                         farmer.id,
+                                                                                                     )
+                                                                                                   }
+                                                                                                   className="cursor-pointer"
+                                                                                                 >
+                                                                                                   <Eye className="mr-2 h-4 w-4" />
+                                                                                                   Edit Details
+                                                                                                 </DropdownMenuItem>
                                                                                                  <DropdownMenuItem
                                                                                                    onClick={() =>
                                                                                                      router.push(
