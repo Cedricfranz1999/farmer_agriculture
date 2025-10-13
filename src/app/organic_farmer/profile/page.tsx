@@ -4,6 +4,7 @@ import { useAuthStore } from '~/app/store/authStore'
 import { api } from '~/trpc/react'
 import { User, Phone, Mail, MapPin, Calendar, Users, DollarSign, Award, ShoppingCart, Wheat, Factory } from 'lucide-react'
 import Image from 'next/image'
+import { QRCodeCanvas } from 'qrcode.react'
 
 const FarmerProfile = () => {
   const farmerId = useAuthStore((state) => state?.user?.id)
@@ -177,7 +178,11 @@ const FarmerProfile = () => {
                   <StatusBadge status="ORGANIC FARMER" type="organic" />
                 )}
               </div>
+                
             </div>
+             <div className="bg-gray-100 p-3 rounded-xl shadow-inner pr-10">
+                    <QRCodeCanvas value={String(farmer.id)} size={100}  className=''/>
+                  </div>
           </div>
         </InfoCard>
 

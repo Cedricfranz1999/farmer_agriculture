@@ -3,6 +3,8 @@ import React from 'react'
 import { useAuthStore } from '~/app/store/authStore'
 import { api } from '~/trpc/react'
 import { User, Phone, Mail, MapPin, Calendar, Users, DollarSign, FileText, Briefcase } from 'lucide-react'
+import { QRCodeCanvas } from "qrcode.react";
+
 
 const FarmerProfile = () => {
   const farmerId = useAuthStore((state) => state?.user?.id)
@@ -151,6 +153,11 @@ const FarmerProfile = () => {
                 <StatusBadge status={farmer.categoryType} type="category" />
               </div>
             </div>
+          <div className="mt-4 flex flex-col items-center lg:items-start pr-4">
+    <div className="bg-gray-100 p-3 rounded-xl shadow-inner">
+      <QRCodeCanvas value={String(farmer.id)} size={100}  className=''/>
+    </div>
+  </div>
           </div>
         </InfoCard>
 
