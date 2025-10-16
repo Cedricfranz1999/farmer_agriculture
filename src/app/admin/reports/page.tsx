@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -16,10 +16,8 @@ import {
   PieChart,
   Pie,
   Cell,
-  LineChart,
-  Line,
-  Area,
   AreaChart,
+  Area,
 } from "recharts";
 import {
   Table,
@@ -73,41 +71,52 @@ const COLORS = [
   "#06b6d4",
 ];
 
+// Memoized chart components to prevent unnecessary re-renders
+const MemoizedAreaChart = React.memo(AreaChart);
+const MemoizedPieChart = React.memo(PieChart);
+const MemoizedBarChart = React.memo(BarChart);
+
+// Types for better type safety
+type ReportType = "farmers" | "events" | "concerns" | "overview" | "allocations";
+type StatusType = "ARCHIVED" | "APPLICANTS" | "REGISTERED" | "NOT_QUALIFIED" | "ALL";
+type FarmerType = "all" | "farmer" | "organic";
+type ExportFormat = "csv" | "print";
+
 const ReportsPage = () => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: new Date(new Date().getFullYear(), 0, 1),
     to: new Date(),
   });
   const [searchTerm, setSearchTerm] = useState("");
-  const [reportType, setReportType] = useState<
-    "farmers" | "events" | "concerns" | "overview" | "allocations"
-  >("overview");
-  const [status, setStatus] = useState<
-    "ARCHIVED" | "APPLICANTS" | "REGISTERED" | "NOT_QUALIFIED" | "ALL"
-  >("ALL");
-  const [farmerType, setFarmerType] = useState<"all" | "farmer" | "organic">("all");
-  const [exportFormat, setExportFormat] = useState<"csv" | "print">("csv");
+  const [reportType, setReportType] = useState<ReportType>("overview");
+  const [status, setStatus] = useState<StatusType>("ALL");
+  const [farmerType, setFarmerType] = useState<FarmerType>("all");
+  const [exportFormat, setExportFormat] = useState<ExportFormat>("csv");
   const printRef = React.useRef<HTMLDivElement>(null);
+
+  // Optimized query with stable parameters
+  const queryParams = useMemo(() => ({
+    startDate: dateRange?.from,
+    endDate: dateRange?.to,
+    reportType,
+    search: searchTerm,
+    status: status === "ALL" ? undefined : status,
+    farmerType: farmerType === "all" ? undefined : farmerType,
+  }), [dateRange?.from, dateRange?.to, reportType, searchTerm, status, farmerType]);
 
   const {
     data: reportsData,
     isLoading,
     refetch,
-  } = api.reports.getReportsData.useQuery({
-    startDate: dateRange?.from,
-    endDate: dateRange?.to,
-    reportType,
-    search: searchTerm,
-    status: status,
-    farmerType: farmerType,
-  });
+  } = api.reports.getReportsData.useQuery(queryParams);
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: `Agricultural Reports - ${format(new Date(), "yyyy-MM-dd")}`,
   });
 
-  const exportToCSV = (data: any[], filename: string) => {
+  // Optimized export function with useCallback
+  const exportToCSV = useCallback((data: any[], filename: string) => {
     if (!data || data.length === 0) return;
 
     let headers: string[] = [];
@@ -116,19 +125,9 @@ const ReportsPage = () => {
     switch (reportType) {
       case "farmers":
         headers = [
-          "id",
-          "last name",
-          "first name",
-          "middle name",
-          "ext name",
-          "birthday",
-          "st/purok/brgy",
-          "municipality",
-          "province",
-          "gender",
-          "organic practitioner",
-          "plant",
-          "hectare",
+          "id", "last name", "first name", "middle name", "ext name", 
+          "birthday", "st/purok/brgy", "municipality", "province", 
+          "gender", "organic practitioner", "plant", "hectare"
         ];
         rows = data.map((row) => {
           const nameParts = row.name.split(" ");
@@ -144,9 +143,9 @@ const ReportsPage = () => {
             `"${lastName}"`,
             `"${firstName}"`,
             `"${middleName}"`,
-            `"${""}"`,
-            `"${""}"`,
-            `"${""}"`,
+            `""`,
+            `""`,
+            `""`,
             `"${row.municipality}"`,
             `"Pampanga"`,
             `"Male"`,
@@ -159,14 +158,8 @@ const ReportsPage = () => {
 
       case "allocations":
         headers = [
-          "id",
-          "amount",
-          "allocation_type",
-          "approved",
-          "created_date",
-          "farmer_name",
-          "farmer_type",
-          "municipality",
+          "id", "amount", "allocation_type", "approved", "created_date", 
+          "farmer_name", "farmer_type", "municipality"
         ];
         rows = data.flatMap((allocation) => 
           allocation.farmers.map((farmer: any) => [
@@ -189,11 +182,7 @@ const ReportsPage = () => {
         );
     }
 
-    const csvContent = [
-      headers.join(","),
-      ...rows,
-    ].join("\n");
-
+    const csvContent = [headers.join(","), ...rows].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
@@ -206,10 +195,11 @@ const ReportsPage = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
+  }, [reportType]);
 
-  const handleExport = () => {
+  const handleExport = useCallback(() => {
     if (!reportsData) return;
+    
     if (exportFormat === "print") {
       handlePrint();
     } else {
@@ -229,66 +219,445 @@ const ReportsPage = () => {
         default:
           exportToCSV(
             [
-              {
-                metric: "Total Farmers",
-                value: reportsData.totalFarmers,
-              },
-              {
-                metric: "Total Organic Farmers",
-                value: reportsData.totalOrganicFarmers,
-              },
-              {
-                metric: "Total Events",
-                value: reportsData.totalEvents,
-              },
-              {
-                metric: "Total Concerns",
-                value: reportsData.totalConcerns,
-              },
-              {
-                metric: "Total Allocations",
-                value: reportsData.totalAllocations,
-              },
-              {
-                metric: "Total Allocation Amount",
-                value: reportsData.totalAllocationAmount,
-              },
+              { metric: "Total Farmers", value: reportsData.totalFarmers },
+              { metric: "Total Organic Farmers", value: reportsData.totalOrganicFarmers },
+              { metric: "Total Events", value: reportsData.totalEvents },
+              { metric: "Total Concerns", value: reportsData.totalConcerns },
+              { metric: "Total Allocations", value: reportsData.totalAllocations },
+              { metric: "Total Allocation Amount", value: reportsData.totalAllocationAmount },
             ],
             "overview-report",
           );
       }
     }
-  };
+  }, [reportsData, exportFormat, reportType, exportToCSV, handlePrint]);
 
+  // Optimized filtered data with better search performance
   const filteredData = useMemo(() => {
     if (!reportsData || !searchTerm) return reportsData;
+    
+    const searchLower = searchTerm.toLowerCase();
+    
     return {
       ...reportsData,
       farmersList: reportsData.farmersList?.filter(
         (farmer) =>
-          farmer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          farmer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          farmer.municipality.toLowerCase().includes(searchTerm.toLowerCase()),
+          farmer.name.toLowerCase().includes(searchLower) ||
+          farmer.email.toLowerCase().includes(searchLower) ||
+          farmer.municipality.toLowerCase().includes(searchLower),
       ),
       eventsList: reportsData.eventsList?.filter(
         (event) =>
-          event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          event.location.toLowerCase().includes(searchTerm.toLowerCase()),
+          event.title.toLowerCase().includes(searchLower) ||
+          event.location.toLowerCase().includes(searchLower),
       ),
       concernsList: reportsData.concernsList?.filter(
         (concern) =>
-          concern.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          concern.description.toLowerCase().includes(searchTerm.toLowerCase()),
+          concern.title.toLowerCase().includes(searchLower) ||
+          concern.description.toLowerCase().includes(searchLower),
       ),
       allocationsList: reportsData.allocationsList?.filter(
         (allocation) =>
-          allocation.allocationType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          allocation.allocationType?.toLowerCase().includes(searchLower) ||
           allocation.farmers.some((farmer: any) => 
-            farmer.name.toLowerCase().includes(searchTerm.toLowerCase())
+            farmer.name.toLowerCase().includes(searchLower)
           ),
       ),
     };
   }, [reportsData, searchTerm]);
+
+  // Memoized chart data and components
+  const overviewCards = useMemo(() => [
+    {
+      title: "Total Farmers",
+      value: filteredData?.totalFarmers,
+      change: `+${filteredData?.newFarmersThisMonth} this month`,
+      icon: Users,
+      color: "text-emerald-700",
+      iconColor: "text-emerald-600"
+    },
+    {
+      title: "Organic Farmers",
+      value: filteredData?.totalOrganicFarmers,
+      change: `+${filteredData?.newOrganicFarmersThisMonth} this month`,
+      icon: Users,
+      color: "text-green-700",
+      iconColor: "text-green-600"
+    },
+    {
+      title: "Total Allocations",
+      value: filteredData?.totalAllocations,
+      change: `₱${filteredData?.totalAllocationAmount?.toLocaleString()} total`,
+      icon: DollarSign,
+      color: "text-blue-700",
+      iconColor: "text-blue-600"
+    },
+    {
+      title: "Total Events",
+      value: filteredData?.totalEvents,
+      change: `+${filteredData?.newEventsThisMonth} this month`,
+      icon: CalendarIcon,
+      color: "text-purple-700",
+      iconColor: "text-purple-600"
+    }
+  ], [filteredData]);
+
+  const renderOverview = useMemo(() => (
+    <>
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {overviewCards.map((card, index) => (
+          <Card key={index} className="border-emerald-200 bg-white/90 backdrop-blur-sm">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {card.title}
+              </CardTitle>
+              <card.icon className={`h-4 w-4 ${card.iconColor}`} />
+            </CardHeader>
+            <CardContent>
+              <div className={`text-2xl font-bold ${card.color}`}>
+                {card.value?.toLocaleString()}
+              </div>
+              <p className="text-muted-foreground text-xs">
+                {card.change}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center text-emerald-700">
+              <TrendingUp className="mr-2 h-5 w-5" />
+              Registration Trends
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <MemoizedAreaChart data={filteredData?.registrationTrends}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Area
+                  type="monotone"
+                  dataKey="farmers"
+                  stackId="1"
+                  stroke="#10b981"
+                  fill="#10b981"
+                  fillOpacity={0.6}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="organicFarmers"
+                  stackId="1"
+                  stroke="#059669"
+                  fill="#059669"
+                  fillOpacity={0.6}
+                />
+              </MemoizedAreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+        
+        <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center text-emerald-700">
+              <PieChartIcon className="mr-2 h-5 w-5" />
+              Registration Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <MemoizedPieChart>
+                <Pie
+                  data={filteredData?.statusDistribution}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) =>
+                    `${name} ${((percent as any) * 100).toFixed(0)}%`
+                  }
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {filteredData?.statusDistribution?.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </MemoizedPieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+      
+      <Card className="mb-6 border-emerald-200 bg-white/90 backdrop-blur-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center text-emerald-700">
+            <BarChart3 className="mr-2 h-5 w-5" />
+            Events by Month
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <MemoizedBarChart data={filteredData?.eventsByMonth}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="events" fill="#3b82f6" />
+            </MemoizedBarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    </>
+  ), [filteredData, overviewCards]);
+
+  const renderFarmersReport = useMemo(() => (
+    <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
+      <CardHeader>
+        <CardTitle className="flex items-center text-emerald-700">
+          <Users className="mr-2 h-5 w-5" />
+          Farmers Report ({filteredData?.farmersList?.length || 0} records)
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Municipality</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Primary Crop</TableHead>
+                <TableHead>Hectares</TableHead>
+                <TableHead>Registration Date</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredData?.farmersList?.map((farmer) => (
+                <TableRow key={farmer.id || crypto.randomUUID()}>
+                  <TableCell className="font-medium">{farmer.name}</TableCell>
+                  <TableCell>{farmer.email}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center">
+                      <MapPin className="mr-1 h-3 w-3" />
+                      {farmer.municipality}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        farmer.status === "REGISTERED"
+                          ? "default"
+                          : farmer.status === "APPLICANTS"
+                            ? "secondary"
+                            : "destructive"
+                      }
+                    >
+                      {farmer.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        farmer.category === "ORGANIC_FARMER"
+                          ? "default"
+                          : "outline"
+                      }
+                    >
+                      {farmer.category}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center">
+                      <Crop className="mr-1 h-3 w-3" />
+                      {farmer.primaryCrop}
+                    </div>
+                  </TableCell>
+                  <TableCell>{farmer.hectares} ha</TableCell>
+                  <TableCell>{farmer.registrationDate}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
+  ), [filteredData?.farmersList]);
+
+  const renderEventsReport = useMemo(() => (
+    <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
+      <CardHeader>
+        <CardTitle className="flex items-center text-emerald-700">
+          <CalendarIcon className="mr-2 h-5 w-5" />
+          Events Report ({filteredData?.eventsList?.length || 0} records)
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Target Audience</TableHead>
+                <TableHead>Created</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredData?.eventsList?.map((event) => (
+                <TableRow key={event.id || crypto.randomUUID()}>
+                  <TableCell className="font-medium">{event.title}</TableCell>
+                  <TableCell>{event.location}</TableCell>
+                  <TableCell>{event.eventDate}</TableCell>
+                  <TableCell>
+                    <div className="flex space-x-1">
+                      {event.forFarmers && <Badge variant="outline">Farmers</Badge>}
+                      {event.forOrganicFarmers && <Badge variant="outline">Organic</Badge>}
+                    </div>
+                  </TableCell>
+                  <TableCell>{event.createdDate}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
+  ), [filteredData?.eventsList]);
+
+  const renderConcernsReport = useMemo(() => (
+    <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
+      <CardHeader>
+        <CardTitle className="flex items-center text-emerald-700">
+          <FileText className="mr-2 h-5 w-5" />
+          Concerns Report ({filteredData?.concernsList?.length || 0} records)
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Farmer</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Messages</TableHead>
+                <TableHead>Created</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredData?.concernsList?.map((concern) => (
+                <TableRow key={concern.id || crypto.randomUUID()}>
+                  <TableCell className="font-medium">{concern.title}</TableCell>
+                  <TableCell className="max-w-xs truncate">{concern.description}</TableCell>
+                  <TableCell>{concern.farmerName}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        concern.status === "RESOLVED"
+                          ? "default"
+                          : concern.status === "IN_PROGRESS"
+                            ? "secondary"
+                            : concern.status === "OPEN"
+                              ? "destructive"
+                              : "outline"
+                      }
+                    >
+                      {concern.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{concern.messageCount}</TableCell>
+                  <TableCell>{concern.createdDate}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
+  ), [filteredData?.concernsList]);
+
+  const renderAllocationsReport = useMemo(() => (
+    <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
+      <CardHeader>
+        <CardTitle className="flex items-center text-emerald-700">
+          <DollarSign className="mr-2 h-5 w-5" />
+          Allocations Report ({filteredData?.allocationsList?.length || 0} records)
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Approved</TableHead>
+                <TableHead>Farmers</TableHead>
+                <TableHead>Created Date</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredData?.allocationsList?.map((allocation) => (
+                <TableRow key={allocation.id || crypto.randomUUID()}>
+                  <TableCell className="font-medium">{allocation.id}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center">
+                      <DollarSign className="mr-1 h-3 w-3" />
+                      ₱{allocation.amount.toLocaleString()}
+                    </div>
+                  </TableCell>
+                  <TableCell>{allocation.allocationType || "N/A"}</TableCell>
+                  <TableCell>
+                    <Badge variant={allocation.approved ? "default" : "secondary"}>
+                      {allocation.approved ? "Approved" : "Pending"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="max-w-xs">
+                      {allocation.farmers.map((farmer: any, index: number) => (
+                        <div key={index} className="text-xs">
+                          {farmer.name} ({farmer.type})
+                        </div>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell>{allocation.createdAt}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
+  ), [filteredData?.allocationsList]);
+
+  const renderReportContent = useMemo(() => {
+    switch (reportType) {
+      case "overview":
+        return renderOverview;
+      case "farmers":
+        return renderFarmersReport;
+      case "events":
+        return renderEventsReport;
+      case "concerns":
+        return renderConcernsReport;
+      case "allocations":
+        return renderAllocationsReport;
+      default:
+        return null;
+    }
+  }, [reportType, renderOverview, renderFarmersReport, renderEventsReport, renderConcernsReport, renderAllocationsReport]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50 p-4">
@@ -301,6 +670,7 @@ const ReportsPage = () => {
             Comprehensive insights and data analysis for agricultural management
           </p>
         </div>
+        
         <Card className="mb-6 border-emerald-200 bg-white/90 shadow-xl backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="flex items-center text-emerald-700">
@@ -350,14 +720,12 @@ const ReportsPage = () => {
                   </PopoverContent>
                 </Popover>
               </div>
+              
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">
                   Status
                 </label>
-                <Select
-                  value={status}
-                  onValueChange={(value: any) => setStatus(value)}
-                >
+                <Select value={status} onValueChange={setStatus as any}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -370,14 +738,12 @@ const ReportsPage = () => {
                   </SelectContent>
                 </Select>
               </div>
+              
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">
                   Report Type
                 </label>
-                <Select
-                  value={reportType}
-                  onValueChange={(value: any) => setReportType(value)}
-                >
+                <Select value={reportType} onValueChange={setReportType as any}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -390,15 +756,13 @@ const ReportsPage = () => {
                   </SelectContent>
                 </Select>
               </div>
+              
               {(reportType === "farmers" || reportType === "overview") && (
                 <div>
                   <label className="mb-2 block text-sm font-medium text-gray-700">
                     Farmer Type
                   </label>
-                  <Select
-                    value={farmerType}
-                    onValueChange={(value: any) => setFarmerType(value)}
-                  >
+                  <Select value={farmerType} onValueChange={setFarmerType as any}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -410,6 +774,7 @@ const ReportsPage = () => {
                   </Select>
                 </div>
               )}
+              
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">
                   Search
@@ -424,15 +789,13 @@ const ReportsPage = () => {
                   />
                 </div>
               </div>
+              
               <div className="flex flex-col space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Export
                 </label>
                 <div className="flex space-x-2">
-                  <Select
-                    value={exportFormat}
-                    onValueChange={(value: any) => setExportFormat(value)}
-                  >
+                  <Select value={exportFormat} onValueChange={setExportFormat as any}>
                     <SelectTrigger className="w-24">
                       <SelectValue />
                     </SelectTrigger>
@@ -460,12 +823,13 @@ const ReportsPage = () => {
             </div>
           </CardContent>
         </Card>
+        
         <div>
           {isLoading ? (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
               {Array.from({ length: 8 }).map((_, i) => (
                 <Card
-                  key={crypto.randomUUID()}
+                  key={i}
                   className="border-emerald-200 bg-white/90 backdrop-blur-sm"
                 >
                   <CardHeader>
@@ -478,413 +842,12 @@ const ReportsPage = () => {
               ))}
             </div>
           ) : (
-            <>
-              <div ref={printRef}>
-                {reportType === "overview" && filteredData && (
-                  <>
-                    <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                      <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                          <CardTitle className="text-sm font-medium">
-                            Total Farmers
-                          </CardTitle>
-                          <Users className="h-4 w-4 text-emerald-600" />
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold text-emerald-700">
-                            {filteredData.totalFarmers?.toLocaleString()}
-                          </div>
-                          <p className="text-muted-foreground text-xs">
-                            +{filteredData.newFarmersThisMonth} this month
-                          </p>
-                        </CardContent>
-                      </Card>
-                      <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                          <CardTitle className="text-sm font-medium">
-                            Organic Farmers
-                          </CardTitle>
-                          <Users className="h-4 w-4 text-green-600" />
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold text-green-700">
-                            {filteredData.totalOrganicFarmers?.toLocaleString()}
-                          </div>
-                          <p className="text-muted-foreground text-xs">
-                            +{filteredData.newOrganicFarmersThisMonth} this month
-                          </p>
-                        </CardContent>
-                      </Card>
-                      <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                          <CardTitle className="text-sm font-medium">
-                            Total Allocations
-                          </CardTitle>
-                          <DollarSign className="h-4 w-4 text-blue-600" />
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold text-blue-700">
-                            {filteredData.totalAllocations?.toLocaleString()}
-                          </div>
-                          <p className="text-muted-foreground text-xs">
-                            ₱{filteredData.totalAllocationAmount?.toLocaleString()} total
-                          </p>
-                        </CardContent>
-                      </Card>
-                      <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                          <CardTitle className="text-sm font-medium">
-                            Total Events
-                          </CardTitle>
-                          <CalendarIcon className="h-4 w-4 text-purple-600" />
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold text-purple-700">
-                            {filteredData.totalEvents?.toLocaleString()}
-                          </div>
-                          <p className="text-muted-foreground text-xs">
-                            +{filteredData.newEventsThisMonth} this month
-                          </p>
-                        </CardContent>
-                      </Card>
-                    </div>
-                    <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-                      <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
-                        <CardHeader>
-                          <CardTitle className="flex items-center text-emerald-700">
-                            <TrendingUp className="mr-2 h-5 w-5" />
-                            Registration Trends
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <ResponsiveContainer width="100%" height={300}>
-                            <AreaChart data={filteredData.registrationTrends}>
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="month" />
-                              <YAxis />
-                              <Tooltip />
-                              <Area
-                                type="monotone"
-                                dataKey="farmers"
-                                stackId="1"
-                                stroke="#10b981"
-                                fill="#10b981"
-                                fillOpacity={0.6}
-                              />
-                              <Area
-                                type="monotone"
-                                dataKey="organicFarmers"
-                                stackId="1"
-                                stroke="#059669"
-                                fill="#059669"
-                                fillOpacity={0.6}
-                              />
-                            </AreaChart>
-                          </ResponsiveContainer>
-                        </CardContent>
-                      </Card>
-                      <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
-                        <CardHeader>
-                          <CardTitle className="flex items-center text-emerald-700">
-                            <PieChartIcon className="mr-2 h-5 w-5" />
-                            Registration Status
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <ResponsiveContainer width="100%" height={300}>
-                            <PieChart>
-                              <Pie
-                                data={filteredData.statusDistribution}
-                                cx="50%"
-                                cy="50%"
-                                labelLine={false}
-                                label={({ name, percent }) =>
-                                  `${name} ${((percent as any) * 100).toFixed(0)}%`
-                                }
-                                outerRadius={80}
-                                fill="#8884d8"
-                                dataKey="value"
-                              >
-                                {filteredData.statusDistribution?.map(
-                                  (entry, index) => (
-                                    <Cell
-                                      key={`cell-${index}`}
-                                      fill={COLORS[index % COLORS.length]}
-                                    />
-                                  ),
-                                )}
-                              </Pie>
-                              <Tooltip />
-                            </PieChart>
-                          </ResponsiveContainer>
-                        </CardContent>
-                      </Card>
-                    </div>
-                    <Card className="mb-6 border-emerald-200 bg-white/90 backdrop-blur-sm">
-                      <CardHeader>
-                        <CardTitle className="flex items-center text-emerald-700">
-                          <BarChart3 className="mr-2 h-5 w-5" />
-                          Events by Month
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <ResponsiveContainer width="100%" height={300}>
-                          <BarChart data={filteredData.eventsByMonth}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="month" />
-                            <YAxis />
-                            <Tooltip />
-                            <Bar dataKey="events" fill="#3b82f6" />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </CardContent>
-                    </Card>
-                  </>
-                )}
-                {reportType === "farmers" && filteredData?.farmersList && (
-                  <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
-                    <CardHeader>
-                      <CardTitle className="flex items-center text-emerald-700">
-                        <Users className="mr-2 h-5 w-5" />
-                        Farmers Report ({filteredData.farmersList.length} records)
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="overflow-x-auto">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Name</TableHead>
-                              <TableHead>Email</TableHead>
-                              <TableHead>Municipality</TableHead>
-                              <TableHead>Status</TableHead>
-                              <TableHead>Category</TableHead>
-                              <TableHead>Primary Crop</TableHead>
-                              <TableHead>Hectares</TableHead>
-                              <TableHead>Registration Date</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {filteredData.farmersList.map((farmer) => (
-                              <TableRow key={crypto.randomUUID()}>
-                                <TableCell className="font-medium">
-                                  {farmer.name}
-                                </TableCell>
-                                <TableCell>{farmer.email}</TableCell>
-                                <TableCell>
-                                  <div className="flex items-center">
-                                    <MapPin className="mr-1 h-3 w-3" />
-                                    {farmer.municipality}
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <Badge
-                                    variant={
-                                      farmer.status === "REGISTERED"
-                                        ? "default"
-                                        : farmer.status === "APPLICANTS"
-                                          ? "secondary"
-                                          : "destructive"
-                                    }
-                                  >
-                                    {farmer.status}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>
-                                  <Badge
-                                    variant={
-                                      farmer.category === "ORGANIC_FARMER"
-                                        ? "default"
-                                        : "outline"
-                                    }
-                                  >
-                                    {farmer.category}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center">
-                                    <Crop className="mr-1 h-3 w-3" />
-                                    {farmer.primaryCrop}
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  {farmer.hectares} ha
-                                </TableCell>
-                                <TableCell>{farmer.registrationDate}</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-                {reportType === "events" && filteredData?.eventsList && (
-                  <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
-                    <CardHeader>
-                      <CardTitle className="flex items-center text-emerald-700">
-                        <CalendarIcon className="mr-2 h-5 w-5" />
-                        Events Report ({filteredData.eventsList.length} records)
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="overflow-x-auto">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Title</TableHead>
-                              <TableHead>Location</TableHead>
-                              <TableHead>Date</TableHead>
-                              <TableHead>Target Audience</TableHead>
-                              <TableHead>Created</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {filteredData.eventsList.map((event) => (
-                              <TableRow key={crypto.randomUUID()}>
-                                <TableCell className="font-medium">
-                                  {event.title}
-                                </TableCell>
-                                <TableCell>{event.location}</TableCell>
-                                <TableCell>{event.eventDate}</TableCell>
-                                <TableCell>
-                                  <div className="flex space-x-1">
-                                    {event.forFarmers && (
-                                      <Badge variant="outline">Farmers</Badge>
-                                    )}
-                                    {event.forOrganicFarmers && (
-                                      <Badge variant="outline">Organic</Badge>
-                                    )}
-                                  </div>
-                                </TableCell>
-                                <TableCell>{event.createdDate}</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-                {reportType === "concerns" && filteredData?.concernsList && (
-                  <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
-                    <CardHeader>
-                      <CardTitle className="flex items-center text-emerald-700">
-                        <FileText className="mr-2 h-5 w-5" />
-                        Concerns Report ({filteredData.concernsList.length} records)
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="overflow-x-auto">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Title</TableHead>
-                              <TableHead>Description</TableHead>
-                              <TableHead>Farmer</TableHead>
-                              <TableHead>Status</TableHead>
-                              <TableHead>Messages</TableHead>
-                              <TableHead>Created</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {filteredData.concernsList.map((concern) => (
-                              <TableRow key={crypto.randomUUID()}>
-                                <TableCell className="font-medium">
-                                  {concern.title}
-                                </TableCell>
-                                <TableCell className="max-w-xs truncate">
-                                  {concern.description}
-                                </TableCell>
-                                <TableCell>{concern.farmerName}</TableCell>
-                                <TableCell>
-                                  <Badge
-                                    variant={
-                                      concern.status === "RESOLVED"
-                                        ? "default"
-                                        : concern.status === "IN_PROGRESS"
-                                          ? "secondary"
-                                          : concern.status === "OPEN"
-                                            ? "destructive"
-                                            : "outline"
-                                    }
-                                  >
-                                    {concern.status}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>{concern.messageCount}</TableCell>
-                                <TableCell>{concern.createdDate}</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-                {reportType === "allocations" && filteredData?.allocationsList && (
-                  <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
-                    <CardHeader>
-                      <CardTitle className="flex items-center text-emerald-700">
-                        <DollarSign className="mr-2 h-5 w-5" />
-                        Allocations Report ({filteredData.allocationsList.length} records)
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="overflow-x-auto">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>ID</TableHead>
-                              <TableHead>Amount</TableHead>
-                              <TableHead>Type</TableHead>
-                              <TableHead>Approved</TableHead>
-                              <TableHead>Farmers</TableHead>
-                              <TableHead>Created Date</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {filteredData.allocationsList.map((allocation) => (
-                              <TableRow key={crypto.randomUUID()}>
-                                <TableCell className="font-medium">
-                                  {allocation.id}
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center">
-                                    <DollarSign className="mr-1 h-3 w-3" />
-                                    ₱{allocation.amount.toLocaleString()}
-                                  </div>
-                                </TableCell>
-                                <TableCell>{allocation.allocationType || "N/A"}</TableCell>
-                                <TableCell>
-                                  <Badge
-                                    variant={allocation.approved ? "default" : "secondary"}
-                                  >
-                                    {allocation.approved ? "Approved" : "Pending"}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="max-w-xs">
-                                    {allocation.farmers.map((farmer: any, index: number) => (
-                                      <div key={index} className="text-xs">
-                                        {farmer.name} ({farmer.type})
-                                      </div>
-                                    ))}
-                                  </div>
-                                </TableCell>
-                                <TableCell>{allocation.createdAt}</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            </>
+            <div ref={printRef}>
+              {renderReportContent}
+            </div>
           )}
         </div>
+        
         <div className="mt-8 text-center">
           <p className="text-sm text-slate-500">
             Report generated on {format(new Date(), "PPP")} at{" "}
