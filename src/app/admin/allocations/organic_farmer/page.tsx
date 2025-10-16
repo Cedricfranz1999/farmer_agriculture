@@ -13,8 +13,10 @@ const OrganicFarmerQRScanner = () => {
   const [scannedId, setScannedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [deviceId, setDeviceId] = useState<string | undefined>(undefined);
+
   const [showAllocationModal, setShowAllocationModal] =
     useState<boolean>(false);
+    
   const [organicFarmerId, setOrganicFarmerId] = useState<number | undefined>(
     undefined,
   );
@@ -232,6 +234,8 @@ const AllocationModal = ({
   onSuccess: (allocationId: string) => void;
 }) => {
   const [amount, setAmount] = useState<number>(0);
+    const [type, setType] = useState<string>("");
+  
   const { mutate: createAllocation } =
     api.allocation.createAllocation.useMutation();
 
@@ -244,6 +248,7 @@ const AllocationModal = ({
       {
         organicFarmerId: organicFarmerId,
         amount,
+        type
       },
       {
         onSuccess: (allocation) => {
@@ -259,6 +264,10 @@ const AllocationModal = ({
     setAmount(value === "" ? 0 : parseInt(value) || 0);
   };
 
+     const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setType(value);
+  };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-md rounded-lg bg-white p-6">
@@ -268,9 +277,19 @@ const AllocationModal = ({
             {firstname} {lastname}
           </p>
         </div>
+         <div className="mb-4">
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Allocation Type
+          </label>
+          <input
+            onChange={handleTextChange}
+            className="w-full rounded-md border p-2"
+            placeholder="Enter Allocation Type"
+          />
+        </div>
         <div className="mb-4">
           <label className="mb-1 block text-sm font-medium text-gray-700">
-            Allocation Amount (kg)
+            Allocation Amount 
           </label>
           <input
             type="number"
@@ -325,6 +344,8 @@ const AllocationSuccessDisplay = ({
         <p>
           <strong>Organic Farmer:</strong> {firstname} {surname}
         </p>
+        <strong>Allocation Type:</strong> {allocationDetails.AllocationType} 
+
         <p>
           <strong>Amount:</strong> {allocationDetails.amount} kg
         </p>

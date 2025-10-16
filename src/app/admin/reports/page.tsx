@@ -57,6 +57,9 @@ import {
   PieChartIcon,
   Filter,
   RefreshCw,
+  DollarSign,
+  Crop,
+  MapPin,
 } from "lucide-react";
 import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/lib/utils";
@@ -77,11 +80,12 @@ const ReportsPage = () => {
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [reportType, setReportType] = useState<
-    "farmers" | "events" | "concerns" | "overview"
+    "farmers" | "events" | "concerns" | "overview" | "allocations"
   >("overview");
   const [status, setStatus] = useState<
     "ARCHIVED" | "APPLICANTS" | "REGISTERED" | "NOT_QUALIFIED" | "ALL"
   >("ALL");
+  const [farmerType, setFarmerType] = useState<"all" | "farmer" | "organic">("all");
   const [exportFormat, setExportFormat] = useState<"csv" | "print">("csv");
   const printRef = React.useRef<HTMLDivElement>(null);
 
@@ -95,6 +99,7 @@ const ReportsPage = () => {
     reportType,
     search: searchTerm,
     status: status,
+    farmerType: farmerType,
   });
 
   const handlePrint = useReactToPrint({
@@ -105,53 +110,88 @@ const ReportsPage = () => {
   const exportToCSV = (data: any[], filename: string) => {
     if (!data || data.length === 0) return;
 
-    // Hardcoded CSV headers and values as per your request
-    const headers = [
-      "id",
-      "last name",
-      "first name",
-      "middle name",
-      "ext name",
-      "birthday",
-      "st/purok/brgy",
-      "municipality",
-      "province",
-      "gender",
-      "organic practitioner",
-      "plant",
-      "hectare",
-    ];
+    let headers: string[] = [];
+    let rows: string[] = [];
+
+    switch (reportType) {
+      case "farmers":
+        headers = [
+          "id",
+          "last name",
+          "first name",
+          "middle name",
+          "ext name",
+          "birthday",
+          "st/purok/brgy",
+          "municipality",
+          "province",
+          "gender",
+          "organic practitioner",
+          "plant",
+          "hectare",
+        ];
+        rows = data.map((row) => {
+          const nameParts = row.name.split(" ");
+          const lastName = nameParts[1] || "";
+          const firstName = nameParts[0] || "";
+          const middleName = nameParts[2] || "";
+          const organicPractitioner = row.category === "ORGANIC_FARMER" ? "yes" : "no";
+          const plant = row.primaryCrop || "Various";
+          const hectare = row.hectares?.toString() || "0";
+
+          return [
+            row.id || "",
+            `"${lastName}"`,
+            `"${firstName}"`,
+            `"${middleName}"`,
+            `"${""}"`,
+            `"${""}"`,
+            `"${""}"`,
+            `"${row.municipality}"`,
+            `"Pampanga"`,
+            `"Male"`,
+            `"${organicPractitioner}"`,
+            `"${plant}"`,
+            `"${hectare}"`,
+          ].join(",");
+        });
+        break;
+
+      case "allocations":
+        headers = [
+          "id",
+          "amount",
+          "allocation_type",
+          "approved",
+          "created_date",
+          "farmer_name",
+          "farmer_type",
+          "municipality",
+        ];
+        rows = data.flatMap((allocation) => 
+          allocation.farmers.map((farmer: any) => [
+            allocation.id,
+            allocation.amount,
+            allocation.allocationType || "",
+            allocation.approved ? "yes" : "no",
+            allocation.createdAt,
+            farmer.name,
+            farmer.type,
+            farmer.municipality,
+          ].join(","))
+        );
+        break;
+
+      default:
+        headers = Object.keys(data[0] || {});
+        rows = data.map(row => 
+          headers.map(header => `"${row[header] || ''}"`).join(',')
+        );
+    }
 
     const csvContent = [
       headers.join(","),
-      ...data.map((row) => {
-        const fullName = row.name ? row.name.split(" ") : ["", "", ""];
-        const lastName = fullName[1] || "";
-        const firstName = fullName[0] || "";
-        const middleName = fullName[2] || "";
-        const municipality = row.municipality || "";
-        const province = "Pampanga"; // Hardcoded as per your request
-        const gender = "Male"; // Hardcoded as per your request
-        const organicPractitioner = row.category === "ORGANIC_FARMER" ? "yes" : "no";
-        const plant = "rice"; // Hardcoded as per your request
-        const hectare = "51"; // Hardcoded as per your request
-
-        return [
-          row.id || "",
-          `"${lastName}"`,
-          `"${firstName}"`,
-          `"${middleName}"`,
-          `"${""}"`, // ext name
-          `"${""}"`, // birthday
-          `"${""}"`, // st/purok/brgy
-          `"${municipality}"`,
-          `"${province}"`,
-          `"${gender}"`,
-          `"${organicPractitioner}"`,
-          `"${plant}"`,
-          `"${hectare}"`,
-        ].join(",");
-      }),
+      ...rows,
     ].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -183,6 +223,9 @@ const ReportsPage = () => {
         case "concerns":
           exportToCSV(reportsData.concernsList || [], "concerns-report");
           break;
+        case "allocations":
+          exportToCSV(reportsData.allocationsList || [], "allocations-report");
+          break;
         default:
           exportToCSV(
             [
@@ -201,6 +244,14 @@ const ReportsPage = () => {
               {
                 metric: "Total Concerns",
                 value: reportsData.totalConcerns,
+              },
+              {
+                metric: "Total Allocations",
+                value: reportsData.totalAllocations,
+              },
+              {
+                metric: "Total Allocation Amount",
+                value: reportsData.totalAllocationAmount,
               },
             ],
             "overview-report",
@@ -229,6 +280,13 @@ const ReportsPage = () => {
           concern.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           concern.description.toLowerCase().includes(searchTerm.toLowerCase()),
       ),
+      allocationsList: reportsData.allocationsList?.filter(
+        (allocation) =>
+          allocation.allocationType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          allocation.farmers.some((farmer: any) => 
+            farmer.name.toLowerCase().includes(searchTerm.toLowerCase())
+          ),
+      ),
     };
   }, [reportsData, searchTerm]);
 
@@ -251,7 +309,7 @@ const ReportsPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-6">
               <div className="lg:col-span-2">
                 <label className="mb-2 block text-sm font-medium text-gray-700">
                   Date Range
@@ -328,9 +386,30 @@ const ReportsPage = () => {
                     <SelectItem value="farmers">Farmers</SelectItem>
                     <SelectItem value="events">Events</SelectItem>
                     <SelectItem value="concerns">Concerns</SelectItem>
+                    <SelectItem value="allocations">Allocations</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+              {(reportType === "farmers" || reportType === "overview") && (
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                    Farmer Type
+                  </label>
+                  <Select
+                    value={farmerType}
+                    onValueChange={(value: any) => setFarmerType(value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Farmers</SelectItem>
+                      <SelectItem value="farmer">Regular Farmers</SelectItem>
+                      <SelectItem value="organic">Organic Farmers</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">
                   Search
@@ -432,8 +511,23 @@ const ReportsPage = () => {
                             {filteredData.totalOrganicFarmers?.toLocaleString()}
                           </div>
                           <p className="text-muted-foreground text-xs">
-                            +{filteredData.newOrganicFarmersThisMonth} this
-                            month
+                            +{filteredData.newOrganicFarmersThisMonth} this month
+                          </p>
+                        </CardContent>
+                      </Card>
+                      <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium">
+                            Total Allocations
+                          </CardTitle>
+                          <DollarSign className="h-4 w-4 text-blue-600" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold text-blue-700">
+                            {filteredData.totalAllocations?.toLocaleString()}
+                          </div>
+                          <p className="text-muted-foreground text-xs">
+                            ₱{filteredData.totalAllocationAmount?.toLocaleString()} total
                           </p>
                         </CardContent>
                       </Card>
@@ -442,10 +536,10 @@ const ReportsPage = () => {
                           <CardTitle className="text-sm font-medium">
                             Total Events
                           </CardTitle>
-                          <CalendarIcon className="h-4 w-4 text-blue-600" />
+                          <CalendarIcon className="h-4 w-4 text-purple-600" />
                         </CardHeader>
                         <CardContent>
-                          <div className="text-2xl font-bold text-blue-700">
+                          <div className="text-2xl font-bold text-purple-700">
                             {filteredData.totalEvents?.toLocaleString()}
                           </div>
                           <p className="text-muted-foreground text-xs">
@@ -504,10 +598,9 @@ const ReportsPage = () => {
                                 cx="50%"
                                 cy="50%"
                                 labelLine={false}
-                              label={({ name, percent }) =>
-  `${name} ${((percent  as any) * 100).toFixed(0)}%`
-}
-
+                                label={({ name, percent }) =>
+                                  `${name} ${((percent as any) * 100).toFixed(0)}%`
+                                }
                                 outerRadius={80}
                                 fill="#8884d8"
                                 dataKey="value"
@@ -553,8 +646,7 @@ const ReportsPage = () => {
                     <CardHeader>
                       <CardTitle className="flex items-center text-emerald-700">
                         <Users className="mr-2 h-5 w-5" />
-                        Farmers Report ({filteredData.farmersList.length}{" "}
-                        records)
+                        Farmers Report ({filteredData.farmersList.length} records)
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -567,6 +659,8 @@ const ReportsPage = () => {
                               <TableHead>Municipality</TableHead>
                               <TableHead>Status</TableHead>
                               <TableHead>Category</TableHead>
+                              <TableHead>Primary Crop</TableHead>
+                              <TableHead>Hectares</TableHead>
                               <TableHead>Registration Date</TableHead>
                             </TableRow>
                           </TableHeader>
@@ -577,7 +671,12 @@ const ReportsPage = () => {
                                   {farmer.name}
                                 </TableCell>
                                 <TableCell>{farmer.email}</TableCell>
-                                <TableCell>{farmer.municipality}</TableCell>
+                                <TableCell>
+                                  <div className="flex items-center">
+                                    <MapPin className="mr-1 h-3 w-3" />
+                                    {farmer.municipality}
+                                  </div>
+                                </TableCell>
                                 <TableCell>
                                   <Badge
                                     variant={
@@ -591,7 +690,26 @@ const ReportsPage = () => {
                                     {farmer.status}
                                   </Badge>
                                 </TableCell>
-                                <TableCell>{farmer.category}</TableCell>
+                                <TableCell>
+                                  <Badge
+                                    variant={
+                                      farmer.category === "ORGANIC_FARMER"
+                                        ? "default"
+                                        : "outline"
+                                    }
+                                  >
+                                    {farmer.category}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center">
+                                    <Crop className="mr-1 h-3 w-3" />
+                                    {farmer.primaryCrop}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  {farmer.hectares} ha
+                                </TableCell>
                                 <TableCell>{farmer.registrationDate}</TableCell>
                               </TableRow>
                             ))}
@@ -653,8 +771,7 @@ const ReportsPage = () => {
                     <CardHeader>
                       <CardTitle className="flex items-center text-emerald-700">
                         <FileText className="mr-2 h-5 w-5" />
-                        Concerns Report ({filteredData.concernsList.length}{" "}
-                        records)
+                        Concerns Report ({filteredData.concernsList.length} records)
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -697,6 +814,65 @@ const ReportsPage = () => {
                                 </TableCell>
                                 <TableCell>{concern.messageCount}</TableCell>
                                 <TableCell>{concern.createdDate}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+                {reportType === "allocations" && filteredData?.allocationsList && (
+                  <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
+                    <CardHeader>
+                      <CardTitle className="flex items-center text-emerald-700">
+                        <DollarSign className="mr-2 h-5 w-5" />
+                        Allocations Report ({filteredData.allocationsList.length} records)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>ID</TableHead>
+                              <TableHead>Amount</TableHead>
+                              <TableHead>Type</TableHead>
+                              <TableHead>Approved</TableHead>
+                              <TableHead>Farmers</TableHead>
+                              <TableHead>Created Date</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {filteredData.allocationsList.map((allocation) => (
+                              <TableRow key={crypto.randomUUID()}>
+                                <TableCell className="font-medium">
+                                  {allocation.id}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center">
+                                    <DollarSign className="mr-1 h-3 w-3" />
+                                    ₱{allocation.amount.toLocaleString()}
+                                  </div>
+                                </TableCell>
+                                <TableCell>{allocation.allocationType || "N/A"}</TableCell>
+                                <TableCell>
+                                  <Badge
+                                    variant={allocation.approved ? "default" : "secondary"}
+                                  >
+                                    {allocation.approved ? "Approved" : "Pending"}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="max-w-xs">
+                                    {allocation.farmers.map((farmer: any, index: number) => (
+                                      <div key={index} className="text-xs">
+                                        {farmer.name} ({farmer.type})
+                                      </div>
+                                    ))}
+                                  </div>
+                                </TableCell>
+                                <TableCell>{allocation.createdAt}</TableCell>
                               </TableRow>
                             ))}
                           </TableBody>

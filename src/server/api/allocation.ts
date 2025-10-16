@@ -36,6 +36,7 @@ export const allocationRouter = createTRPCRouter({
           farmerId: z.number().optional(),
           organicFarmerId: z.number().optional(),
           amount: z.number(),
+          type: z.string(),
         })
         .refine(
           (data) => {
@@ -57,6 +58,7 @@ export const allocationRouter = createTRPCRouter({
       const allocation = await ctx.db.allocation.create({
         data: {
           amount: input.amount,
+          AllocationType:input.type,
           approved: false,
           farmers: {
             create: {
@@ -114,7 +116,7 @@ export const allocationRouter = createTRPCRouter({
       return allocation;
     }),
   getAllAllocations: publicProcedure.query(async ({ ctx }) => {
-    const allocations = await ctx.db.allocation.findMany({
+  const allocations = await ctx.db.allocation.findMany({
       include: {
         farmers: {
           include: {
@@ -123,6 +125,7 @@ export const allocationRouter = createTRPCRouter({
                 firstname: true,
                 surname: true,
                 farmerImage: true,
+                createdAt:true,
               },
             },
             organicFarmer: {
@@ -130,6 +133,7 @@ export const allocationRouter = createTRPCRouter({
                 firstname: true,
                 surname: true,
                 farmerImage: true,
+                createdAt:true
               },
             },
           },

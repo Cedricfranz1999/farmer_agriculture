@@ -9,83 +9,104 @@ import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 export const OrganicfarmersRouterData = createTRPCRouter({
   // Get farmers with APPLICANTS status with pagination
   getApplicants: publicProcedure
-    .input(
-      z.object({
-        page: z.number().default(1),
-        limit: z.number().default(10),
-        status: z.nativeEnum(organicFarmerRegistrationsStatus).optional(),
-        search: z.string().optional(),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const skip = (input.page - 1) * input.limit;
-
-      const whereClause: Prisma.Organic_FarmerWhereInput = {
-        status: input.status,
-        ...(input.search && {
-          OR: [
-            {
-              firstname: {
-                contains: input.search,
-                mode: "insensitive" as const,
-              },
-            },
-            {
-              middleName: {
-                contains: input.search,
-                mode: "insensitive" as const,
-              },
-            },
-            {
-              surname: { contains: input.search, mode: "insensitive" as const },
-            },
-            {
-              extensionName: {
-                contains: input.search,
-                mode: "insensitive" as const,
-              },
-            },
-          ],
-        }),
-      };
-
-      const [farmers, total] = await Promise.all([
-        ctx.db.organic_Farmer.findMany({
-          where: whereClause,
-          select: {
-            id: true,
-            firstname: true,
-            middleName: true,
-            surname: true,
-            extensionName: true,
-            sex: true,
-            barangay: true,
-            municipalityOrCity: true,
-            dateOfBirth: true,
-            farmerImage: true,
-            status: true,
-            not_qualifiedreason:true,
-            createdAt: true,
-            
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-          skip,
-          take: input.limit,
-        }),
-        ctx.db.organic_Farmer.count({
-          where: whereClause,
-        }),
-      ]);
-
-      return {
-        farmers,
-        total,
-        pages: Math.ceil(total / input.limit),
-        currentPage: input.page,
-      };
+  .input(
+    z.object({
+      page: z.number().default(1),
+      limit: z.number().default(10),
+      status: z.nativeEnum(organicFarmerRegistrationsStatus).optional(),
+      search: z.string().optional(),
+      dateFrom: z.string().optional(), 
+      dateTo: z.string().optional(),  
+      
     }),
+  )
+  .query(async ({ ctx, input }) => {
+    const skip = (input.page - 1) * input.limit;
+
+    const whereClause: Prisma.Organic_FarmerWhereInput = {
+      status: input.status,
+      ...(input.search && {
+        OR: [
+          {
+            firstname: {
+              contains: input.search,
+              mode: "insensitive" as const,
+            },
+          },
+          {
+            middleName: {
+              contains: input.search,
+              mode: "insensitive" as const,
+            },
+          },
+          {
+            surname: { contains: input.search, mode: "insensitive" as const },
+          },
+          {
+            extensionName: {
+              contains: input.search,
+              mode: "insensitive" as const,
+            },
+          },
+        ],
+      }),
+      // Add date range filtering here
+      ...(input.dateFrom && input.dateTo && {
+        createdAt: {
+          gte: new Date(input.dateFrom),
+          lte: new Date(input.dateTo + 'T23:59:59.999Z'),
+        },
+      }),
+      ...(input.dateFrom && !input.dateTo && {
+        createdAt: {
+          gte: new Date(input.dateFrom),
+        },
+      }),
+      ...(!input.dateFrom && input.dateTo && {
+        createdAt: {
+          lte: new Date(input.dateTo + 'T23:59:59.999Z'),
+        },
+      }),
+    };
+
+    const [farmers, total] = await Promise.all([
+      ctx.db.organic_Farmer.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          firstname: true,
+          middleName: true,
+          surname: true,
+          extensionName: true,
+          sex: true,
+          barangay: true,
+          municipalityOrCity: true,
+          dateOfBirth: true,
+          farmerImage: true,
+          not_qualifiedreason: true,
+          email_address: true,
+          contactNumber: true,
+          status: true,
+          createdAt: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        skip,
+        take: input.limit,
+      }),
+      ctx.db.organic_Farmer.count({
+        where: whereClause,
+      }),
+    ]);
+
+    return {
+      farmers,
+      total,
+      pages: Math.ceil(total / input.limit),
+      currentPage: input.page,
+    };
+  }),
 
   // Update farmer status
 updateStatus: publicProcedure

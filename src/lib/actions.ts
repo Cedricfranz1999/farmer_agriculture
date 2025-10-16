@@ -8,5 +8,5 @@ export async function sendVerifyEmailAction(
   name: string,
   rejectionMessage: string  | null,
 ) {
-  return await sendVerifyEmail(to, status, name);
+  return await sendVerifyEmail(to, status, name , rejectionMessage);
 }

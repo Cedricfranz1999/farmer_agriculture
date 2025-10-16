@@ -9,19 +9,17 @@ export const reportsRouter = createTRPCRouter({
         startDate: z.date().optional(),
         status: z.any().optional(),
         endDate: z.date().optional(),
-        reportType: z.enum(["farmers", "events", "concerns", "overview"]),
+        reportType: z.enum(["farmers", "events", "concerns", "overview", "allocations"]),
         search: z.string().optional(),
+        farmerType: z.enum(["all", "farmer", "organic"]).optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { startDate, endDate, reportType, search } = input;
+      const { startDate, endDate, reportType, search, farmerType } = input;
 
-      // Default date range if not provided
-      const defaultStartDate =
-        startDate || new Date(new Date().getFullYear(), 0, 1);
+      const defaultStartDate = startDate || new Date(new Date().getFullYear(), 0, 1);
       const defaultEndDate = endDate || new Date();
 
-      // Base where clause for date filtering
       const dateFilter = {
         createdAt: {
           gte: defaultStartDate,
@@ -30,7 +28,16 @@ export const reportsRouter = createTRPCRouter({
       };
 
       if (reportType === "overview") {
-        // Get overview statistics
+        const farmerWhereClause = {
+          status: input.status !== "ALL" ? input.status : undefined,
+          ...dateFilter,
+        };
+
+        const organicFarmerWhereClause = {
+          status: input.status !== "ALL" ? input.status : undefined,
+          ...dateFilter,
+        };
+
         const [
           totalFarmers,
           totalOrganicFarmers,
@@ -40,25 +47,18 @@ export const reportsRouter = createTRPCRouter({
           newOrganicFarmersThisMonth,
           newEventsThisMonth,
           newConcernsThisMonth,
+          totalAllocations,
+          totalAllocationAmount,
         ] = await Promise.all([
-          // Total counts
           ctx.db.farmer.count({
-            where: {
-              status: input.status !== "ALL" ? input.status : undefined,
-              ...dateFilter,
-            },
+            where: farmerWhereClause,
           }),
           ctx.db.organic_Farmer.count({
-            where: {
-              status: input.status !== "ALL" ? input.status : undefined,
-              ...dateFilter,
-            },
+            where: organicFarmerWhereClause,
           }),
           ctx.db.events.count({ where: dateFilter }),
           (await ctx.db.farmerConcern.count({ where: dateFilter })) +
             (await ctx.db.organicFarmerConcern.count({ where: dateFilter })),
-
-          // This month counts
           ctx.db.farmer.count({
             where: {
               status: input.status !== "ALL" ? input.status : undefined,
@@ -101,9 +101,17 @@ export const reportsRouter = createTRPCRouter({
                 },
               },
             })),
+          ctx.db.allocation.count({
+            where: dateFilter,
+          }),
+          ctx.db.allocation.aggregate({
+            where: dateFilter,
+            _sum: {
+              amount: true,
+            },
+          }),
         ]);
 
-        // Get registration trends (last 12 months)
         const registrationTrends = [];
         for (let i = 11; i >= 0; i--) {
           const monthStart = startOfMonth(subMonths(new Date(), i));
@@ -137,7 +145,6 @@ export const reportsRouter = createTRPCRouter({
           });
         }
 
-        // Get status distribution
         const [
           applicantFarmers,
           registeredFarmers,
@@ -181,7 +188,6 @@ export const reportsRouter = createTRPCRouter({
           },
         ];
 
-        // Get events by month
         const eventsByMonth = [];
         for (let i = 11; i >= 0; i--) {
           const monthStart = startOfMonth(subMonths(new Date(), i));
@@ -207,6 +213,8 @@ export const reportsRouter = createTRPCRouter({
           totalOrganicFarmers,
           totalEvents,
           totalConcerns,
+          totalAllocations,
+          totalAllocationAmount: totalAllocationAmount._sum.amount || 0,
           newFarmersThisMonth,
           newOrganicFarmersThisMonth,
           newEventsThisMonth,
@@ -218,7 +226,6 @@ export const reportsRouter = createTRPCRouter({
       }
 
       if (reportType === "farmers") {
-        // Get farmers list with search
         const searchFilter = search
           ? {
               OR: [
@@ -242,73 +249,147 @@ export const reportsRouter = createTRPCRouter({
             }
           : {};
 
-        const [farmers, organicFarmers] = await Promise.all([
-          ctx.db.farmer.findMany({
-            where: {
-              status: input.status !== "ALL" ? input.status : undefined,
-              ...dateFilter,
-              ...searchFilter,
-            },
-            select: {
-              id: true,
-              firstname: true,
-              surname: true,
-              email_address: true,
-              municipalityOrCity: true,
-              status: true,
-              categoryType: true,
-              createdAt: true,
-            },
-            orderBy: { createdAt: "desc" },
-          }),
-          ctx.db.organic_Farmer.findMany({
-            where: {
-              status: input.status !== "ALL" ? input.status : undefined,
-              ...dateFilter,
-              ...searchFilter,
-            },
-            select: {
-              id: true,
-              firstname: true,
-              surname: true,
-              email_address: true,
-              municipalityOrCity: true,
-              status: true,
-              createdAt: true,
-            },
-            orderBy: { createdAt: "desc" },
-          }),
-        ]);
+        const farmerWhereClause = {
+          status: input.status !== "ALL" ? input.status : undefined,
+          ...dateFilter,
+          ...searchFilter,
+        };
 
-        const farmersList = [
-          ...farmers.map((farmer) => ({
-            id: farmer.id,
-            name: `${farmer.firstname} ${farmer.surname}`,
-            email: farmer.email_address || "N/A",
-            municipality: farmer.municipalityOrCity,
-            status: farmer.status,
-            category: farmer.categoryType || "FARMER",
-            registrationDate: format(farmer.createdAt, "MMM dd, yyyy"),
-          })),
-          ...organicFarmers.map((farmer) => ({
-            id: farmer.id,
-            name: `${farmer.firstname} ${farmer.surname}`,
-            email: farmer.email_address || "N/A",
-            municipality: farmer.municipalityOrCity,
-            status: farmer.status,
-            category: "ORGANIC_FARMER",
-            registrationDate: format(
-              farmer.createdAt || new Date(),
-              "MMM dd, yyyy",
-            ),
-          })),
-        ];
+        const organicFarmerWhereClause = {
+          status: input.status !== "ALL" ? input.status : undefined,
+          ...dateFilter,
+          ...searchFilter,
+        };
+
+        const queries = [];
+
+        if (farmerType === "all" || farmerType === "farmer") {
+          queries.push(
+            ctx.db.farmer.findMany({
+              where: farmerWhereClause,
+              select: {
+                id: true,
+                firstname: true,
+                surname: true,
+                email_address: true,
+                municipalityOrCity: true,
+                status: true,
+                categoryType: true,
+                createdAt: true,
+                farmDetails: {
+                  include: {
+                    lotDetails: true,
+                  },
+                },
+                farmerDetails: true,
+              },
+              orderBy: { createdAt: "desc" },
+            })
+          );
+        }
+
+        if (farmerType === "all" || farmerType === "organic") {
+          queries.push(
+            ctx.db.organic_Farmer.findMany({
+              where: organicFarmerWhereClause,
+              select: {
+                id: true,
+                firstname: true,
+                surname: true,
+                email_address: true,
+                municipalityOrCity: true,
+                status: true,
+                createdAt: true,
+                Grains: true,
+                LowlandVegetables: true,
+                UplandVegetables: true,
+                FruitsAndNots: true,
+                Mushroom: true,
+                OrganicSoil: true,
+                Rootcrops: true,
+                PultryProducts: true,
+                LiveStockProducts: true,
+                FisheriesAndAquaCulture: true,
+                IndustrialCropsAndProducts: true,
+                OtherCommodity: true,
+              },
+              orderBy: { createdAt: "desc" },
+            })
+          );
+        }
+
+        const results = await Promise.all(queries);
+        const farmersList = [];
+
+        if (farmerType === "all" || farmerType === "farmer") {
+          const farmers = results[0] as any[];
+          for (const farmer of farmers) {
+            const totalHectares = farmer.farmDetails?.reduce((sum: number, farm: any) => {
+              return sum + (farm.TotalFarmAreaInHa || 0);
+            }, 0) || 0;
+
+            const primaryCrop = farmer.farmerDetails?.rice ? "Rice" : 
+                              farmer.farmerDetails?.corn ? "Corn" : 
+                              farmer.farmerDetails?.livestock ? "Livestock" :
+                              farmer.farmerDetails?.poultry ? "Poultry" :
+                              farmer.farmerDetails?.othersCrops || "Various";
+
+            farmersList.push({
+              id: farmer.id,
+              name: `${farmer.firstname} ${farmer.surname}`,
+              email: farmer.email_address || "N/A",
+              municipality: farmer.municipalityOrCity,
+              status: farmer.status,
+              category: farmer.categoryType || "FARMER",
+              registrationDate: format(farmer.createdAt, "MMM dd, yyyy"),
+              hectares: totalHectares,
+              primaryCrop: primaryCrop,
+            });
+          }
+        }
+
+        if (farmerType === "all" || farmerType === "organic") {
+          const organicFarmers = farmerType === "all" ? results[1] : results[0];
+          for (const farmer of organicFarmers as any) {
+            const commodities = [
+              farmer.Grains,
+              farmer.LowlandVegetables,
+              farmer.UplandVegetables,
+              farmer.FruitsAndNots,
+              farmer.Mushroom,
+              farmer.OrganicSoil,
+              farmer.Rootcrops,
+              farmer.PultryProducts,
+              farmer.LiveStockProducts,
+              farmer.FisheriesAndAquaCulture,
+              farmer.IndustrialCropsAndProducts,
+              farmer.OtherCommodity,
+            ].filter(Boolean);
+
+            const totalHectares = commodities.reduce((sum: number, commodity: any) => {
+              return sum + (commodity?.sizeInHa || 0);
+            }, 0);
+
+            const primaryCrop = commodities.length > 0 ? commodities[0]?.name : "Various";
+
+            farmersList.push({
+              id: farmer.id,
+              name: `${farmer.firstname} ${farmer.surname}`,
+              email: farmer.email_address || "N/A",
+              municipality: farmer.municipalityOrCity,
+              status: farmer.status,
+              category: "ORGANIC_FARMER",
+              registrationDate: format(farmer.createdAt || new Date(), "MMM dd, yyyy"),
+              hectares: totalHectares,
+              primaryCrop: primaryCrop,
+            });
+          }
+        }
 
         return { farmersList };
       }
 
       if (reportType === "events") {
-        // Get events list with search
         const searchFilter = search
           ? {
               OR: [
@@ -340,7 +421,6 @@ export const reportsRouter = createTRPCRouter({
       }
 
       if (reportType === "concerns") {
-        // Get concerns list with search
         const searchFilter = search
           ? {
               OR: [
@@ -420,6 +500,52 @@ export const reportsRouter = createTRPCRouter({
         ];
 
         return { concernsList };
+      }
+
+      if (reportType === "allocations") {
+        const allocations = await ctx.db.allocation.findMany({
+          where: {
+            ...dateFilter,
+          },
+          include: {
+            farmers: {
+              include: {
+                farmer: {
+                  select: {
+                    firstname: true,
+                    surname: true,
+                    municipalityOrCity: true,
+                  },
+                },
+                organicFarmer: {
+                  select: {
+                    firstname: true,
+                    surname: true,
+                    municipalityOrCity: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        });
+
+        const allocationsList = allocations.map((allocation) => ({
+          id: allocation.id,
+          amount: allocation.amount,
+          allocationType: allocation.AllocationType,
+          approved: allocation.approved,
+          createdAt: format(allocation.createdAt, "MMM dd, yyyy"),
+          farmers: allocation.farmers.map((fa) => ({
+            name: fa.farmer 
+              ? `${fa.farmer.firstname} ${fa.farmer.surname}`
+              : `${fa.organicFarmer?.firstname} ${fa.organicFarmer?.surname}`,
+            municipality: fa.farmer?.municipalityOrCity || fa.organicFarmer?.municipalityOrCity,
+            type: fa.farmer ? "FARMER" : "ORGANIC_FARMER",
+          })),
+        }));
+
+        return { allocationsList };
       }
 
       return {};

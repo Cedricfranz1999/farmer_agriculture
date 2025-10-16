@@ -210,6 +210,8 @@ const AllocationModal = ({
   onSuccess: (allocationId: string) => void;
 }) => {
   const [amount, setAmount] = useState<number>(0);
+  const [type, setType] = useState<string>("");
+
   const { mutate: createAllocation } =
     api.allocation.createAllocation.useMutation();
   const handleSubmit = () => {
@@ -221,6 +223,7 @@ const AllocationModal = ({
       {
         farmerId: farmerId,
         amount,
+        type,
       },
       {
         onSuccess: (allocation) => {
@@ -233,6 +236,11 @@ const AllocationModal = ({
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setAmount(value === "" ? 0 : parseInt(value) || 0);
+  };
+
+    const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setType(value);
   };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -252,6 +260,17 @@ const AllocationModal = ({
             {firstname} {lastname}
           </p>
         </div>
+
+          <div className="mb-4">
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Allocation Type
+          </label>
+          <input
+            onChange={handleTextChange}
+            className="w-full rounded-md border p-2"
+            placeholder="Enter Allocation Type"
+          />
+        </div>
         <div className="mb-4">
           <label className="mb-1 block text-sm font-medium text-gray-700">
             Allocation Amount
@@ -264,6 +283,8 @@ const AllocationModal = ({
             placeholder="Enter amount"
           />
         </div>
+
+         
         <div className="flex justify-end gap-2">
           <button
             onClick={onClose}
@@ -305,6 +326,9 @@ const AllocationSuccessDisplay = ({
       <AlertDescription>
         <p>
           <strong>Name:</strong> {firstname} {surname}
+        </p>
+          <p>
+          <strong>Allocation Type:</strong> {allocationDetails.AllocationType}
         </p>
         <p>
           <strong>Amount:</strong> {allocationDetails.amount}

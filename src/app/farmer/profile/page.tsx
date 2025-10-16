@@ -294,40 +294,7 @@ const FarmerProfile = () => {
           )}
         </InfoCard>
 
-        {/* Documents Section */}
-        <InfoCard title="Documents & Signatures" icon={FileText}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <h3 className="font-semibold text-gray-700 mb-3">Farmer Signature</h3>
-              {farmer.farmerSignatureAsImage ? (
-                <div className="border-2 border-[#00a06a]/20 rounded-xl p-4 bg-[#fcfefc]">
-                  <img 
-                    src={farmer.farmerSignatureAsImage} 
-                    alt="Farmer Signature" 
-                    className="h-24 object-contain mx-auto"
-                  />
-                </div>
-              ) : (
-                <SignaturePlaceholder type="signature" />
-              )}
-            </div>
-            
-            <div>
-              <h3 className="font-semibold text-gray-700 mb-3">Fingerprint</h3>
-              {farmer.farmerFingerPrintAsImage ? (
-                <div className="border-2 border-[#00a06a]/20 rounded-xl p-4 bg-[#fcfefc]">
-                  <img 
-                    src={farmer.farmerFingerPrintAsImage} 
-                    alt="Fingerprint" 
-                    className="h-24 object-contain mx-auto"
-                  />
-                </div>
-              ) : (
-                <SignaturePlaceholder type="fingerprint" />
-              )}
-            </div>
-          </div>
-        </InfoCard>
+
 
         {/* Category Specific Information */}
         {farmer.categoryType === 'FARMER' && farmer.farmerDetails && (
