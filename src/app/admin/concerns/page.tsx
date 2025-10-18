@@ -1,5 +1,7 @@
 "use client";
+
 import type React from "react";
+
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
@@ -17,21 +19,16 @@ import {
   Search,
   Plus,
   X,
-  Calendar as CalendarIcon,
+  Image as ImageIcon,
+  Paperclip,
 } from "lucide-react";
 import { Skeleton } from "~/components/ui/skeleton";
 import Image from "next/image";
 import { useAuthStore } from "~/app/store/authStore";
-import { format } from "date-fns";
-import { Calendar } from "~/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
 
 const Page = () => {
   const authDAta = useAuthStore((state) => state?.user);
+
   const [selectedConcern, setSelectedConcern] = useState<number | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,13 +38,12 @@ const Page = () => {
     description: "",
     image: "",
   });
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
-    from: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-    to: new Date(),
-  });
+  const [messageImage, setMessageImage] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const messageFileInputRef = useRef<HTMLInputElement>(null);
 
+  // Fetch concerns based on user type
   const {
     data: concerns,
     isLoading: concernsLoading,
@@ -55,7 +51,7 @@ const Page = () => {
   } = api.messages.getConcerns.useQuery(
     {
       userType: authDAta?.type as "FARMER" | "ADMIN" | "ORGANIC_FARMER",
-      userId: Number(authDAta?.id),
+      userId: authDAta?.id as number,
       search: searchTerm,
     },
     {
@@ -63,6 +59,7 @@ const Page = () => {
     },
   );
 
+  // Fetch messages for selected concern
   const {
     data: messages,
     isLoading: messagesLoading,
@@ -76,9 +73,13 @@ const Page = () => {
     { enabled: !!selectedConcern && !!authDAta?.type },
   );
 
+  console.log("MESSAGE", messages, "CONCERNS", concerns);
+  
+  // Send message mutation
   const sendMessageMutation = api.messages.sendMessage.useMutation({
     onSuccess: () => {
       setNewMessage("");
+      setMessageImage("");
       refetchMessages();
       refetchConcerns();
     },
@@ -87,6 +88,7 @@ const Page = () => {
     },
   });
 
+  // Create concern mutation (for farmers/organic farmers)
   const createConcernMutation = api.messages.createConcern.useMutation({
     onSuccess: (newConcern) => {
       setShowNewConcernForm(false);
@@ -100,6 +102,7 @@ const Page = () => {
     },
   });
 
+  // Update concern status (admin only)
   const updateConcernStatusMutation =
     api.messages.updateConcernStatus.useMutation({
       onSuccess: () => {
@@ -111,46 +114,105 @@ const Page = () => {
       },
     });
 
+  // Auto scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Handle send message
   const handleSendMessage = () => {
-    if (!newMessage.trim() || !selectedConcern) return;
+    if ((!newMessage.trim() && !messageImage) || !selectedConcern) return;
+
     sendMessageMutation.mutate({
       concernId: selectedConcern,
-      content: newMessage,
+      content: newMessage.trim() || "[Image]",
       userType: authDAta?.type as "FARMER" | "ADMIN" | "ORGANIC_FARMER",
       userId: authDAta?.id as number,
+      image: messageImage || undefined,
     });
   };
 
+  // Handle create concern
   const handleCreateConcern = () => {
     if (!newConcernData.title.trim() || !newConcernData.description.trim()) {
       alert("Please fill in title and description");
       return;
     }
+
     createConcernMutation.mutate({
       title: newConcernData.title,
       description: newConcernData.description,
-      image: newConcernData.image,
+      image: newConcernData.image || undefined,
       userType: authDAta?.type as "FARMER" | "ADMIN" | "ORGANIC_FARMER",
       userId: authDAta?.id as number,
     });
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle image upload for concerns
+// Handle image upload for concerns
+const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+  if (file) {
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File size too large. Please select an image under 5MB.");
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      alert("Please select a valid image file.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      console.log("Image loaded successfully, size:", result.length, "chars");
+      setNewConcernData((prev) => ({ ...prev, image: result }));
+    };
+    reader.onerror = () => {
+      alert("Error reading file. Please try another image.");
+    };
+    reader.onerror = () => {
+      console.error("Error reading file");
+      alert("Error reading file. Please try another image.");
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+  // Handle image upload for messages
+  const handleMessageImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("File size too large. Please select an image under 5MB.");
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
-        setNewConcernData((prev) => ({ ...prev, image: result }));
+        setMessageImage(result);
+      };
+      reader.onerror = () => {
+        alert("Error reading file. Please try another image.");
       };
       reader.readAsDataURL(file);
     }
   };
 
+  // Remove message image
+  const removeMessageImage = () => {
+    setMessageImage("");
+    if (messageFileInputRef.current) {
+      messageFileInputRef.current.value = "";
+    }
+  };
+
+  // Get user icon based on type
   const getUserIcon = (userType: string) => {
     switch (userType) {
       case "ADMIN":
@@ -162,6 +224,7 @@ const Page = () => {
     }
   };
 
+  // Get status color
   const getStatusColor = (status: string) => {
     switch (status) {
       case "OPEN":
@@ -177,21 +240,18 @@ const Page = () => {
     }
   };
 
-  const filteredConcerns = concerns?.filter((concern) => {
-    const concernDate = new Date(concern.createdAt);
-    const fromDate = new Date(dateRange.from);
-    const toDate = new Date(dateRange.to);
-    toDate.setHours(23, 59, 59, 999);
-    const isInDateRange = concernDate >= fromDate && concernDate <= toDate;
-    const matchesSearch =
-      concern.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      concern.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return isInDateRange && matchesSearch;
-  }) || [];
+  // Filter concerns based on search
+  const filteredConcerns =
+    concerns?.filter(
+      (concern) =>
+        concern.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        concern.description.toLowerCase().includes(searchTerm.toLowerCase()),
+    ) || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50 p-4">
       <div className="container mx-auto">
+        {/* Header */}
         <div className="mb-8">
           <h1 className="bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-4xl font-bold text-transparent">
             Messages & Concerns
@@ -202,14 +262,18 @@ const Page = () => {
               : "Communicate with administrators about your concerns"}
           </p>
         </div>
+
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Concerns List */}
           <div className="lg:col-span-1">
             <Card className="border-emerald-200 bg-white/90 shadow-xl backdrop-blur-sm">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center text-emerald-700">
                     <MessageSquare className="mr-2 h-5 w-5" />
-                    {authDAta?.type === "ADMIN" ? "All Concerns" : "My Concerns"}
+                    {authDAta?.type === "ADMIN"
+                      ? "All Concerns"
+                      : "My Concerns"}
                   </CardTitle>
                   {authDAta?.type !== "ADMIN" && (
                     <Button
@@ -221,55 +285,25 @@ const Page = () => {
                     </Button>
                   )}
                 </div>
-                <div className="flex space-x-2">
-                  <div className="relative flex-1">
-                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
-                    <Input
-                      placeholder="Search concerns..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-[280px] justify-start text-left font-normal"
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {dateRange.from ? (
-                          dateRange.to ? (
-                            <>
-                              {format(dateRange.from, "LLL dd, y")} -{" "}
-                              {format(dateRange.to, "LLL dd, y")}
-                            </>
-                          ) : (
-                            format(dateRange.from, "LLL dd, y")
-                          )
-                        ) : (
-                          <span>Pick a date range</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        initialFocus
-                        mode="range"
-                        defaultMonth={dateRange.from}
-                        selected={dateRange}
-                        onSelect={setDateRange as any}
-                        numberOfMonths={2}
-                      />
-                    </PopoverContent>
-                  </Popover>
+                {/* Search */}
+                <div className="relative">
+                  <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+                  <Input
+                    placeholder="Search concerns..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
                 </div>
               </CardHeader>
               <CardContent className="p-0">
                 {concernsLoading ? (
                   <div className="space-y-2 p-4">
                     {Array.from({ length: 5 }).map((_, i) => (
-                      <Skeleton key={`concern-skeleton-${i}`} className="h-20 w-full" />
+                      <Skeleton
+                        key={`concern-skeleton-${i}`}
+                        className="h-20 w-full"
+                      />
                     ))}
                   </div>
                 ) : filteredConcerns.length === 0 ? (
@@ -299,7 +333,7 @@ const Page = () => {
                         }`}
                       >
                         <div className="mb-2 flex items-start justify-between">
-                          <h4 className="line-clamp-1 text-sm font-semibold text-gray-900 b">
+                          <h4 className="line-clamp-1 text-sm font-semibold text-gray-900">
                             {concern.title}
                           </h4>
                           <Badge
@@ -313,11 +347,13 @@ const Page = () => {
                         </p>
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <div className="flex items-center">
-                            <img
-                              width={50}
-                              height={50}
-                              src={concern.farmer?.farmerImage}
-                            />
+                            {/* <img
+                              width={20}
+                              height={20}
+                              src={concern.organicFarmer?.farmerImage || concern.farmer?.farmerImage || "/default-avatar.png"}
+                              alt="Farmer"
+                              className="h-5 w-5 rounded-full object-cover"
+                            /> */}
                             <span className="ml-1">
                               {concern.farmer
                                 ? `${concern.farmer.firstname} ${concern.farmer.surname}`
@@ -343,8 +379,11 @@ const Page = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Messages Area */}
           <div className="lg:col-span-2">
             {showNewConcernForm ? (
+              /* New Concern Form */
               <Card className="border-emerald-200 bg-white/90 shadow-xl backdrop-blur-sm">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -400,37 +439,10 @@ const Page = () => {
                       rows={4}
                     />
                   </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700">
-                      Image (Optional)
-                    </label>
-                    <div className="space-y-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        Upload Image
-                      </Button>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
-                      {newConcernData.image && (
-                        <div className="relative h-32 w-full overflow-hidden rounded-lg border">
-                          <Image
-                            src={newConcernData.image}
-                            alt="Concern image"
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                 <div>
+
+  
+</div>
                   <Button
                     onClick={handleCreateConcern}
                     className="w-full bg-emerald-600 hover:bg-emerald-700"
@@ -443,6 +455,7 @@ const Page = () => {
                 </CardContent>
               </Card>
             ) : selectedConcern ? (
+              /* Messages View */
               <Card className="border-emerald-200 bg-white/90 shadow-xl backdrop-blur-sm">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -452,9 +465,7 @@ const Page = () => {
                       </CardTitle>
                       <div className="mt-1 flex items-center space-x-2">
                         <Badge
-                          className={`text-xs ${getStatusColor(
-                            concerns?.find((c) => c.id === selectedConcern)?.status || "",
-                          )}`}
+                          className={`text-xs ${getStatusColor(concerns?.find((c) => c.id === selectedConcern)?.status || "")}`}
                         >
                           {
                             concerns?.find((c) => c.id === selectedConcern)
@@ -494,6 +505,7 @@ const Page = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
+                  {/* Messages */}
                   <div className="mb-4 h-96 space-y-4 overflow-y-auto rounded-lg bg-gray-50 p-4">
                     {messagesLoading ? (
                       <div className="space-y-4">
@@ -517,6 +529,7 @@ const Page = () => {
                                 setNewMessage(
                                   "Hello, I have a concern about...",
                                 );
+                                // Auto-focus the input
                                 setTimeout(() => {
                                   const input = document.querySelector(
                                     'input[placeholder="Type your message..."]',
@@ -558,7 +571,24 @@ const Page = () => {
                                     : `${message.organicFarmer?.firstname} ${message.organicFarmer?.surname}`}
                               </span>
                             </div>
-                            <p className="text-sm">{message.content}</p>
+                            {message.content && message.content !== "[Image]" && (
+                              <p className="text-sm">{message.content}</p>
+                            )}
+                            
+                            {/* Display message image if exists */}
+                            {message.image && (
+                              <div className="mt-2">
+                                <div className="relative h-48 w-full overflow-hidden rounded-lg border">
+                                  <Image
+                                    src={message.image}
+                                    alt="Message attachment"
+                                    fill
+                                    className="object-cover"
+                                  />
+                                </div>
+                              </div>
+                            )}
+                            
                             <p className="mt-1 text-xs opacity-70">
                               {new Date(message.createdAt).toLocaleString()}
                             </p>
@@ -568,29 +598,73 @@ const Page = () => {
                     )}
                     <div ref={messagesEndRef} />
                   </div>
-                  <div className="flex space-x-2">
-                    <Input
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="Type your message..."
-                      onKeyPress={(e) =>
-                        e.key === "Enter" && handleSendMessage()
-                      }
-                      className="flex-1"
-                    />
-                    <Button
-                      onClick={handleSendMessage}
-                      disabled={
-                        !newMessage.trim() || sendMessageMutation.isPending
-                      }
-                      className="bg-emerald-600 hover:bg-emerald-700"
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
+
+                  {/* Message Input */}
+                  <div className="space-y-2">
+                    {/* Image Preview */}
+                    {messageImage && (
+                      <div className="relative rounded-lg border border-emerald-200 bg-emerald-50 p-2">
+                        <div className="relative h-32 w-32 overflow-hidden rounded-md">
+                          <Image
+                            src={messageImage}
+                            alt="Message image preview"
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute -right-2 -top-2 h-6 w-6 rounded-full p-0"
+                          onClick={removeMessageImage}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
+                    
+                    <div className="flex space-x-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => messageFileInputRef.current?.click()}
+                        className="flex-shrink-0"
+                      >
+                        <Paperclip className="h-4 w-4" />
+                      </Button>
+                      <input
+                        ref={messageFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleMessageImageUpload}
+                        className="hidden"
+                      />
+                      <Input
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Type your message..."
+                        onKeyPress={(e) =>
+                          e.key === "Enter" && handleSendMessage()
+                        }
+                        className="flex-1"
+                      />
+                      <Button
+                        onClick={handleSendMessage}
+                        disabled={
+                          (!newMessage.trim() && !messageImage) || sendMessageMutation.isPending
+                        }
+                        className="bg-emerald-600 hover:bg-emerald-700"
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             ) : (
+              /* No Selection */
               <Card className="border-emerald-200 bg-white/90 shadow-xl backdrop-blur-sm">
                 <CardContent className="flex h-96 items-center justify-center">
                   <div className="text-center">

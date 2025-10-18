@@ -318,6 +318,7 @@ model OrganicFarmerConcern {
 model ConcernMessage {
   id Int @id @default(autoincrement())
   content String
+  image String? // Make sure this field exists
   senderType MessageSenderType
   admin Admin? @relation(fields: [adminId], references: [id])
   adminId Int?

@@ -19,6 +19,8 @@ import {
   Search,
   Plus,
   X,
+  Image as ImageIcon,
+  Paperclip,
 } from "lucide-react";
 import { Skeleton } from "~/components/ui/skeleton";
 import Image from "next/image";
@@ -36,8 +38,10 @@ const Page = () => {
     description: "",
     image: "",
   });
+  const [messageImage, setMessageImage] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const messageFileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch concerns based on user type
   const {
@@ -70,10 +74,12 @@ const Page = () => {
   );
 
   console.log("MESSAGE", messages, "CONCERNS", concerns);
+  
   // Send message mutation
   const sendMessageMutation = api.messages.sendMessage.useMutation({
     onSuccess: () => {
       setNewMessage("");
+      setMessageImage("");
       refetchMessages();
       refetchConcerns();
     },
@@ -115,13 +121,14 @@ const Page = () => {
 
   // Handle send message
   const handleSendMessage = () => {
-    if (!newMessage.trim() || !selectedConcern) return;
+    if ((!newMessage.trim() && !messageImage) || !selectedConcern) return;
 
     sendMessageMutation.mutate({
       concernId: selectedConcern,
-      content: newMessage,
+      content: newMessage.trim() || "[Image]",
       userType: authDAta?.type as "FARMER" | "ADMIN" | "ORGANIC_FARMER",
       userId: authDAta?.id as number,
+      image: messageImage || undefined,
     });
   };
 
@@ -135,22 +142,73 @@ const Page = () => {
     createConcernMutation.mutate({
       title: newConcernData.title,
       description: newConcernData.description,
-      image: newConcernData.image,
+      image: newConcernData.image || undefined,
       userType: authDAta?.type as "FARMER" | "ADMIN" | "ORGANIC_FARMER",
       userId: authDAta?.id as number,
     });
   };
 
-  // Handle image upload
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle image upload for concerns
+// Handle image upload for concerns
+const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+  if (file) {
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File size too large. Please select an image under 5MB.");
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      alert("Please select a valid image file.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      console.log("Image loaded successfully, size:", result.length, "chars");
+      setNewConcernData((prev) => ({ ...prev, image: result }));
+    };
+    reader.onerror = () => {
+      alert("Error reading file. Please try another image.");
+    };
+    reader.onerror = () => {
+      console.error("Error reading file");
+      alert("Error reading file. Please try another image.");
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+  // Handle image upload for messages
+  const handleMessageImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("File size too large. Please select an image under 5MB.");
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
-        setNewConcernData((prev) => ({ ...prev, image: result }));
+        setMessageImage(result);
+      };
+      reader.onerror = () => {
+        alert("Error reading file. Please try another image.");
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  // Remove message image
+  const removeMessageImage = () => {
+    setMessageImage("");
+    if (messageFileInputRef.current) {
+      messageFileInputRef.current.value = "";
     }
   };
 
@@ -289,8 +347,13 @@ const Page = () => {
                         </p>
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <div className="flex items-center">
-                             <img   width={50}  height={50} src=  {concern.farmer?.farmerImage} />
-
+                            {/* <img
+                              width={20}
+                              height={20}
+                              src={concern.organicFarmer?.farmerImage || concern.farmer?.farmerImage || "/default-avatar.png"}
+                              alt="Farmer"
+                              className="h-5 w-5 rounded-full object-cover"
+                            /> */}
                             <span className="ml-1">
                               {concern.farmer
                                 ? `${concern.farmer.firstname} ${concern.farmer.surname}`
@@ -376,37 +439,10 @@ const Page = () => {
                       rows={4}
                     />
                   </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700">
-                      Image (Optional)
-                    </label>
-                    <div className="space-y-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        Upload Image
-                      </Button>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
-                      {newConcernData.image && (
-                        <div className="relative h-32 w-full overflow-hidden rounded-lg border">
-                          <Image
-                            src={newConcernData.image}
-                            alt="Concern image"
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                 <div>
+
+  
+</div>
                   <Button
                     onClick={handleCreateConcern}
                     className="w-full bg-emerald-600 hover:bg-emerald-700"
@@ -535,7 +571,24 @@ const Page = () => {
                                     : `${message.organicFarmer?.firstname} ${message.organicFarmer?.surname}`}
                               </span>
                             </div>
-                            <p className="text-sm">{message.content}</p>
+                            {message.content && message.content !== "[Image]" && (
+                              <p className="text-sm">{message.content}</p>
+                            )}
+                            
+                            {/* Display message image if exists */}
+                            {message.image && (
+                              <div className="mt-2">
+                                <div className="relative h-48 w-full overflow-hidden rounded-lg border">
+                                  <Image
+                                    src={message.image}
+                                    alt="Message attachment"
+                                    fill
+                                    className="object-cover"
+                                  />
+                                </div>
+                              </div>
+                            )}
+                            
                             <p className="mt-1 text-xs opacity-70">
                               {new Date(message.createdAt).toLocaleString()}
                             </p>
@@ -547,25 +600,66 @@ const Page = () => {
                   </div>
 
                   {/* Message Input */}
-                  <div className="flex space-x-2">
-                    <Input
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="Type your message..."
-                      onKeyPress={(e) =>
-                        e.key === "Enter" && handleSendMessage()
-                      }
-                      className="flex-1"
-                    />
-                    <Button
-                      onClick={handleSendMessage}
-                      disabled={
-                        !newMessage.trim() || sendMessageMutation.isPending
-                      }
-                      className="bg-emerald-600 hover:bg-emerald-700"
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
+                  <div className="space-y-2">
+                    {/* Image Preview */}
+                    {messageImage && (
+                      <div className="relative rounded-lg border border-emerald-200 bg-emerald-50 p-2">
+                        <div className="relative h-32 w-32 overflow-hidden rounded-md">
+                          <Image
+                            src={messageImage}
+                            alt="Message image preview"
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute -right-2 -top-2 h-6 w-6 rounded-full p-0"
+                          onClick={removeMessageImage}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
+                    
+                    <div className="flex space-x-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => messageFileInputRef.current?.click()}
+                        className="flex-shrink-0"
+                      >
+                        <Paperclip className="h-4 w-4" />
+                      </Button>
+                      <input
+                        ref={messageFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleMessageImageUpload}
+                        className="hidden"
+                      />
+                      <Input
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Type your message..."
+                        onKeyPress={(e) =>
+                          e.key === "Enter" && handleSendMessage()
+                        }
+                        className="flex-1"
+                      />
+                      <Button
+                        onClick={handleSendMessage}
+                        disabled={
+                          (!newMessage.trim() && !messageImage) || sendMessageMutation.isPending
+                        }
+                        className="bg-emerald-600 hover:bg-emerald-700"
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

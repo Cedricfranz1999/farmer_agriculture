@@ -106,7 +106,6 @@ export const messagesRouter = createTRPCRouter({
     }),
 
   // Get messages for a specific concern
-  // Get messages for a specific concern
   getMessages: publicProcedure
     .input(
       z.object({
@@ -204,6 +203,7 @@ export const messagesRouter = createTRPCRouter({
 
       return messages;
     }),
+
   // Send a message
   sendMessage: publicProcedure
     .input(
@@ -212,6 +212,7 @@ export const messagesRouter = createTRPCRouter({
         content: z.string().min(1),
         userType: z.enum(["ADMIN", "FARMER", "ORGANIC_FARMER"]),
         userId: z.number(),
+        image: z.string().optional(), // Add image support for messages
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -235,6 +236,11 @@ export const messagesRouter = createTRPCRouter({
         content: input.content,
         senderType: input.userType,
       };
+
+      // Only add image if provided (not empty string)
+      if (input.image && input.image.trim() !== "") {
+        messageData.image = input.image;
+      }
 
       // Set the appropriate foreign keys based on user type
       if (input.userType === "ADMIN") {
@@ -285,24 +291,27 @@ export const messagesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // Prepare concern data
+      const concernData: any = {
+        title: input.title,
+        description: input.description,
+      };
+
+      // Only add image if provided (not empty string)
+      if (input.image && input.image.trim() !== "") {
+        concernData.image = input.image;
+      }
+
       if (input.userType === "FARMER") {
+        concernData.farmerId = input.userId;
         const concern = await ctx.db.farmerConcern.create({
-          data: {
-            title: input.title,
-            description: input.description,
-            image: input.image,
-            farmerId: input.userId,
-          },
+          data: concernData,
         });
         return concern;
       } else {
+        concernData.farmerId = input.userId; // Note: uses farmerId field
         const concern = await ctx.db.organicFarmerConcern.create({
-          data: {
-            title: input.title,
-            description: input.description,
-            image: input.image,
-            farmerId: input.userId, // Note: uses farmerId field
-          },
+          data: concernData,
         });
         return concern;
       }

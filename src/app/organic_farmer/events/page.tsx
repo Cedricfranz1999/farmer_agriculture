@@ -560,14 +560,14 @@ const EventsCalendarPage = () => {
               <Card className="mb-6 border-emerald-200 bg-white/90 shadow-xl backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between text-emerald-700">
-                    <div className="flex items-center">
+                    {/* <div className="flex items-center">
                       {editingEvent ? (
                         <Edit className="mr-2 h-5 w-5" />
                       ) : (
                         <Plus className="mr-2 h-5 w-5" />
                       )}
                       {editingEvent ? "Edit Event" : "Create New Event"}
-                    </div>
+                    </div> */}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -760,7 +760,7 @@ const EventsCalendarPage = () => {
                     Event Details
                   </div>
                   <div className="flex items-center space-x-2">
-                    {selectedDate && !showCreateForm && (
+                    {/* {selectedDate && !showCreateForm && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -780,7 +780,7 @@ const EventsCalendarPage = () => {
                       >
                         <X className="h-4 w-4" />
                       </Button>
-                    )}
+                    )} */}
                   </div>
                 </CardTitle>
               </CardHeader>
@@ -802,13 +802,13 @@ const EventsCalendarPage = () => {
                       No events scheduled for{" "}
                       {selectedDate.toLocaleDateString()}
                     </p>
-                    <Button
+                    {/* <Button
                       onClick={handleCreateNewEvent}
                       className="bg-emerald-600 hover:bg-emerald-700"
                     >
                       <Plus className="mr-2 h-4 w-4" />
                       Create Event
-                    </Button>
+                    </Button> */}
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -835,20 +835,20 @@ const EventsCalendarPage = () => {
                         >
                           {/* Event Actions */}
                           <div className="mb-3 flex justify-end space-x-2">
-                            <Button
+                            {/* <Button
                               variant="outline"
                               size="sm"
                               onClick={() => startEditingEvent(event)}
                             >
                               <Edit className="h-3 w-3" />
-                            </Button>
-                            <Button
+                            </Button> */}
+                            {/* <Button
                               variant="destructive"
                               size="sm"
                               onClick={() => handleDeleteEvent(event.id)}
                             >
                               <Trash2 className="h-3 w-3" />
-                            </Button>
+                            </Button> */}
                           </div>
 
                           {/* Event Image */}

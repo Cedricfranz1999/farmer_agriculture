@@ -51,77 +51,180 @@ const FarmerProfilePrintView = () => {
       setShowActions(true);
     },
     pageStyle: `
-  @page {
-    size: 8.5in 11in;
-    margin: 0.5in 0.4in 0.5in 0.4in;
-  }
-  @media print {
-    body {
-      margin: 0 !important;
-      padding: 0 !important;
-      font-size: 10pt !important;
-      line-height: 1.2 !important;
-      -webkit-print-color-adjust: exact !important;
-      color-adjust: exact !important;
-    }
-    * {
-      -webkit-print-color-adjust: exact !important;
-      color-adjust: exact !important;
-    }
-    .no-print {
-      display: none !important;
-    }
-    .page-break {
-      page-break-before: always !important;
-      break-before: always !important;
-    }
-    .page-break-after {
-      page-break-after: always !important;
-      break-after: always !important;
-    }
-    .avoid-break {
-      page-break-inside: avoid !important;
-      break-inside: avoid !important;
-    }
-    .print-container {
-      max-width: none !important;
-      width: 100% !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      box-shadow: none !important;
-      background: white !important;
-    }
-    .section-header {
-      background-color: #f8f9fa !important;
-      -webkit-print-color-adjust: exact !important;
-    }
-    .header-section {
-      border-bottom: 1px solid #000 !important;
-      margin-bottom: 0.3in !important;
-      padding-bottom: 0.2in !important;
-      page-break-after: avoid !important;
-    }
-    .section-divider {
-      border-bottom: 1px solid #ccc !important;
-    }
-    .compact-spacing {
-      margin-bottom: 0.15in !important;
-    }
-    .compact-section {
-      margin-bottom: 0.2in !important;
-    }
-    h1, h2, h3 {
-      page-break-after: avoid !important;
-    }
-       body::after {
-      display: none !important;
-    }
-    table, figure {
-      page-break-inside: avoid !important;
-    }
-  }
-    
-`,
+      @page {
+        size: 8.5in 11in;
+        margin: 0.25in 0.2in 0.25in 0.2in;
+      }
+      @media print {
+        body {
+          margin: 0 !important;
+          padding: 0 !important;
+          font-size: 8pt !important;
+          line-height: 1.1 !important;
+          -webkit-print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        * {
+          -webkit-print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        .no-print {
+          display: none !important;
+        }
+        .page-break {
+          page-break-before: always !important;
+          break-before: page !important;
+        }
+        .avoid-break {
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
+        }
+        .force-break-after {
+          page-break-after: always !important;
+          break-after: page !important;
+        }
+        .print-container {
+          max-width: none !important;
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          box-shadow: none !important;
+          background: white !important;
+        }
+        .section-header {
+          background-color: #f8f9fa !important;
+          -webkit-print-color-adjust: exact !important;
+          font-size: 9pt !important;
+          padding: 4px 8px !important;
+          margin-bottom: 8px !important;
+        }
+        .header-section {
+          border-bottom: 1px solid #000 !important;
+          margin-bottom: 12px !important;
+          padding-bottom: 8px !important;
+        }
+        .section-divider {
+          border-bottom: 1px solid #ccc !important;
+        }
+        .compact-spacing {
+          margin-bottom: 6px !important;
+        }
+        .compact-section {
+          margin-bottom: 12px !important;
+        }
+        .text-xs {
+          font-size: 7pt !important;
+        }
+        .text-sm {
+          font-size: 8pt !important;
+        }
+        .text-base {
+          font-size: 9pt !important;
+        }
+        .text-lg {
+          font-size: 10pt !important;
+        }
+        .text-xl {
+          font-size: 11pt !important;
+        }
+        .text-2xl {
+          font-size: 12pt !important;
+        }
+        .grid-cols-1 {
+          grid-template-columns: 1fr !important;
+        }
+        .grid-cols-2 {
+          grid-template-columns: repeat(2, 1fr) !important;
+        }
+        .grid-cols-3 {
+          grid-template-columns: repeat(3, 1fr) !important;
+        }
+        .grid-cols-4 {
+          grid-template-columns: repeat(4, 1fr) !important;
+        }
+        .gap-1 {
+          gap: 4px !important;
+        }
+        .gap-2 {
+          gap: 8px !important;
+        }
+        .gap-3 {
+          gap: 12px !important;
+        }
+        .gap-4 {
+          gap: 16px !important;
+        }
+        .p-1 {
+          padding: 4px !important;
+        }
+        .p-2 {
+          padding: 8px !important;
+        }
+        .p-3 {
+          padding: 12px !important;
+        }
+        .py-1 {
+          padding-top: 4px !important;
+          padding-bottom: 4px !important;
+        }
+        .py-2 {
+          padding-top: 8px !important;
+          padding-bottom: 8px !important;
+        }
+        .px-1 {
+          padding-left: 4px !important;
+          padding-right: 4px !important;
+        }
+        .px-2 {
+          padding-left: 8px !important;
+          padding-right: 8px !important;
+        }
+        .mb-1 {
+          margin-bottom: 4px !important;
+        }
+        .mb-2 {
+          margin-bottom: 8px !important;
+        }
+        .mb-3 {
+          margin-bottom: 12px !important;
+        }
+        .mb-4 {
+          margin-bottom: 16px !important;
+        }
+        .mb-6 {
+          margin-bottom: 24px !important;
+        }
+        .mt-2 {
+          margin-top: 8px !important;
+        }
+        .mt-3 {
+          margin-top: 12px !important;
+        }
+        .space-y-2 > * + * {
+          margin-top: 8px !important;
+        }
+        .space-y-3 > * + * {
+          margin-top: 12px !important;
+        }
+        .space-y-4 > * + * {
+          margin-top: 16px !important;
+        }
+        img {
+          max-height: 50px !important;
+          object-fit: cover !important;
+        }
+        .image-container {
+          height: 50px !important;
+          width: 70px !important;
+        }
+        h1, h2, h3 {
+          page-break-after: avoid !important;
+        }
+        table, figure {
+          page-break-inside: avoid !important;
+        }
+      }
+    `,
   });
 
   const handleLogin = () => {
@@ -159,7 +262,7 @@ const FarmerProfilePrintView = () => {
       </div>
     );
 
-  // Helper function to render commodity section
+  // Helper function to render commodity section - made more compact
   const renderCommoditySection = (
     commodity: CommodityData | null,
     title: string,
@@ -167,12 +270,12 @@ const FarmerProfilePrintView = () => {
     if (!commodity) return null;
 
     return (
-      <div className="avoid-break compact-spacing mb-4">
-        <h3 className="mb-2 border-l-4 border-green-500 pl-3 text-base font-semibold text-gray-800">
+      <div className="avoid-break compact-spacing mb-2">
+        <h3 className="mb-1 border-l-2 border-green-500 pl-2 text-sm font-semibold text-gray-800">
           {title}
         </h3>
-        <div className="ml-6 rounded-lg bg-gray-50 p-3 print:border print:border-gray-300 print:bg-transparent">
-          <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-2">
+        <div className="ml-4 rounded bg-gray-50 p-2 print:border print:border-gray-300 print:bg-transparent">
+          <div className="grid grid-cols-3 gap-1 text-xs">
             <p>
               <span className="font-medium text-gray-700">Name:</span>{" "}
               {commodity.name}
@@ -182,17 +285,9 @@ const FarmerProfilePrintView = () => {
               {commodity.sizeInHa} ha
             </p>
             <p>
-              <span className="font-medium text-gray-700">Annual Volume:</span>{" "}
+              <span className="font-medium text-gray-700">Volume:</span>{" "}
               {commodity.annualVolumeInKG.toLocaleString()} kg
             </p>
-            {commodity.Certification && (
-              <p>
-                <span className="font-medium text-gray-700">
-                  Certification:
-                </span>{" "}
-                {commodity.Certification}
-              </p>
-            )}
           </div>
         </div>
       </div>
@@ -209,7 +304,6 @@ const FarmerProfilePrintView = () => {
 
   return (
     <>
-      {/* Hide any navigation/breadcrumb elements */}
       <style jsx global>{`
         @media print {
           nav,
@@ -227,7 +321,7 @@ const FarmerProfilePrintView = () => {
             min-height: 11in;
             width: 1500px;
             margin: 2rem auto;
-            padding: 0.5in 0.4in;
+            padding: 0.25in 0.2in;
           }
         }
       `}</style>
@@ -257,223 +351,199 @@ const FarmerProfilePrintView = () => {
         </div>
       )}
 
-      <div className="min-h-screen bg-gray-200 print:bg-white ">
+      <div className="min-h-screen bg-gray-200 print:bg-white">
         <div
           ref={printRef}
-          className="print-container print-preview  "
+          className="print-container print-preview"
           style={{
             breakInside: "avoid",
             breakAfter: "avoid",
             breakBefore: "avoid",
           }}
         >
-          {/* Enhanced Header with QR Code */}
-          {/* Enhanced Header with QR Code */}
-          <div className="header-section document-header avoid-break mb-6 pb-4">
+          {/* Compact Header with QR Code */}
+          <div className="header-section document-header avoid-break mb-4 pb-2">
             <div className="flex items-start justify-between">
-                 <QRCodeCanvas value={String(farmer.id)} size={70} />
-
+              <QRCodeCanvas value={String(farmer.id)} size={50} />
               <div className="flex-1 text-center">
-                <h1 className="avoid-break mb-2 text-2xl font-bold text-gray-900 print:text-xl">
+                <h1 className="avoid-break mb-1 text-xl font-bold text-gray-900">
                   ORGANIC FARMER PROFILE
                 </h1>
-                <div className="avoid-break mx-auto mb-3 h-1 w-32 bg-green-500 print:bg-black"></div>
+                <div className="avoid-break mx-auto mb-2 h-1 w-24 bg-green-500 print:bg-black"></div>
                 <p className="avoid-break text-xs font-medium tracking-wide text-gray-600 uppercase">
                   Republic of the Philippines | Department of Agriculture
                 </p>
               </div>
-              <div className="avoid-break ml-6 text-center">
-              
+              <div className="avoid-break ml-4 text-center">
+                <div className="mb-1 rounded border border-gray-300 p-1">
+                  <QRCodeCanvas value={qrCodeData} size={40} />
+                </div>
+                <p className="text-xs text-gray-500">Profile QR</p>
               </div>
             </div>
           </div>
 
-          {/* Basic Information Section */}
-          <section
-            className="compact-section avoid-break mb-6"
-            style={{ pageBreakBefore: "avoid" }}
-          >
-            <h2 className="section-header section-divider mb-4 rounded-lg bg-gray-50 px-3 py-2 text-lg font-bold text-gray-900 print:bg-gray-100">
+          {/* Basic Information Section - Made more compact */}
+          <section className="compact-section avoid-break mb-4">
+            <h2 className="section-header section-divider mb-3 rounded bg-gray-50 px-2 py-1 text-lg font-bold text-gray-900 print:bg-gray-100">
               I. BASIC INFORMATION
             </h2>
-            <div className="space-y-4">
-              {/* Personal Details */}
-              <div className="grid grid-cols-1 gap-4 text-xs md:grid-cols-2">
-                <div className="space-y-2">
+            <div className="space-y-3">
+              {/* Personal Details in tighter grid */}
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="space-y-1">
                   <div className="flex flex-col">
-                    <span className="mb-1 font-medium text-gray-700">
+                    <span className="mb-0.5 font-medium text-gray-700">
                       Full Name:
                     </span>
-                    <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                    <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                       {farmer.surname}, {farmer.firstname} {farmer.middleName}{" "}
                       {farmer.extensionName}
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-1">
                     <div className="flex flex-col">
-                      <span className="mb-1 font-medium text-gray-700">
+                      <span className="mb-0.5 font-medium text-gray-700">
                         Sex:
                       </span>
-                      <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                      <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                         {farmer.sex}
                       </span>
                     </div>
                     <div className="flex flex-col">
-                      <span className="mb-1 font-medium text-gray-700">
+                      <span className="mb-0.5 font-medium text-gray-700">
                         Civil Status:
                       </span>
-                      <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                      <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                         {farmer.civilStaus}
                       </span>
                     </div>
                   </div>
+                </div>
+                <div className="space-y-1">
                   <div className="flex flex-col">
-                    <span className="mb-1 font-medium text-gray-700">
+                    <span className="mb-0.5 font-medium text-gray-700">
                       Date of Birth:
                     </span>
-                    <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                    <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                       {farmer.dateOfBirth.toLocaleDateString()}
                     </span>
                   </div>
-                </div>
-                <div className="space-y-2">
                   <div className="flex flex-col">
-                    <span className="mb-1 font-medium text-gray-700">
+                    <span className="mb-0.5 font-medium text-gray-700">
                       Place of Birth:
                     </span>
-                    <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                    <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                       {farmer.placeOfBirth}
                     </span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="mb-1 font-medium text-gray-700">
-                      Highest Education:
-                    </span>
-                    <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
-                      {farmer.highestFormOfEducation}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="flex flex-col">
-                      <span className="mb-1 font-medium text-gray-700">
-                        Religion:
-                      </span>
-                      <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
-                        {farmer.religion || "N/A"}
-                      </span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="mb-1 font-medium text-gray-700">
-                        4Ps Beneficiary:
-                      </span>
-                      <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
-                        {farmer.FourPS_Benificiaty || "N/A"}
-                      </span>
-                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Family Background */}
+              {/* Education and Religion in single row */}
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="flex flex-col">
+                  <span className="mb-0.5 font-medium text-gray-700">
+                    Highest Education:
+                  </span>
+                  <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                    {farmer.highestFormOfEducation}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="mb-0.5 font-medium text-gray-700">
+                    4Ps Beneficiary:
+                  </span>
+                  <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                    {farmer.FourPS_Benificiaty || "N/A"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Family Background - Compact */}
               <div className="avoid-break">
-                <h3 className="mb-2 border-l-4 border-blue-500 pl-3 text-base font-semibold text-gray-800">
+                <h3 className="mb-1 border-l-2 border-blue-500 pl-2 text-sm font-semibold text-gray-800">
                   Family Background
                 </h3>
-                <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-2">
+                <div className="grid grid-cols-2 gap-1 text-xs">
                   <div className="flex flex-col">
-                    <span className="mb-1 font-medium text-gray-700">
-                      Fathers Name:
+                    <span className="mb-0.5 font-medium text-gray-700">
+                      Father's Name:
                     </span>
-                    <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                    <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                       {farmer.fathersName || "N/A"}
                     </span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="mb-1 font-medium text-gray-700">
-                      Mothers Name:
+                    <span className="mb-0.5 font-medium text-gray-700">
+                      Mother's Name:
                     </span>
-                    <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                    <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                       {farmer.mothersName || "N/A"}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Contact Information */}
+              {/* Contact Information - Compact */}
               <div className="avoid-break">
-                <h3 className="mb-2 border-l-4 border-purple-500 pl-3 text-base font-semibold text-gray-800">
+                <h3 className="mb-1 border-l-2 border-purple-500 pl-2 text-sm font-semibold text-gray-800">
                   Contact Information
                 </h3>
-                <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-2">
+                <div className="grid grid-cols-2 gap-1 text-xs">
                   <div className="flex flex-col">
-                    <span className="mb-1 font-medium text-gray-700">
+                    <span className="mb-0.5 font-medium text-gray-700">
                       Contact Number:
                     </span>
-                    <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                    <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                       {farmer.contactNumber}
                     </span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="mb-1 font-medium text-gray-700">
-                      Email Address:
-                    </span>
-                    <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
-                      {farmer.email_address || "N/A"}
-                    </span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="mb-1 font-medium text-gray-700">
+                    <span className="mb-0.5 font-medium text-gray-700">
                       Emergency Contact:
                     </span>
-                    <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
-                      {farmer.personToContactIncaseOfEmerceny || "N/A"}
-                    </span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="mb-1 font-medium text-gray-700">
-                      Emergency Contact Number:
-                    </span>
-                    <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                    <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                       {farmer.personContactNumberIncaseOfEmergency || "N/A"}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Documents */}
+              {/* Documents - Smaller images */}
               <div className="avoid-break">
-                <h3 className="mb-2 border-l-4 border-orange-500 pl-3 text-base font-semibold text-gray-800">
+                <h3 className="mb-1 border-l-2 border-orange-500 pl-2 text-sm font-semibold text-gray-800">
                   Documents
                 </h3>
-                <div className="flex flex-wrap justify-center gap-4 md:justify-start">
+                <div className="flex flex-wrap justify-start gap-2">
                   {farmer.govermentId && (
                     <div className="text-center">
-                      <p className="mb-2 text-xs font-medium text-gray-700">
-                        Government ID
+                      <p className="mb-1 text-xs font-medium text-gray-700">
+                        Gov't ID
                       </p>
-                      <div className="relative h-20 w-32 overflow-hidden rounded-lg border-2 border-gray-300 shadow-sm">
+                      <div className="image-container relative overflow-hidden rounded border border-gray-300 shadow-sm">
                         <Image
                           src={farmer.govermentId}
                           alt="Government ID"
                           fill
                           className="object-cover"
-                          sizes="128px"
+                          sizes="70px"
                         />
                       </div>
                     </div>
                   )}
                   {farmer.farmerImage && (
                     <div className="text-center">
-                      <p className="mb-2 text-xs font-medium text-gray-700">
-                        Farmer Photo
+                      <p className="mb-1 text-xs font-medium text-gray-700">
+                        Photo
                       </p>
-                      <div className="relative h-20 w-32 overflow-hidden rounded-lg border-2 border-gray-300 shadow-sm">
+                      <div className="image-container relative overflow-hidden rounded border border-gray-300 shadow-sm">
                         <Image
                           src={farmer.farmerImage}
                           alt="Farmer"
                           fill
                           className="object-cover"
-                          sizes="128px"
+                          sizes="70px"
                         />
                       </div>
                     </div>
@@ -483,125 +553,121 @@ const FarmerProfilePrintView = () => {
             </div>
           </section>
 
-          {/* Address Section */}
-          <section className="compact-section avoid-break mb-6">
-            <h2 className="section-header section-divider mb-4 rounded-lg bg-gray-50 px-3 py-2 text-lg font-bold text-gray-900 print:bg-gray-100">
+          {/* Address Section - More compact */}
+          <section className="compact-section avoid-break mb-4">
+            <h2 className="section-header section-divider mb-3 rounded bg-gray-50 px-2 py-1 text-lg font-bold text-gray-900 print:bg-gray-100">
               II. ADDRESS
             </h2>
-            <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-1 text-xs">
               <div className="flex flex-col">
-                <span className="mb-1 font-medium text-gray-700">
+                <span className="mb-0.5 font-medium text-gray-700">
                   House/Lot/Building No:
                 </span>
-                <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                   {farmer.houseOrLotOrBuildingNo}
                 </span>
               </div>
               <div className="flex flex-col">
-                <span className="mb-1 font-medium text-gray-700">
+                <span className="mb-0.5 font-medium text-gray-700">
                   Street/Sitio/Subdivision:
                 </span>
-                <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                   {farmer.streetOrSitioOrSubDivision}
                 </span>
               </div>
               <div className="flex flex-col">
-                <span className="mb-1 font-medium text-gray-700">
+                <span className="mb-0.5 font-medium text-gray-700">
                   Barangay:
                 </span>
-                <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                   {farmer.barangay}
                 </span>
               </div>
               <div className="flex flex-col">
-                <span className="mb-1 font-medium text-gray-700">
+                <span className="mb-0.5 font-medium text-gray-700">
                   Municipality/City:
                 </span>
-                <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                   {farmer.municipalityOrCity}
                 </span>
               </div>
               <div className="flex flex-col">
-                <span className="mb-1 font-medium text-gray-700">
+                <span className="mb-0.5 font-medium text-gray-700">
                   Province:
                 </span>
-                <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                   {farmer.province}
                 </span>
               </div>
               <div className="flex flex-col">
-                <span className="mb-1 font-medium text-gray-700">Region:</span>
-                <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                <span className="mb-0.5 font-medium text-gray-700">Region:</span>
+                <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                   {farmer.region}
                 </span>
               </div>
             </div>
           </section>
 
-          {/* Income Section */}
-          <section className="compact-section avoid-break mb-6">
-            <h2 className="section-header section-divider mb-4 rounded-lg bg-gray-50 px-3 py-2 text-lg font-bold text-gray-900 print:bg-gray-100">
+          {/* Income Section - Compact */}
+          <section className="compact-section avoid-break mb-4">
+            <h2 className="section-header section-divider mb-3 rounded bg-gray-50 px-2 py-1 text-lg font-bold text-gray-900 print:bg-gray-100">
               III. INCOME INFORMATION
             </h2>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="rounded-lg bg-green-50 p-3 print:border print:border-gray-300 print:bg-transparent">
-                <h3 className="mb-1 text-sm font-semibold text-green-800">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded bg-green-50 p-2 print:border print:border-gray-300 print:bg-transparent">
+                <h3 className="mb-0.5 text-sm font-semibold text-green-800">
                   Farming Income
                 </h3>
-                <p className="text-lg font-bold text-green-900">
+                <p className="text-base font-bold text-green-900">
                   ₱{farmer.grossAnualIncomeLastYearFarming.toLocaleString()}
                 </p>
-                <p className="text-xs text-green-700">Gross Annual Income</p>
               </div>
-              <div className="rounded-lg bg-blue-50 p-3 print:border print:border-gray-300 print:bg-transparent">
-                <h3 className="mb-1 text-sm font-semibold text-blue-800">
+              <div className="rounded bg-blue-50 p-2 print:border print:border-gray-300 print:bg-transparent">
+                <h3 className="mb-0.5 text-sm font-semibold text-blue-800">
                   Non-Farming Income
                 </h3>
-                <p className="text-lg font-bold text-blue-900">
+                <p className="text-base font-bold text-blue-900">
                   ₱{farmer.grossAnualIncomeLastYeaNonFarming.toLocaleString()}
                 </p>
-                <p className="text-xs text-blue-700">Gross Annual Income</p>
               </div>
             </div>
           </section>
 
-          {/* Certification Section */}
-          <section className="compact-section avoid-break mb-6">
-            <h2 className="section-header section-divider mb-4 rounded-lg bg-gray-50 px-3 py-2 text-lg font-bold text-gray-900 print:bg-gray-100">
+          {/* Certification Section - Compact */}
+          <section className="compact-section avoid-break mb-4">
+            <h2 className="section-header section-divider mb-3 rounded bg-gray-50 px-2 py-1 text-lg font-bold text-gray-900 print:bg-gray-100">
               IV. CERTIFICATION
             </h2>
-            <div className="space-y-3 text-xs">
-              <div className="flex items-center space-x-4">
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center space-x-2">
                 <span className="font-medium text-gray-700">
-                  Organic Agriculture Certification:
+                  Organic Certification:
                 </span>
                 <span
-                  className={`rounded-full px-2 py-1 text-xs font-medium ${
+                  className={`rounded px-1 py-0.5 text-xs font-medium ${
                     farmer.withOrganicAgricultureCertification
                       ? "bg-green-100 text-green-800 print:border print:border-green-600 print:bg-transparent"
                       : "bg-red-100 text-red-800 print:border print:border-red-600 print:bg-transparent"
                   }`}
                 >
-                  {farmer.withOrganicAgricultureCertification
-                    ? "✓ Yes"
-                    : "✗ No"}
+                  {farmer.withOrganicAgricultureCertification ? "Yes" : "No"}
                 </span>
               </div>
               {farmer.withOrganicAgricultureCertification && (
-                <div className="ml-4 space-y-2">
+                <div className="ml-2 space-y-1">
                   <div className="flex flex-col">
-                    <span className="mb-1 font-medium text-gray-700">
+                    <span className="mb-0.5 font-medium text-gray-700">
                       Certification Type:
                     </span>
-                    <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                    <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                       {farmer.certification || "N/A"}
                     </span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="mb-1 font-medium text-gray-700">
+                    <span className="mb-0.5 font-medium text-gray-700">
                       Certification Stage:
                     </span>
-                    <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                    <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                       {farmer.whatStagesInCertification || "N/A"}
                     </span>
                   </div>
@@ -610,96 +676,66 @@ const FarmerProfilePrintView = () => {
             </div>
           </section>
 
-          {/* Nature of Business Section */}
-          <section className="compact-section avoid-break mb-6">
-            <h2 className="section-header section-divider mb-4 rounded-lg bg-gray-50 px-3 py-2 text-lg font-bold text-gray-900 print:bg-gray-100">
+          {/* Nature of Business Section - Compact */}
+          <section className="compact-section avoid-break mb-4">
+            <h2 className="section-header section-divider mb-3 rounded bg-gray-50 px-2 py-1 text-lg font-bold text-gray-900 print:bg-gray-100">
               V. NATURE OF BUSINESS
             </h2>
-            <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-2">
-              <div className="space-y-2">
-                <div className="flex flex-col">
-                  <span className="mb-1 font-medium text-gray-700">
-                    Production for Inputs:
-                  </span>
-                  <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+            <div className="grid grid-cols-2 gap-1 text-xs">
+              <div className="space-y-1">
+                <div className="flex items-center space-x-1">
+                  <span className="font-medium text-gray-700">Inputs:</span>
+                  <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                     {farmer.productionForInputs || "N/A"}
                   </span>
                 </div>
-                <div className="flex flex-col">
-                  <span className="mb-1 font-medium text-gray-700">
-                    Production for Food:
-                  </span>
-                  <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                <div className="flex items-center space-x-1">
+                  <span className="font-medium text-gray-700">Food:</span>
+                  <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                     {farmer.productionForFood || "N/A"}
                   </span>
                 </div>
-                <div className="flex flex-col">
-                  <span className="mb-1 font-medium text-gray-700">
-                    Post Harvest & Processing:
-                  </span>
-                  <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                <div className="flex items-center space-x-1">
+                  <span className="font-medium text-gray-700">Processing:</span>
+                  <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                     {farmer.postHarvestAndProcessing || "N/A"}
                   </span>
                 </div>
-                <div className="flex flex-col">
-                  <span className="mb-1 font-medium text-gray-700">
-                    Transport & Logistics:
-                  </span>
-                  <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
-                    {farmer.transPortAndLogistics || "N/A"}
-                  </span>
-                </div>
               </div>
-              <div className="space-y-2">
-                <div className="flex flex-col">
-                  <span className="mb-1 font-medium text-gray-700">
-                    Trading & Wholesale:
-                  </span>
-                  <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+              <div className="space-y-1">
+                <div className="flex items-center space-x-1">
+                  <span className="font-medium text-gray-700">Trading:</span>
+                  <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                     {farmer.tradingAndWholeSale || "N/A"}
                   </span>
                 </div>
-                <div className="flex flex-col">
-                  <span className="mb-1 font-medium text-gray-700">
-                    Retailing:
-                  </span>
-                  <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                <div className="flex items-center space-x-1">
+                  <span className="font-medium text-gray-700">Retailing:</span>
+                  <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                     {farmer.retailing || "N/A"}
                   </span>
                 </div>
-                <div className="flex flex-col">
-                  <span className="mb-1 font-medium text-gray-700">
-                    Warehousing:
-                  </span>
-                  <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                <div className="flex items-center space-x-1">
+                  <span className="font-medium text-gray-700">Warehouse:</span>
+                  <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                     {farmer.WareHousing || "N/A"}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="mb-1 font-medium text-gray-700">
-                    Others:
-                  </span>
-                  <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
-                    {farmer.Others || "N/A"}
                   </span>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* Target Market Section */}
-          <section className="compact-section avoid-break mb-6">
-            <h2 className="section-header section-divider mb-4 rounded-lg bg-gray-50 px-3 py-2 text-lg font-bold text-gray-900 print:bg-gray-100">
+          {/* Target Market Section - Compact */}
+          <section className="compact-section avoid-break mb-4">
+            <h2 className="section-header section-divider mb-3 rounded bg-gray-50 px-2 py-1 text-lg font-bold text-gray-900 print:bg-gray-100">
               VI. TARGET MARKET
             </h2>
-            <div className="grid grid-cols-1 gap-4 text-xs md:grid-cols-2">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between rounded bg-gray-50 p-2 print:border print:border-gray-300 print:bg-transparent">
-                  <span className="font-medium text-gray-700">
-                    Direct to Consumer:
-                  </span>
+            <div className="grid grid-cols-2 gap-1 text-xs">
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-gray-700">Consumer:</span>
                   <span
-                    className={`rounded px-2 py-1 text-xs font-medium ${
+                    className={`rounded px-1 py-0.5 text-xs font-medium ${
                       farmer.direcToConsumer
                         ? "bg-green-100 text-green-800 print:border print:border-green-600 print:bg-transparent"
                         : "bg-gray-200 text-gray-600 print:border print:border-gray-400 print:bg-transparent"
@@ -708,31 +744,24 @@ const FarmerProfilePrintView = () => {
                     {farmer.direcToConsumer ? "Yes" : "No"}
                   </span>
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between rounded bg-gray-50 p-2 print:border print:border-gray-300 print:bg-transparent">
-                    <span className="font-medium text-gray-700">Trader:</span>
-                    <span
-                      className={`rounded px-2 py-1 text-xs font-medium ${
-                        farmer.trader
-                          ? "bg-green-100 text-green-800 print:border print:border-green-600 print:bg-transparent"
-                          : "bg-gray-200 text-gray-600 print:border print:border-gray-400 print:bg-transparent"
-                      }`}
-                    >
-                      {farmer.trader ? "Yes" : "No"}
-                    </span>
-                  </div>
-                  {farmer.trader && farmer.specificType1 && (
-                    <div className="ml-3 rounded bg-blue-50 p-1 print:border print:border-blue-300 print:bg-transparent">
-                      <span className="text-xs text-blue-800">
-                        <strong>Type:</strong> {farmer.specificType1}
-                      </span>
-                    </div>
-                  )}
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-gray-700">Trader:</span>
+                  <span
+                    className={`rounded px-1 py-0.5 text-xs font-medium ${
+                      farmer.trader
+                        ? "bg-green-100 text-green-800 print:border print:border-green-600 print:bg-transparent"
+                        : "bg-gray-200 text-gray-600 print:border print:border-gray-400 print:bg-transparent"
+                    }`}
+                  >
+                    {farmer.trader ? "Yes" : "No"}
+                  </span>
                 </div>
-                <div className="flex items-center justify-between rounded bg-gray-50 p-2 print:border print:border-gray-300 print:bg-transparent">
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
                   <span className="font-medium text-gray-700">Retailer:</span>
                   <span
-                    className={`rounded px-2 py-1 text-xs font-medium ${
+                    className={`rounded px-1 py-0.5 text-xs font-medium ${
                       farmer.retailer
                         ? "bg-green-100 text-green-800 print:border print:border-green-600 print:bg-transparent"
                         : "bg-gray-200 text-gray-600 print:border print:border-gray-400 print:bg-transparent"
@@ -741,73 +770,30 @@ const FarmerProfilePrintView = () => {
                     {farmer.retailer ? "Yes" : "No"}
                   </span>
                 </div>
-              </div>
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between rounded bg-gray-50 p-2 print:border print:border-gray-300 print:bg-transparent">
-                    <span className="font-medium text-gray-700">
-                      Institutional Buyer:
-                    </span>
-                    <span
-                      className={`rounded px-2 py-1 text-xs font-medium ${
-                        farmer.institutionalBuyer
-                          ? "bg-green-100 text-green-800 print:border print:border-green-600 print:bg-transparent"
-                          : "bg-gray-200 text-gray-600 print:border print:border-gray-400 print:bg-transparent"
-                      }`}
-                    >
-                      {farmer.institutionalBuyer ? "Yes" : "No"}
-                    </span>
-                  </div>
-                  {(farmer.retailer || farmer.institutionalBuyer) &&
-                    farmer.SpecificType2 && (
-                      <div className="ml-3 rounded bg-blue-50 p-1 print:border print:border-blue-300 print:bg-transparent">
-                        <span className="text-xs text-blue-800">
-                          <strong>Type:</strong> {farmer.SpecificType2}
-                        </span>
-                      </div>
-                    )}
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between rounded bg-gray-50 p-2 print:border print:border-gray-300 print:bg-transparent">
-                    <span className="font-medium text-gray-700">
-                      International Buyers:
-                    </span>
-                    <span
-                      className={`rounded px-2 py-1 text-xs font-medium ${
-                        farmer.internationalBasedBuyers
-                          ? "bg-green-100 text-green-800 print:border print:border-green-600 print:bg-transparent"
-                          : "bg-gray-200 text-gray-600 print:border print:border-gray-400 print:bg-transparent"
-                      }`}
-                    >
-                      {farmer.internationalBasedBuyers ? "Yes" : "No"}
-                    </span>
-                  </div>
-                  {farmer.internationalBasedBuyers && farmer.SpecificType3 && (
-                    <div className="ml-3 rounded bg-blue-50 p-1 print:border print:border-blue-300 print:bg-transparent">
-                      <span className="text-xs text-blue-800">
-                        <strong>Type:</strong> {farmer.SpecificType3}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col">
-                  <span className="mb-1 font-medium text-gray-700">
-                    Others:
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-gray-700">
+                    Institutional:
                   </span>
-                  <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
-                    {farmer.others || "N/A"}
+                  <span
+                    className={`rounded px-1 py-0.5 text-xs font-medium ${
+                      farmer.institutionalBuyer
+                        ? "bg-green-100 text-green-800 print:border print:border-green-600 print:bg-transparent"
+                        : "bg-gray-200 text-gray-600 print:border print:border-gray-400 print:bg-transparent"
+                    }`}
+                  >
+                    {farmer.institutionalBuyer ? "Yes" : "No"}
                   </span>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* Agricultural Commodities Section */}
-          <section className="mb-6">
-            <h2 className="section-header section-divider mb-4 rounded-lg bg-gray-50 px-3 py-2 text-lg font-bold text-gray-900 print:bg-gray-100">
+          {/* Agricultural Commodities Section - Made much more compact */}
+          <section className="mb-4">
+            <h2 className="section-header section-divider mb-3 rounded bg-gray-50 px-2 py-1 text-lg font-bold text-gray-900 print:bg-gray-100">
               VII. AGRICULTURAL COMMODITIES
             </h2>
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-1">
               {renderCommoditySection(farmer.Grains, "Grains")}
               {renderCommoditySection(
                 farmer.LowlandVegetables,
@@ -835,119 +821,83 @@ const FarmerProfilePrintView = () => {
               )}
               {renderCommoditySection(
                 farmer.IndustrialCropsAndProducts,
-                "Industrial Crops and Products",
+                "Industrial Crops",
               )}
               {renderCommoditySection(farmer.OtherCommodity, "Other Commodity")}
-              {farmer.othersCommodity && (
-                <div className="avoid-break compact-spacing mb-4">
-                  <h3 className="mb-2 border-l-4 border-yellow-500 pl-3 text-base font-semibold text-gray-800">
-                    Additional Commodities
-                  </h3>
-                  <div className="ml-6 rounded-lg bg-yellow-50 p-3 print:border print:border-yellow-300 print:bg-transparent">
-                    <p className="text-xs text-gray-900">
-                      {farmer.othersCommodity}
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
+            {farmer.othersCommodity && (
+              <div className="avoid-break compact-spacing mt-2">
+                <h3 className="mb-1 border-l-2 border-yellow-500 pl-2 text-sm font-semibold text-gray-800">
+                  Additional Commodities
+                </h3>
+                <div className="ml-4 rounded bg-yellow-50 p-2 print:border print:border-yellow-300 print:bg-transparent">
+                  <p className="text-xs text-gray-900">{farmer.othersCommodity}</p>
+                </div>
+              </div>
+            )}
           </section>
 
-          {/* Facilities Section */}
-          <section className="mb-6">
-            <h2 className="section-header section-divider mb-4 rounded-lg bg-gray-50 px-3 py-2 text-lg font-bold text-gray-900 print:bg-gray-100">
+          {/* Facilities Section - Made much more compact */}
+          <section className="mb-4">
+            <h2 className="section-header section-divider mb-3 rounded bg-gray-50 px-2 py-1 text-lg font-bold text-gray-900 print:bg-gray-100">
               VIII. OWNED/SHARED FACILITIES
             </h2>
             {farmer.ownSharedFacilities &&
             farmer.ownSharedFacilities.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {farmer.ownSharedFacilities.map(
                   (facility: FacilityData, index: number) => (
                     <div
                       key={facility.id || index}
-                      className="facility-card avoid-break rounded-lg border border-gray-300 bg-white p-3 shadow-sm print:shadow-none"
+                      className="facility-card avoid-break rounded border border-gray-300 bg-white p-2"
                     >
-                      <div className="mb-3">
-                        <h3 className="border-b border-gray-200 pb-1 text-base font-semibold text-gray-800">
+                      <div className="mb-2">
+                        <h3 className="border-b border-gray-200 pb-1 text-sm font-semibold text-gray-800">
                           Facility #{index + 1}
                         </h3>
                       </div>
-                      <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-2">
-                        <div className="space-y-2">
+                      <div className="grid grid-cols-2 gap-1 text-xs">
+                        <div className="space-y-1">
                           <div className="flex flex-col">
-                            <span className="mb-1 font-medium text-gray-700">
+                            <span className="mb-0.5 font-medium text-gray-700">
                               Equipment:
                             </span>
-                            <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                            <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                               {facility.facilitiesMachineryEquipmentUsed}
                             </span>
                           </div>
                           <div className="flex flex-col">
-                            <span className="mb-1 font-medium text-gray-700">
+                            <span className="mb-0.5 font-medium text-gray-700">
                               Ownership:
                             </span>
-                            <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                            <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                               {facility.ownership}
                             </span>
                           </div>
+                        </div>
+                        <div className="space-y-1">
                           <div className="flex flex-col">
-                            <span className="mb-1 font-medium text-gray-700">
-                              Model:
-                            </span>
-                            <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
-                              {facility.model}
-                            </span>
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="mb-1 font-medium text-gray-700">
+                            <span className="mb-0.5 font-medium text-gray-700">
                               Quantity:
                             </span>
-                            <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
+                            <span className="rounded bg-gray-50 px-1 py-0.5 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
                               {facility.quantity}
                             </span>
                           </div>
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex flex-col">
-                            <span className="mb-1 font-medium text-gray-700">
-                              Volume/Service Area:
-                            </span>
-                            <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
-                              {facility.volumeServicesArea}
-                            </span>
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="mb-1 font-medium text-gray-700">
-                              Working Hours/Day:
-                            </span>
-                            <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
-                              {facility.averageWorkingHoursDay}
-                            </span>
-                          </div>
-                          <div className="flex items-center space-x-4">
+                          <div className="flex items-center space-x-1">
                             <span className="font-medium text-gray-700">
-                              Dedicated to Organic:
+                              Organic:
                             </span>
                             <span
-                              className={`rounded-full px-2 py-1 text-xs font-medium ${
+                              className={`rounded px-1 py-0.5 text-xs font-medium ${
                                 facility.dedicatedToOrganic
                                   ? "bg-green-100 text-green-800 print:border print:border-green-600 print:bg-transparent"
                                   : "bg-red-100 text-red-800 print:border print:border-red-600 print:bg-transparent"
                               }`}
                             >
-                              {facility.dedicatedToOrganic ? "✓ Yes" : "✗ No"}
+                              {facility.dedicatedToOrganic ? "Yes" : "No"}
                             </span>
                           </div>
-                          {facility.Remarks && (
-                            <div className="flex flex-col">
-                              <span className="mb-1 font-medium text-gray-700">
-                                Remarks:
-                              </span>
-                              <span className="rounded bg-gray-50 px-2 py-1 text-gray-900 print:border-b print:border-gray-400 print:bg-transparent">
-                                {facility.Remarks}
-                              </span>
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -955,73 +905,19 @@ const FarmerProfilePrintView = () => {
                 )}
               </div>
             ) : (
-              <div className="py-8 text-center text-gray-500">
-                <div className="mb-2 text-2xl">📦</div>
-                <p className="text-sm">No facilities recorded</p>
+              <div className="py-4 text-center text-gray-500">
+                <div className="mb-1 text-xl">📦</div>
+                <p className="text-xs">No facilities recorded</p>
               </div>
             )}
           </section>
 
-          {/* <div className="page-break mt-12 border-t-2 border-black pt-6">
-            <div className="mb-8 text-center">
-              <p className="mb-1 text-base font-semibold text-gray-800">
-                Document Generated:{" "}
-                {new Date().toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </p>
-              <p className="text-xs text-gray-600 italic">
-                This document contains confidential agricultural information.
-                Handle with care.
-              </p>
-            </div>
-
-            <div className="mt-12 grid grid-cols-1 gap-12 md:grid-cols-2">
-              <div className="text-center">
-                <div className="mb-3 flex h-12 items-end justify-center border-b-2 border-black">
-                  <span className="pb-1 text-xs text-gray-400">
-                    (Signature)
-                  </span>
-                </div>
-                <div className="mb-1 flex items-center justify-center">
-                  <span className="text-xs text-gray-500">Thumbmark</span>
-                </div>
-                <p className="mb-2 text-base font-bold text-gray-800">
-                  FARMERS SIGNATURE
-                </p>
-                <div className="flex items-center justify-center space-x-4">
-                  <span className="text-xs font-medium text-gray-700">
-                    Date:
-                  </span>
-                  <div className="h-4 w-24 border-b border-black"></div>
-                </div>
-              </div>
-
-              <div className="text-center">
-                <div className="mb-3 flex h-12 items-end justify-center border-b-2 border-black">
-                  <span className="pb-1 text-xs text-gray-400">
-                    (Signature)
-                  </span>
-                </div>
-                <p className="mb-2 text-base font-bold text-gray-800">
-                  AUTHORIZED OFFICER
-                </p>
-                <div className="flex items-center justify-center space-x-4">
-                  <span className="text-xs font-medium text-gray-700">
-                    Date:
-                  </span>
-                  <div className="h-4 w-24 border-b border-black"></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 text-center text-xs text-gray-500">
-              <p>Republic of the Philippines | Department of Agriculture</p>
-              <p>Organic Agriculture Profile - Official Document</p>
-            </div>
-          </div> */}
+          {/* Footer with generation date */}
+          <div className="mt-4 border-t border-gray-300 pt-2 text-center">
+            <p className="text-xs text-gray-600">
+              Document Generated: {new Date().toLocaleDateString()}
+            </p>
+          </div>
         </div>
       </div>
     </>
