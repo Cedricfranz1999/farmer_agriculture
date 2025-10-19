@@ -146,69 +146,86 @@ const FarmerApplicantsPage = () => {
   };
 
   // Confirm status update
-  const confirmStatusUpdate = async () => {
-    if (!selectedFarmer) return;
-    updateStatusMutation.mutate({
-      id: selectedFarmer.id,
-      status: selectedFarmer.newStatus || null,
-      rejectionReason: "IS NOT GOOD "
-    });
-    
-    if (selectedFarmer.email) {
-      try {
-        await sendVerifyEmailAction(
-          selectedFarmer.email,
-          selectedFarmer.newStatus,
-          selectedFarmer.name,
-          rejectionMessage,
-        );
-      } catch (err) {
-        console.error("Email failed:", err);
-      }
+const confirmStatusUpdate = async () => {
+  if (!selectedFarmer) return;
+  
+  updateStatusMutation.mutate({
+    id: selectedFarmer.id,
+    status: selectedFarmer.newStatus || null,
+    rejectionReason: rejectionMessage
+  });
+
+  if (selectedFarmer.email) {
+    try {
+      await sendVerifyEmailAction(
+        selectedFarmer.email,
+        selectedFarmer.newStatus,
+        selectedFarmer.name,
+        rejectionMessage,
+      );
+    } catch (err) {
+      console.error("Email failed:", err);
     }
-    
-    const contact = selectedFarmer.contactNumber?.trim();
-    const isValidContact =
-      contact && contact.length === 11 && contact.startsWith("09");
-    
-    if (isValidContact) {
-      try {
-        const message = `Hello ${selectedFarmer.name},
+  }
+
+  const contact = selectedFarmer.contactNumber?.trim();
+  console.log("Contact number:", contact);
+
+  const isValidContact = contact && contact.length === 11 && contact.startsWith("09");
+  
+  if (isValidContact) {
+    try {
+      setLoading(true);
+      
+      const message = `Hello ${selectedFarmer.name},
 Thank you for applying to the Farmer Management System.
 Your current application status is: ${selectedFarmer.newStatus}
 ${rejectionMessage ? `Reason: ${rejectionMessage}` : ""}
 We will notify you of further updates.
 Best regards,
 Farmer Management Team`;
-        
-        const res = await fetch(
-          `https://api.textbee.dev/api/v1/gateway/devices/${process.env.NEXT_PUBLIC_TEXTBEE_DEVICE_ID}/send-sms`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-api-key": process.env.NEXT_PUBLIC_TEXTBEE_API_KEY as string,
-            },
-            body: JSON.stringify({
-              to: contact,
-              message: message,
-            }),
+      
+      // FIX 1: Use array for recipients as per API documentation
+      // FIX 2: Add proper error handling
+      const res = await fetch(
+        `https://api.textbee.dev/api/v1/gateway/devices/${process.env.NEXT_PUBLIC_TEXTBEE_DEVICE_ID}/send-sms`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": process.env.NEXT_PUBLIC_TEXTBEE_API_KEY as string,
           },
-        );
-        const data = await res.json();
-        setResponse(data);
-      } catch (err) {
-        setResponse({ error: "Failed to send SMS" });
-      } finally {
-        setLoading(false);
-        setRejectionMessage("");
+          body: JSON.stringify({
+            recipients: [contact], // FIX: Wrap in array
+            message: message,
+          }),
+        },
+      );
+
+      // FIX 3: Check if response is ok
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error("TextBee API error:", errorData);
+        throw new Error(`SMS sending failed: ${res.status} ${res.statusText}`);
       }
-    } else {
-      console.warn("Invalid or missing contact number");
+
+      const data = await res.json();
+      console.log("SMS sent successfully:", data);
+      setResponse(data);
+      
+    } catch (err) {
+      console.error("Failed to send SMS:", err);
+      setResponse({ error: err instanceof Error ? err.message : "Failed to send SMS" });
+    } finally {
       setLoading(false);
       setRejectionMessage("");
     }
-  };
+  } else {
+    console.warn("Invalid or missing contact number:", contact);
+    setLoading(false);
+    setRejectionMessage("");
+  }
+};
 
   // Date range handlers
   const handleDateRangeChange = (from: Date | null, to: Date | null) => {
