@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { api } from "~/trpc/react";
 import AllocationsTable from "../allocationTable";
+import { useRouter } from "next/navigation";
 
 const OrganicFarmerQRScanner = () => {
   const [isScanning, setIsScanning] = useState<boolean>(false);
@@ -259,6 +260,9 @@ const AllocationModal = ({
     );
   };
 
+
+  const router = useRouter()
+
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setAmount(value === "" ? 0 : parseInt(value) || 0);
@@ -270,50 +274,65 @@ const AllocationModal = ({
   };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white p-6">
-        <h2 className="mb-4 text-xl font-bold">Allocation Details</h2>
-        <div className="mb-4 flex flex-col items-center">
-          <p className="text-lg font-semibold">
-            {firstname} {lastname}
-          </p>
-        </div>
-         <div className="mb-4">
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Allocation Type
-          </label>
-          <input
-            onChange={handleTextChange}
-            className="w-full rounded-md border p-2"
-            placeholder="Enter Allocation Type"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Allocation Amount 
-          </label>
-          <input
-            type="number"
-            value={amount === 0 ? "" : amount}
-            onChange={handleAmountChange}
-            className="w-full rounded-md border p-2"
-            placeholder="Enter amount in kg"
-          />
-        </div>
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="rounded border px-4 py-2 hover:bg-gray-100"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="rounded bg-green-700 px-4 py-2 text-white hover:bg-green-800"
-          >
-            Confirm Allocation
-          </button>
-        </div>
-      </div>
+    <div className="w-full max-w-md rounded-lg bg-white p-6">
+  <h2 className="mb-4 text-xl font-bold">Allocation Details</h2>
+
+  <div className="mb-4 flex flex-col items-center">
+    <p className="text-lg font-semibold">
+      {firstname} {lastname}
+    </p>
+  </div>
+
+  <div className="mb-4">
+    <label className="mb-1 block text-sm font-medium text-gray-700">
+      Allocation Type
+    </label>
+    <input
+      onChange={handleTextChange}
+      className="w-full rounded-md border p-2"
+      placeholder="Enter Allocation Type"
+    />
+  </div>
+
+  <div className="mb-4">
+    <label className="mb-1 block text-sm font-medium text-gray-700">
+      Allocation Amount
+    </label>
+    <input
+      type="number"
+      value={amount === 0 ? "" : amount}
+      onChange={handleAmountChange}
+      className="w-full rounded-md border p-2"
+      placeholder="Enter amount in kg"
+    />
+  </div>
+
+  <div className="flex justify-end gap-2">
+    <button
+      onClick={onClose}
+      className="rounded border px-4 py-2 hover:bg-gray-100"
+    >
+      Cancel
+    </button>
+    <button
+      onClick={handleSubmit}
+      className="rounded bg-green-700 px-4 py-2 text-white hover:bg-green-800"
+    >
+      Confirm Allocation
+    </button>
+  </div>
+
+  {/* View More Details Button */}
+  <div className="mt-4 flex justify-center">
+    <button
+      onClick={()=> router.push(`/admin/organic-farmer/profile/${organicFarmerId}`)}
+      className="text-sm font-medium text-teal-600 hover:text-teal-700"
+    >
+      View More Details
+    </button>
+  </div>
+</div>
+
     </div>
   );
 };

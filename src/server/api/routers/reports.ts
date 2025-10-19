@@ -232,19 +232,39 @@ export const reportsRouter = createTRPCRouter({
                 {
                   firstname: { contains: search, mode: "insensitive" as const },
                 },
-                { surname: { contains: search, mode: "insensitive" as const } },
-                {
-                  email_address: {
-                    contains: search,
-                    mode: "insensitive" as const,
-                  },
+                { 
+                  surname: { contains: search, mode: "insensitive" as const } 
+                },
+                { 
+                  email_address: { 
+                    contains: search, 
+                    mode: "insensitive" as const 
+                  } 
                 },
                 {
-                  municipalityOrCity: {
-                    contains: search,
-                    mode: "insensitive" as const,
-                  },
+                  municipalityOrCity: { 
+                    contains: search, 
+                    mode: "insensitive" as const 
+                  }
                 },
+                {
+                  barangay: { 
+                    contains: search, 
+                    mode: "insensitive" as const 
+                  }
+                },
+                {
+                  province: { 
+                    contains: search, 
+                    mode: "insensitive" as const 
+                  }
+                },
+                {
+                  region: { 
+                    contains: search, 
+                    mode: "insensitive" as const 
+                  }
+                }
               ],
             }
           : {};
@@ -321,6 +341,7 @@ export const reportsRouter = createTRPCRouter({
         const results = await Promise.all(queries);
         const farmersList = [];
 
+        // Process regular farmers
         if (farmerType === "all" || farmerType === "farmer") {
           const farmers = results[0] as any[];
           for (const farmer of farmers) {
@@ -348,6 +369,7 @@ export const reportsRouter = createTRPCRouter({
           }
         }
 
+        // Process organic farmers
         if (farmerType === "all" || farmerType === "organic") {
           const organicFarmers = farmerType === "all" ? results[1] : results[0];
           for (const farmer of organicFarmers as any) {
@@ -395,6 +417,7 @@ export const reportsRouter = createTRPCRouter({
               OR: [
                 { What: { contains: search, mode: "insensitive" as const } },
                 { Where: { contains: search, mode: "insensitive" as const } },
+                { Note: { contains: search, mode: "insensitive" as const } },
               ],
             }
           : {};
@@ -503,9 +526,42 @@ export const reportsRouter = createTRPCRouter({
       }
 
       if (reportType === "allocations") {
+        const searchFilter = search
+          ? {
+              OR: [
+                { AllocationType: { contains: search, mode: "insensitive" as const } },
+                {
+                  farmers: {
+                    some: {
+                      OR: [
+                        {
+                          farmer: {
+                            OR: [
+                              { firstname: { contains: search, mode: "insensitive" as const } },
+                              { surname: { contains: search, mode: "insensitive" as const } },
+                            ]
+                          }
+                        },
+                        {
+                          organicFarmer: {
+                            OR: [
+                              { firstname: { contains: search, mode: "insensitive" as const } },
+                              { surname: { contains: search, mode: "insensitive" as const } },
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+            }
+          : {};
+
         const allocations = await ctx.db.allocation.findMany({
           where: {
             ...dateFilter,
+            ...searchFilter,
           },
           include: {
             farmers: {

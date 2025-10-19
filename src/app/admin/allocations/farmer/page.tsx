@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { Scanner, useDevices } from "@yudiel/react-qr-scanner";
-import { Camera, QrCode, VideoOff } from "lucide-react";
+import { Camera, QrCode, Router, VideoOff } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
@@ -9,6 +9,7 @@ import { api } from "~/trpc/react";
 import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import AllocationsTable from "../allocationTable";
+import { useRouter } from "next/navigation";
 
 const FarmerQRScanner = () => {
   const [isScanning, setIsScanning] = useState<boolean>(false);
@@ -242,65 +243,76 @@ const AllocationModal = ({
     const value = e.target.value;
     setType(value);
   };
+
+  const router = useRouter()
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white p-6">
-        <h2 className="mb-4 text-xl font-bold">Allocation Details</h2>
-        <div className="mb-4 flex flex-col items-center">
-          {image && (
-            <Image
-              src={image}
-              alt={`${firstname} ${lastname}`}
-              width={120}
-              height={120}
-              className="mb-2 rounded-full object-cover"
-            />
-          )}
-          <p className="text-lg font-semibold">
-            {firstname} {lastname}
-          </p>
-        </div>
+   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+  <div className="w-full max-w-md rounded-lg bg-white p-6">
+    <h2 className="mb-4 text-xl font-bold">Allocation Details</h2>
 
-          <div className="mb-4">
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Allocation Type
-          </label>
-          <input
-            onChange={handleTextChange}
-            className="w-full rounded-md border p-2"
-            placeholder="Enter Allocation Type"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Allocation Amount
-          </label>
-          <input
-            type="number"
-            value={amount === 0 ? "" : amount}
-            onChange={handleAmountChange}
-            className="w-full rounded-md border p-2"
-            placeholder="Enter amount"
-          />
-        </div>
+    <div className="mb-4 flex flex-col items-center">
+      {image && (
+        <Image
+          src={image}
+          alt={`${firstname} ${lastname}`}
+          width={120}
+          height={120}
+          className="mb-2 rounded-full object-cover"
+        />
+      )}
+      <p className="text-lg font-semibold">
+        {firstname} {lastname}
+      </p>
 
-         
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="rounded border px-4 py-2 hover:bg-gray-100"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="rounded bg-teal-700 px-4 py-2 text-white hover:bg-teal-800"
-          >
-            Approve
-          </button>
-        </div>
-      </div>
+      <button
+        onClick={()=>{router.push(`/admin/farmer/profile/${farmerId}`)}}
+        className="mt-2 rounded bg-teal-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-teal-700"
+      >
+        View More Details
+      </button>
     </div>
+
+    <div className="mb-4">
+      <label className="mb-1 block text-sm font-medium text-gray-700">
+        Allocation Type
+      </label>
+      <input
+        onChange={handleTextChange}
+        className="w-full rounded-md border p-2"
+        placeholder="Enter Allocation Type"
+      />
+    </div>
+
+    <div className="mb-4">
+      <label className="mb-1 block text-sm font-medium text-gray-700">
+        Allocation Amount
+      </label>
+      <input
+        type="number"
+        value={amount === 0 ? "" : amount}
+        onChange={handleAmountChange}
+        className="w-full rounded-md border p-2"
+        placeholder="Enter amount"
+      />
+    </div>
+
+    <div className="flex justify-end gap-2">
+      <button
+        onClick={onClose}
+        className="rounded border px-4 py-2 hover:bg-gray-100"
+      >
+        Cancel
+      </button>
+      <button
+        onClick={handleSubmit}
+        className="rounded bg-teal-700 px-4 py-2 text-white hover:bg-teal-800"
+      >
+        Approve
+      </button>
+    </div>
+  </div>
+</div>
+
   );
 };
 

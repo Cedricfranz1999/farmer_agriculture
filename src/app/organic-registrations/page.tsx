@@ -231,7 +231,7 @@ const OrganicFarmerSignupPage = () => {
           : "Organic farmer account created successfully",
         variant: "default",
       });
-      router.push("/organic-registrations/info");
+      router.push("/organic-registrations/success");
     },
     onError: (error) => {
       toast({

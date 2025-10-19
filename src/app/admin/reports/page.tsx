@@ -74,14 +74,14 @@ const COLORS = [
 ];
 
 const ReportsPage = () => {
-const now = new Date();
-const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  const now = new Date();
+  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-const [dateRange, setDateRange] = useState<DateRange | undefined>({
-  from: firstDayOfMonth,
-  to: lastDayOfMonth,
-});
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: firstDayOfMonth,
+    to: lastDayOfMonth,
+  });
   const [searchTerm, setSearchTerm] = useState("");
   const [reportType, setReportType] = useState<
     "farmers" | "events" | "concerns" | "overview" | "allocations"
@@ -91,6 +91,7 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
   >("ALL");
   const [farmerType, setFarmerType] = useState<"all" | "farmer" | "organic">("all");
   const [exportFormat, setExportFormat] = useState<"csv" | "print">("csv");
+  const [searchQuery, setSearchQuery] = useState("");
   const printRef = React.useRef<HTMLDivElement>(null);
 
   const {
@@ -101,10 +102,19 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
     startDate: dateRange?.from,
     endDate: dateRange?.to,
     reportType,
-    search: searchTerm,
+    search: searchQuery,
     status: status,
     farmerType: farmerType,
   });
+
+  const handleSearch = () => {
+    setSearchQuery(searchTerm);
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm("");
+    setSearchQuery("");
+  };
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
@@ -264,35 +274,11 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
     }
   };
 
-  const filteredData = useMemo(() => {
-    if (!reportsData || !searchTerm) return reportsData;
-    return {
-      ...reportsData,
-      farmersList: reportsData.farmersList?.filter(
-        (farmer) =>
-          farmer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          farmer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          farmer.municipality.toLowerCase().includes(searchTerm.toLowerCase()),
-      ),
-      eventsList: reportsData.eventsList?.filter(
-        (event) =>
-          event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          event.location.toLowerCase().includes(searchTerm.toLowerCase()),
-      ),
-      concernsList: reportsData.concernsList?.filter(
-        (concern) =>
-          concern.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          concern.description.toLowerCase().includes(searchTerm.toLowerCase()),
-      ),
-      allocationsList: reportsData.allocationsList?.filter(
-        (allocation) =>
-          allocation.allocationType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          allocation.farmers.some((farmer: any) => 
-            farmer.name.toLowerCase().includes(searchTerm.toLowerCase())
-          ),
-      ),
-    };
-  }, [reportsData, searchTerm]);
+  const handleRefetch = () => {
+    setSearchTerm("");
+    setSearchQuery("");
+    refetch();
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50 p-4">
@@ -418,14 +404,39 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
                 <label className="mb-2 block text-sm font-medium text-gray-700">
                   Search
                 </label>
-                <div className="relative">
-                  <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                  <Input
-                    placeholder="Search records..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
+                <div className="flex space-x-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <Input
+                      placeholder="Search records..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter") {
+                          handleSearch();
+                        }
+                      }}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Button
+                    onClick={handleSearch}
+                    size="sm"
+                    variant="outline"
+                    className="bg-emerald-50 hover:bg-emerald-100"
+                  >
+                    <Search className="h-4 w-4" />
+                  </Button>
+                  {searchQuery && (
+                    <Button
+                      onClick={handleClearSearch}
+                      size="sm"
+                      variant="outline"
+                      className="bg-red-50 hover:bg-red-100"
+                    >
+                      Clear
+                    </Button>
+                  )}
                 </div>
               </div>
               <div className="flex flex-col space-y-2">
@@ -456,7 +467,7 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
                       <Printer className="h-4 w-4" />
                     )}
                   </Button>
-                  <Button onClick={() => refetch()} size="sm" variant="outline">
+                  <Button onClick={handleRefetch} size="sm" variant="outline">
                     <RefreshCw className="h-4 w-4" />
                   </Button>
                 </div>
@@ -484,7 +495,7 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
           ) : (
             <>
               <div ref={printRef}>
-                {reportType === "overview" && filteredData && (
+                {reportType === "overview" && reportsData && (
                   <>
                     <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                       <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
@@ -496,10 +507,10 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
                         </CardHeader>
                         <CardContent>
                           <div className="text-2xl font-bold text-emerald-700">
-                            {filteredData.totalFarmers?.toLocaleString()}
+                            {reportsData.totalFarmers?.toLocaleString()}
                           </div>
                           <p className="text-muted-foreground text-xs">
-                            +{filteredData.newFarmersThisMonth} this month
+                            +{reportsData.newFarmersThisMonth} this month
                           </p>
                         </CardContent>
                       </Card>
@@ -512,10 +523,10 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
                         </CardHeader>
                         <CardContent>
                           <div className="text-2xl font-bold text-green-700">
-                            {filteredData.totalOrganicFarmers?.toLocaleString()}
+                            {reportsData.totalOrganicFarmers?.toLocaleString()}
                           </div>
                           <p className="text-muted-foreground text-xs">
-                            +{filteredData.newOrganicFarmersThisMonth} this month
+                            +{reportsData.newOrganicFarmersThisMonth} this month
                           </p>
                         </CardContent>
                       </Card>
@@ -528,10 +539,10 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
                         </CardHeader>
                         <CardContent>
                           <div className="text-2xl font-bold text-blue-700">
-                            {filteredData.totalAllocations?.toLocaleString()}
+                            {reportsData.totalAllocations?.toLocaleString()}
                           </div>
                           <p className="text-muted-foreground text-xs">
-                            ₱{filteredData.totalAllocationAmount?.toLocaleString()} total
+                            ₱{reportsData.totalAllocationAmount?.toLocaleString()} total
                           </p>
                         </CardContent>
                       </Card>
@@ -544,10 +555,10 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
                         </CardHeader>
                         <CardContent>
                           <div className="text-2xl font-bold text-purple-700">
-                            {filteredData.totalEvents?.toLocaleString()}
+                            {reportsData.totalEvents?.toLocaleString()}
                           </div>
                           <p className="text-muted-foreground text-xs">
-                            +{filteredData.newEventsThisMonth} this month
+                            +{reportsData.newEventsThisMonth} this month
                           </p>
                         </CardContent>
                       </Card>
@@ -562,7 +573,7 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
                         </CardHeader>
                         <CardContent>
                           <ResponsiveContainer width="100%" height={300}>
-                            <AreaChart data={filteredData.registrationTrends}>
+                            <AreaChart data={reportsData.registrationTrends}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis dataKey="month" />
                               <YAxis />
@@ -598,7 +609,7 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
                           <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
                               <Pie
-                                data={filteredData.statusDistribution}
+                                data={reportsData.statusDistribution}
                                 cx="50%"
                                 cy="50%"
                                 labelLine={false}
@@ -609,7 +620,7 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
                                 fill="#8884d8"
                                 dataKey="value"
                               >
-                                {filteredData.statusDistribution?.map(
+                                {reportsData.statusDistribution?.map(
                                   (entry, index) => (
                                     <Cell
                                       key={`cell-${index}`}
@@ -633,7 +644,7 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
                       </CardHeader>
                       <CardContent>
                         <ResponsiveContainer width="100%" height={300}>
-                          <BarChart data={filteredData.eventsByMonth}>
+                          <BarChart data={reportsData.eventsByMonth}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="month" />
                             <YAxis />
@@ -645,12 +656,17 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
                     </Card>
                   </>
                 )}
-                {reportType === "farmers" && filteredData?.farmersList && (
+                {reportType === "farmers" && reportsData?.farmersList && (
                   <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
                     <CardHeader>
                       <CardTitle className="flex items-center text-emerald-700">
                         <Users className="mr-2 h-5 w-5" />
-                        Farmers Report ({filteredData.farmersList.length} records)
+                        Farmers Report ({reportsData.farmersList.length} records)
+                        {searchQuery && (
+                          <Badge variant="secondary" className="ml-2">
+                            Search: "{searchQuery}"
+                          </Badge>
+                        )}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -669,7 +685,7 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {filteredData.farmersList.map((farmer) => (
+                            {reportsData.farmersList.map((farmer) => (
                               <TableRow key={crypto.randomUUID()}>
                                 <TableCell className="font-medium">
                                   {farmer.name}
@@ -723,12 +739,17 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
                     </CardContent>
                   </Card>
                 )}
-                {reportType === "events" && filteredData?.eventsList && (
+                {reportType === "events" && reportsData?.eventsList && (
                   <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
                     <CardHeader>
                       <CardTitle className="flex items-center text-emerald-700">
                         <CalendarIcon className="mr-2 h-5 w-5" />
-                        Events Report ({filteredData.eventsList.length} records)
+                        Events Report ({reportsData.eventsList.length} records)
+                        {searchQuery && (
+                          <Badge variant="secondary" className="ml-2">
+                            Search: "{searchQuery}"
+                          </Badge>
+                        )}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -744,7 +765,7 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {filteredData.eventsList.map((event) => (
+                            {reportsData.eventsList.map((event) => (
                               <TableRow key={crypto.randomUUID()}>
                                 <TableCell className="font-medium">
                                   {event.title}
@@ -770,12 +791,17 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
                     </CardContent>
                   </Card>
                 )}
-                {reportType === "concerns" && filteredData?.concernsList && (
+                {reportType === "concerns" && reportsData?.concernsList && (
                   <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
                     <CardHeader>
                       <CardTitle className="flex items-center text-emerald-700">
                         <FileText className="mr-2 h-5 w-5" />
-                        Concerns Report ({filteredData.concernsList.length} records)
+                        Concerns Report ({reportsData.concernsList.length} records)
+                        {searchQuery && (
+                          <Badge variant="secondary" className="ml-2">
+                            Search: "{searchQuery}"
+                          </Badge>
+                        )}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -792,7 +818,7 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {filteredData.concernsList.map((concern) => (
+                            {reportsData.concernsList.map((concern) => (
                               <TableRow key={crypto.randomUUID()}>
                                 <TableCell className="font-medium">
                                   {concern.title}
@@ -826,12 +852,17 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
                     </CardContent>
                   </Card>
                 )}
-                {reportType === "allocations" && filteredData?.allocationsList && (
+                {reportType === "allocations" && reportsData?.allocationsList && (
                   <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
                     <CardHeader>
                       <CardTitle className="flex items-center text-emerald-700">
                         <DollarSign className="mr-2 h-5 w-5" />
-                        Allocations Report ({filteredData.allocationsList.length} records)
+                        Allocations Report ({reportsData.allocationsList.length} records)
+                        {searchQuery && (
+                          <Badge variant="secondary" className="ml-2">
+                            Search: "{searchQuery}"
+                          </Badge>
+                        )}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -848,7 +879,7 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {filteredData.allocationsList.map((allocation) => (
+                            {reportsData.allocationsList.map((allocation) => (
                               <TableRow key={crypto.randomUUID()}>
                                 <TableCell className="font-medium">
                                   {allocation.id}
@@ -893,6 +924,7 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>({
           <p className="text-sm text-slate-500">
             Report generated on {format(new Date(), "PPP")} at{" "}
             {format(new Date(), "p")}
+            {searchQuery && ` • Search: "${searchQuery}"`}
           </p>
         </div>
       </div>

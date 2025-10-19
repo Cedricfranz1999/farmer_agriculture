@@ -376,7 +376,7 @@ const FarmerSignupPage = () => {
           : "Account created successfully",
         variant: "default",
       });
-      router.push("/registrations/info");
+      router.push("/registrations/success");
     },
     onError: (error) => {
       toast({
