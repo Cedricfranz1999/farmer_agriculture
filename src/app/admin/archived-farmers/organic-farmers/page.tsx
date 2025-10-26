@@ -982,19 +982,19 @@ Farmer Management Team`;
                     <X className="h-5 w-5" />
                   </button>
                 </div>
-                <div className="mb-6">
+              <div className="mb-6">
                   <p className="mb-3 text-gray-600">
                     Are you sure you want to{" "}
                     <span
                       className={`font-semibold ${
-                        selectedFarmer.newStatus === "REGISTERED"
-                          ? "text-green-600"
+                        selectedFarmer.newStatus === "ARCHIVED"
+                          ? "text-yellow-600"
                           : "text-red-600"
                       }`}
                     >
-                      {selectedFarmer.newStatus === "REGISTERED"
-                        ? "approve and register"
-                        : "reject"}
+                      {selectedFarmer.newStatus !== "ARCHIVED"
+                        ? "reinstate"
+                        : "archived"}
                     </span>{" "}
                     this farmer?
                   </p>

@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
-import Image from "next/image";
 
 interface FarmerData {
   id: number;
@@ -33,7 +32,7 @@ interface FarmerData {
   fathersName: string | null;
   govermentId: string;
   personToContactIncaseOfEmerceny: string | null;
-  personContactNumberIncaseOfEmergency: string;
+  personContactNumberIncaseOfEmergency: string | null;
   grossAnualIncomeLastYearFarming: number;
   grossAnualIncomeLastYeaNonFarming: number;
   farmerImage: string;
@@ -108,11 +107,15 @@ const EditFarmerProfile = () => {
   const id = Number(params.id);
   const router = useRouter();
 
-  const { data: farmerData, isLoading, error ,refetch} = api.auth.getLatestFarmer.useQuery({ id });
+  const { data: farmerData, isLoading, error, refetch } = api.auth.getLatestFarmer.useQuery({ id });
   const { mutate: updateFarmer, isPending: isUpdating } = api.auth.updateFarmer.useMutation({
     onSuccess: () => {
-      refetch()
+      refetch();
       router.push(`/admin/registered-farmers/farmers`);
+    },
+    onError: (error) => {
+      console.error("Update error:", error);
+      alert("Failed to update farmer: " + error.message);
     },
   });
 
@@ -123,49 +126,48 @@ const EditFarmerProfile = () => {
       setFormData({
         ...farmerData,
         dateOfBirth: farmerData.dateOfBirth ? new Date(farmerData.dateOfBirth) : new Date(),
+        email_address: farmerData.email_address || "",
+        middleName: farmerData.middleName || "",
+        extensionName: farmerData.extensionName || "",
+        religion: farmerData.religion || "",
+        nameOfSpouse: farmerData.nameOfSpouse || "",
+        FourPS_Benificiaty: farmerData.FourPS_Benificiaty || "",
+        mothersName: farmerData.mothersName || "",
+        fathersName: farmerData.fathersName || "",
+        personToContactIncaseOfEmerceny: farmerData.personToContactIncaseOfEmerceny || "",
         personContactNumberIncaseOfEmergency: farmerData.personContactNumberIncaseOfEmergency || "",
+        farmerSignatureAsImage: farmerData.farmerSignatureAsImage || "",
+        farmerFingerPrintAsImage: farmerData.farmerFingerPrintAsImage || "",
         farmerDetails: farmerData.farmerDetails ? {
           ...farmerData.farmerDetails,
-          id: farmerData.farmerDetails.id || 0
+          othersCrops: farmerData.farmerDetails.othersCrops || "",
+          livestockDetails: farmerData.farmerDetails.livestockDetails || "",
+          poultryDetails: farmerData.farmerDetails.poultryDetails || "",
         } : null,
         farmworkerDetails: farmerData.farmworkerDetails ? {
           ...farmerData.farmworkerDetails,
-          id: farmerData.farmworkerDetails.id || 0
+          others: farmerData.farmworkerDetails.others || "",
         } : null,
         fisherfolkDetails: farmerData.fisherfolkDetails ? {
           ...farmerData.fisherfolkDetails,
-          id: farmerData.fisherfolkDetails.id || 0
+          others: farmerData.fisherfolkDetails.others || "",
         } : null,
         houseHead: farmerData.houseHead ? {
           ...farmerData.houseHead,
-          id: farmerData.houseHead.id || 0
         } : null,
         farmDetails: farmerData.farmDetails.map(farm => ({
           ...farm,
-          id: farm.id || 0,
           Location: farm.Location || "",
-          TotalFarmAreaInHa: farm.TotalFarmAreaInHa || 0,
           OwnerDocumentsNumber: farm.OwnerDocumentsNumber || "",
           ownerName: farm.ownerName || "",
-          withAncestordomain: farm.withAncestordomain ?? null,
-          agrarianReform: farm.agrarianReform || false,
-          RegisterOwner: farm.RegisterOwner ?? null,
-          tenantOwner: farm.tenantOwner ?? null,
-          Leese: farm.Leese ?? null,
-          others: farm.others || null,
-          othersField: farm.othersField || null,
-          teenantName: farm.teenantName || null,
-          leeseName: farm.leeseName || null
+          othersField: farm.othersField || "",
+          teenantName: farm.teenantName || "",
+          leeseName: farm.leeseName || "",
+          others: farm.others || "",
         })),
         AGRI_YOUTH: farmerData.AGRI_YOUTH.map(youth => ({
           ...youth,
-          id: youth.id || 0,
-          partOfFarmingHouseHold: youth.partOfFarmingHouseHold || false,
-          attendedFormalAgriFishery: youth.attendedFormalAgriFishery || false,
-          attendedNonFormalAgriFishery: youth.attendedNonFormalAgriFishery || false,
-          participatedInAnyAgriculturalActivity: youth.participatedInAnyAgriculturalActivity || false,
-          fishVending: youth.fishVending || false,
-          others: youth.others || null
+          others: youth.others || "",
         }))
       });
     }
@@ -174,11 +176,30 @@ const EditFarmerProfile = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     const checked = type === "checkbox" ? (e.target as HTMLInputElement).checked : undefined;
+    
     if (!formData) return;
 
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
+    setFormData(prev => {
+      if (!prev) return null;
+      
+      if (type === "number") {
+        return {
+          ...prev,
+          [name]: value === "" ? 0 : Number(value),
+        };
+      }
+      
+      if (type === "checkbox") {
+        return {
+          ...prev,
+          [name]: checked,
+        };
+      }
+      
+      return {
+        ...prev,
+        [name]: value,
+      };
     });
   };
 
@@ -190,190 +211,214 @@ const EditFarmerProfile = () => {
                       category === 'farmworker' ? 'farmworkerDetails' :
                       'fisherfolkDetails';
 
-    if (formData[detailsKey]) {
-      setFormData({
-        ...formData,
+    setFormData(prev => {
+      if (!prev) return null;
+      
+      const currentDetails = prev[detailsKey];
+      if (!currentDetails) return prev;
+
+      return {
+        ...prev,
         [detailsKey]: {
-          ...formData[detailsKey]!,
-          id: formData[detailsKey]!.id || 0,
+          ...currentDetails,
           [field]: value,
         },
-      });
-    }
+      };
+    });
   };
 
   const handleFarmChange = (index: number, field: string, value: any) => {
     if (!formData) return;
 
-    const updatedFarms = [...formData.farmDetails];
-    const currentFarm = updatedFarms[index];
+    setFormData(prev => {
+      if (!prev) return null;
+      
+      const updatedFarms = [...prev.farmDetails];
+      if (!updatedFarms[index]) return prev;
 
-    if (!currentFarm) return;
+      if (field === "TotalFarmAreaInHa") {
+        updatedFarms[index] = {
+          ...updatedFarms[index]!,
+          [field]: Number(value),
+        };
+      } else {
+        updatedFarms[index] = {
+          ...updatedFarms[index]!,
+          [field]: value,
+        };
+      }
 
-    const updatedFarm = {
-      ...currentFarm,
-      [field]: value,
-      id: currentFarm.id || 0,
-      Location: currentFarm.Location || "",
-      TotalFarmAreaInHa: currentFarm.TotalFarmAreaInHa || 0,
-      OwnerDocumentsNumber: currentFarm.OwnerDocumentsNumber || "",
-      ownerName: currentFarm.ownerName || "",
-      withAncestordomain: currentFarm.withAncestordomain ?? null,
-      agrarianReform: currentFarm.agrarianReform || false,
-      RegisterOwner: currentFarm.RegisterOwner ?? null,
-      tenantOwner: currentFarm.tenantOwner ?? null,
-      Leese: currentFarm.Leese ?? null,
-      others: currentFarm.others || null,
-      othersField: currentFarm.othersField || null,
-      teenantName: currentFarm.teenantName || null,
-      leeseName: currentFarm.leeseName || null
-    };
-
-    updatedFarms[index] = updatedFarm;
-    setFormData({
-      ...formData,
-      farmDetails: updatedFarms,
+      return {
+        ...prev,
+        farmDetails: updatedFarms,
+      };
     });
   };
 
   const handleHouseHeadChange = (field: string, value: any) => {
     if (!formData || !formData.houseHead) return;
 
-    const updatedHouseHead = {
-      ...formData.houseHead,
-      [field]: value,
-      id: formData.houseHead.id || 0,
-      houseHoldHead: formData.houseHead.houseHoldHead || "",
-      relationship: formData.houseHead.relationship || "",
-      numberOfLivingHouseHoldMembersTotal: formData.houseHead.numberOfLivingHouseHoldMembersTotal || 0,
-      numberOfMale: formData.houseHead.numberOfMale || 0,
-      NumberOfFemale: formData.houseHead.NumberOfFemale || 0,
-    };
+    setFormData(prev => {
+      if (!prev || !prev.houseHead) return prev;
 
-    setFormData({
-      ...formData,
-      houseHead: updatedHouseHead,
+      if (["numberOfLivingHouseHoldMembersTotal", "numberOfMale", "NumberOfFemale"].includes(field)) {
+        return {
+          ...prev,
+          houseHead: {
+            ...prev.houseHead,
+            [field]: Number(value),
+          },
+        };
+      }
+
+      return {
+        ...prev,
+        houseHead: {
+          ...prev.houseHead,
+          [field]: value,
+        },
+      };
     });
   };
 
   const handleAgriYouthChange = (index: number, field: string, value: any) => {
     if (!formData) return;
 
-    const updatedYouth = [...formData.AGRI_YOUTH];
-    const currentYouth = updatedYouth[index];
+    setFormData(prev => {
+      if (!prev) return null;
+      
+      const updatedYouth = [...prev.AGRI_YOUTH];
+      if (!updatedYouth[index]) return prev;
 
-    if (!currentYouth) return;
+      updatedYouth[index] = {
+        ...updatedYouth[index]!,
+        [field]: value,
+      };
 
-    const updatedItem = {
-      ...currentYouth,
-      [field]: value,
-      id: currentYouth.id || 0,
-      partOfFarmingHouseHold: currentYouth.partOfFarmingHouseHold || false,
-      attendedFormalAgriFishery: currentYouth.attendedFormalAgriFishery || false,
-      attendedNonFormalAgriFishery: currentYouth.attendedNonFormalAgriFishery || false,
-      participatedInAnyAgriculturalActivity: currentYouth.participatedInAnyAgriculturalActivity || false,
-      fishVending: currentYouth.fishVending || false,
-      others: currentYouth.others || null,
-    };
-
-    updatedYouth[index] = updatedItem;
-    setFormData({
-      ...formData,
-      AGRI_YOUTH: updatedYouth,
+      return {
+        ...prev,
+        AGRI_YOUTH: updatedYouth,
+      };
     });
   };
 
-const handleSubmit = (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!formData) return;
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData) return;
 
-  // Helper function to transform null to empty string
-  const transformNullToString = (value: any): string => {
-    return value === null ? '' : value;
-  };
+    const submissionData: any = {
+      id: formData.id,
+      username: formData.username,
+      email_address: formData.email_address || null,
+      surname: formData.surname,
+      firstname: formData.firstname,
+      middleName: formData.middleName || null,
+      extensionName: formData.extensionName || null,
+      sex: formData.sex,
+      houseOrLotOrBuildingNo: formData.houseOrLotOrBuildingNo,
+      streetOrSitioOrSubDivision: formData.streetOrSitioOrSubDivision,
+      barangay: formData.barangay,
+      municipalityOrCity: formData.municipalityOrCity,
+      province: formData.province,
+      region: formData.region,
+      contactNumber: formData.contactNumber,
+      placeOfBirth: formData.placeOfBirth,
+      dateOfBirth: formData.dateOfBirth,
+      highestFormOfEducation: formData.highestFormOfEducation,
+      religion: formData.religion || null,
+      civilStaus: formData.civilStaus,
+      nameOfSpouse: formData.nameOfSpouse || null,
+      FourPS_Benificiaty: formData.FourPS_Benificiaty || null,
+      mothersName: formData.mothersName || null,
+      fathersName: formData.fathersName || null,
+      govermentId: formData.govermentId,
+      personToContactIncaseOfEmerceny: formData.personToContactIncaseOfEmerceny || null,
+      personContactNumberIncaseOfEmergency: formData.personContactNumberIncaseOfEmergency || null,
+      grossAnualIncomeLastYearFarming: Number(formData.grossAnualIncomeLastYearFarming),
+      grossAnualIncomeLastYeaNonFarming: Number(formData.grossAnualIncomeLastYeaNonFarming),
+      farmerImage: formData.farmerImage,
+      farmerSignatureAsImage: formData.farmerSignatureAsImage || null,
+      farmerFingerPrintAsImage: formData.farmerFingerPrintAsImage || null,
+      categoryType: formData.categoryType,
+      numberOfFarms: formData.numberOfFarms,
+    };
 
-  const submissionData: any = {
-    ...formData,
-    dateOfBirth: new Date(formData.dateOfBirth),
-    grossAnualIncomeLastYearFarming: Number(formData.grossAnualIncomeLastYearFarming),
-    grossAnualIncomeLastYeaNonFarming: Number(formData.grossAnualIncomeLastYeaNonFarming),
-    
-    // Transform null fields to empty strings
-    FourPS_Benificiaty: transformNullToString(formData.FourPS_Benificiaty),
-    farmerSignatureAsImage: transformNullToString(formData.farmerSignatureAsImage),
-    farmerFingerPrintAsImage: transformNullToString(formData.farmerFingerPrintAsImage),
-    
-    // Handle category details - ensure they're not null
-    farmerDetails: formData.farmerDetails ? {
-      rice: formData.farmerDetails.rice,
-      corn: formData.farmerDetails.corn,
-      othersCrops: transformNullToString(formData.farmerDetails.othersCrops),
-      livestock: formData.farmerDetails.livestock,
-      livestockDetails: transformNullToString(formData.farmerDetails.livestockDetails),
-      poultry: formData.farmerDetails.poultry,
-      poultryDetails: transformNullToString(formData.farmerDetails.poultryDetails),
-    } : undefined, // Use undefined instead of null
-    
-    farmworkerDetails: formData.farmworkerDetails ? {
-      landPreparation: formData.farmworkerDetails.landPreparation,
-      plantingTransplanting: formData.farmworkerDetails.plantingTransplanting,
-      cultivation: formData.farmworkerDetails.cultivation,
-      harvesting: formData.farmworkerDetails.harvesting,
-      others: transformNullToString(formData.farmworkerDetails.others),
-    } : undefined,
-    
-    fisherfolkDetails: formData.fisherfolkDetails ? {
-      fishCapture: formData.fisherfolkDetails.fishCapture,
-      aquaculture: formData.fisherfolkDetails.aquaculture,
-      gleaning: formData.fisherfolkDetails.gleaning,
-      fishProcessing: formData.fisherfolkDetails.fishProcessing,
-      fishVending: formData.fisherfolkDetails.fishVending,
-      others: transformNullToString(formData.fisherfolkDetails.others),
-    } : undefined,
-    
-    houseHead: formData.houseHead ? {
-      houseHoldHead: formData.houseHead.houseHoldHead,
-      relationship: formData.houseHead.relationship,
-      numberOfLivingHouseHoldMembersTotal: formData.houseHead.numberOfLivingHouseHoldMembersTotal,
-      numberOfMale: formData.houseHead.numberOfMale,
-      NumberOfFemale: formData.houseHead.NumberOfFemale,
-    } : undefined,
-    
-    farmDetails: formData.farmDetails.map(farm => ({
-      Location: farm.Location,
-      TotalFarmAreaInHa: farm.TotalFarmAreaInHa,
-      withAncestordomain: farm.withAncestordomain,
-      agrarianReform: farm.agrarianReform,
-      OwnerDocumentsNumber: farm.OwnerDocumentsNumber,
-      RegisterOwner: farm.RegisterOwner,
-      ownerName: farm.ownerName,
-      othersField: transformNullToString(farm.othersField),
-      tenantOwner: farm.tenantOwner,
-      teenantName: transformNullToString(farm.teenantName),
-      Leese: farm.Leese,
-      leeseName: transformNullToString(farm.leeseName),
-      others: transformNullToString(farm.others),
-    })),
-    
-    AGRI_YOUTH: formData.AGRI_YOUTH.map(youth => ({
-      partOfFarmingHouseHold: youth.partOfFarmingHouseHold,
-      attendedFormalAgriFishery: youth.attendedFormalAgriFishery,
-      attendedNonFormalAgriFishery: youth.attendedNonFormalAgriFishery,
-      participatedInAnyAgriculturalActivity: youth.participatedInAnyAgriculturalActivity,
-      fishVending: youth.fishVending,
-      others: transformNullToString(youth.others),
-    }))
-  };
-
-  // Remove undefined values to avoid sending them
-  Object.keys(submissionData).forEach(key => {
-    if (submissionData[key] === undefined) {
-      delete submissionData[key];
+    if (formData.categoryType === "FARMER" && formData.farmerDetails) {
+      submissionData.farmerDetails = {
+        rice: formData.farmerDetails.rice,
+        corn: formData.farmerDetails.corn,
+        othersCrops: formData.farmerDetails.othersCrops || null,
+        livestock: formData.farmerDetails.livestock,
+        livestockDetails: formData.farmerDetails.livestockDetails || null,
+        poultry: formData.farmerDetails.poultry,
+        poultryDetails: formData.farmerDetails.poultryDetails || null,
+      };
     }
-  });
 
-  updateFarmer(submissionData);
-};
+    if (formData.categoryType === "FARMWORKER" && formData.farmworkerDetails) {
+      submissionData.farmworkerDetails = {
+        landPreparation: formData.farmworkerDetails.landPreparation,
+        plantingTransplanting: formData.farmworkerDetails.plantingTransplanting,
+        cultivation: formData.farmworkerDetails.cultivation,
+        harvesting: formData.farmworkerDetails.harvesting,
+        others: formData.farmworkerDetails.others || null,
+      };
+    }
+
+    if (formData.categoryType === "FISHERFOLK" && formData.fisherfolkDetails) {
+      submissionData.fisherfolkDetails = {
+        fishCapture: formData.fisherfolkDetails.fishCapture,
+        aquaculture: formData.fisherfolkDetails.aquaculture,
+        gleaning: formData.fisherfolkDetails.gleaning,
+        fishProcessing: formData.fisherfolkDetails.fishProcessing,
+        fishVending: formData.fisherfolkDetails.fishVending,
+        others: formData.fisherfolkDetails.others || null,
+      };
+    }
+
+    if (formData.categoryType === "AGRI_YOUTH" && formData.AGRI_YOUTH.length > 0) {
+      submissionData.agriYouthDetails = {
+        partOfFarmingHouseHold: formData.AGRI_YOUTH[0]?.partOfFarmingHouseHold || false,
+        attendedFormalAgriFishery: formData.AGRI_YOUTH[0]?.attendedFormalAgriFishery || false,
+        attendedNonFormalAgriFishery: formData.AGRI_YOUTH[0]?.attendedNonFormalAgriFishery || false,
+        participatedInAnyAgriculturalActivity: formData.AGRI_YOUTH[0]?.participatedInAnyAgriculturalActivity || false,
+        fishVending: formData.AGRI_YOUTH[0]?.fishVending || false,
+        others: formData.AGRI_YOUTH[0]?.others || null,
+      };
+    }
+
+    if (formData.houseHead) {
+      submissionData.houseHead = {
+        houseHoldHead: formData.houseHead.houseHoldHead,
+        relationship: formData.houseHead.relationship,
+        numberOfLivingHouseHoldMembersTotal: formData.houseHead.numberOfLivingHouseHoldMembersTotal,
+        numberOfMale: formData.houseHead.numberOfMale,
+        NumberOfFemale: formData.houseHead.NumberOfFemale,
+      };
+    }
+
+    if (formData.farmDetails.length > 0) {
+      submissionData.farmDetails = formData.farmDetails.map(farm => ({
+        id: farm.id,
+        Location: farm.Location,
+        TotalFarmAreaInHa: Number(farm.TotalFarmAreaInHa),
+        withAncestordomain: farm.withAncestordomain,
+        agrarianReform: farm.agrarianReform,
+        OwnerDocumentsNumber: farm.OwnerDocumentsNumber,
+        RegisterOwner: farm.RegisterOwner,
+        ownerName: farm.ownerName,
+        othersField: farm.othersField || null,
+        tenantOwner: farm.tenantOwner,
+        teenantName: farm.teenantName || null,
+        Leese: farm.Leese,
+        leeseName: farm.leeseName || null,
+        others: farm.others || null,
+      }));
+    }
+
+    console.log("Submitting data:", submissionData);
+    updateFarmer(submissionData);
+  };
 
   if (isLoading) return (
     <div className="flex min-h-screen items-center justify-center">
@@ -703,7 +748,7 @@ const handleSubmit = (e: React.FormEvent) => {
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
-            <div>
+            <div className=" hidden">
               <label className="block text-sm font-medium text-gray-700">Government ID</label>
               <input
                 type="text"
@@ -729,7 +774,7 @@ const handleSubmit = (e: React.FormEvent) => {
               <input
                 type="text"
                 name="personContactNumberIncaseOfEmergency"
-                value={formData.personContactNumberIncaseOfEmergency}
+                value={formData.personContactNumberIncaseOfEmergency || ''}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
@@ -1212,7 +1257,7 @@ const handleSubmit = (e: React.FormEvent) => {
         )}
 
         {/* Images Section */}
-        <section className="rounded-lg bg-white p-6 shadow-sm">
+        <section className="rounded-lg bg-white p-6 shadow-sm hidden">
           <h2 className="mb-4 text-lg font-semibold text-gray-700">Images</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>

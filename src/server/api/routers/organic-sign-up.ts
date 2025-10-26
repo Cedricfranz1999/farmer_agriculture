@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 // ~/server/api/routers/organic-farmer.ts
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
@@ -325,8 +323,7 @@ export const organicFarmerRouter = createTRPCRouter({
       return latestFarmer;
     }),
 
-
-       getById: publicProcedure
+  getById: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
       const farmer = await ctx.db.organic_Farmer.findUnique({
@@ -365,8 +362,8 @@ export const organicFarmerRouter = createTRPCRouter({
         // Basic Information
         surname: z.string().min(1, "Surname is required"),
         firstname: z.string().min(1, "First name is required"),
-        middleName: z.string().optional(),
-        extensionName: z.string().optional(),
+        middleName: z.string().optional().nullable(),
+        extensionName: z.string().optional().nullable(),
         sex: z.enum(["MALE", "FEMALE"]),
         civilStaus: z.enum(["SINGLE", "MARRIED", "WIDOWED", "SEPARATED"]),
         dateOfBirth: z.date(),
@@ -380,14 +377,14 @@ export const organicFarmerRouter = createTRPCRouter({
           "POST_GRADUATE",
           "VOCATIONAL",
         ]),
-        religion: z.string().optional(),
-        FourPS_Benificiaty: z.string().optional(),
-        mothersName: z.string().optional(),
-        fathersName: z.string().optional(),
+        religion: z.string().optional().nullable(),
+        FourPS_Benificiaty: z.string().optional().nullable(),
+        mothersName: z.string().optional().nullable(),
+        fathersName: z.string().optional().nullable(),
         contactNumber: z.string().min(1, "Contact number is required"),
-        email_address: z.string().optional(),
-        personToContactIncaseOfEmerceny: z.string().optional(),
-        personContactNumberIncaseOfEmergency: z.string().optional(),
+        email_address: z.string().optional().nullable(),
+        personToContactIncaseOfEmerceny: z.string().optional().nullable(),
+        personContactNumberIncaseOfEmergency: z.string().optional().nullable(),
         // Address
         houseOrLotOrBuildingNo: z.string().min(1, "House/Lot/Building No is required"),
         streetOrSitioOrSubDivision: z.string().min(1, "Street/Sitio/Subdivision is required"),
@@ -401,7 +398,7 @@ export const organicFarmerRouter = createTRPCRouter({
         // Certification
         withOrganicAgricultureCertification: z.boolean().optional(),
         certification: z.enum(["THIRD_PARTY_CERTIFICATION", "PARTICIPATORY_GUARANTEE_SYSTEM"]).optional().nullable(),
-        whatStagesInCertification: z.string().optional(),
+        whatStagesInCertification: z.string().optional().nullable(),
         // Nature of Business
         productionForInputs: z.enum(["PRIMARY_BUSINESS", "SECONDARY_BUSINESS", "NOT_APPLICABLE"]).optional().nullable(),
         productionForFood: z.enum(["PRIMARY_BUSINESS", "SECONDARY_BUSINESS", "NOT_APPLICABLE"]).optional().nullable(),
@@ -410,18 +407,18 @@ export const organicFarmerRouter = createTRPCRouter({
         retailing: z.enum(["PRIMARY_BUSINESS", "SECONDARY_BUSINESS", "NOT_APPLICABLE"]).optional().nullable(),
         transPortAndLogistics: z.enum(["PRIMARY_BUSINESS", "SECONDARY_BUSINESS", "NOT_APPLICABLE"]).optional().nullable(),
         WareHousing: z.enum(["PRIMARY_BUSINESS", "SECONDARY_BUSINESS", "NOT_APPLICABLE"]).optional().nullable(),
-        Others: z.string().optional(),
+        Others: z.string().optional().nullable(),
         // Target Market
         direcToConsumer: z.boolean().optional(),
         trader: z.boolean().optional(),
-        specificType1: z.string().optional(),
+        specificType1: z.string().optional().nullable(),
         retailer: z.boolean().optional(),
         institutionalBuyer: z.boolean().optional(),
-        SpecificType2: z.string().optional(),
+        SpecificType2: z.string().optional().nullable(),
         internationalBasedBuyers: z.boolean().optional(),
-        SpecificType3: z.string().optional(),
-        others: z.string().optional(),
-        // Agricultural Commodities - Fixed to match schema (single commodity per type)
+        SpecificType3: z.string().optional().nullable(),
+        others: z.string().optional().nullable(),
+        // Agricultural Commodities
         agriculturalCommodities: z.array(
           z.object({
             type: z.string(),
@@ -431,7 +428,7 @@ export const organicFarmerRouter = createTRPCRouter({
             certification: z.string().optional(),
           })
         ).optional(),
-        othersCommodity: z.string().optional(),
+        othersCommodity: z.string().optional().nullable(),
         // Facilities
         ownSharedFacilities: z.array(
           z.object({
@@ -441,7 +438,7 @@ export const organicFarmerRouter = createTRPCRouter({
             quantity: z.string(),
             volumeServicesArea: z.string(),
             averageWorkingHoursDay: z.string(),
-            Remarks: z.string().optional(),
+            Remarks: z.string().optional().nullable(),
             dedicatedToOrganic: z.boolean(),
           })
         ).optional(),
@@ -507,7 +504,7 @@ export const organicFarmerRouter = createTRPCRouter({
               name: commodity.name,
               sizeInHa: commodity.sizeInHa,
               annualVolumeInKG: commodity.annualVolumeInKG,
-              Certification: commodity.certification,
+              Certification: commodity.certification || null,
             };
 
             // Set the appropriate foreign key based on the type

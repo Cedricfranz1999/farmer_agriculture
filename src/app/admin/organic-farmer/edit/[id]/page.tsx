@@ -28,14 +28,18 @@ const EditOrganicFarmer = () => {
   const params = useParams();
   const id = params.id as string;
   
-  const { data: farmer, isLoading } = api.organicFarmer.getById.useQuery(
+  const { data: farmer, isLoading, error } = api.organicFarmer.getById.useQuery(
     { id: Number(id) },
     { enabled: !!id }
   );
 
   const updateFarmerMutation = api.organicFarmer.update.useMutation({
     onSuccess: () => {
-      router.push("/admin/organic-farmer");
+      router.push("/admin/registered-farmers/organic-farmers");
+    },
+    onError: (error) => {
+      console.error("Update error:", error);
+      alert("Failed to update farmer: " + error.message);
     },
   });
 
@@ -110,9 +114,9 @@ const EditOrganicFarmer = () => {
         if (commodity) {
           commodities.push({
             type: type,
-            name: commodity.name,
-            sizeInHa: commodity.sizeInHa,
-            annualVolumeInKG: commodity.annualVolumeInKG,
+            name: commodity.name || "",
+            sizeInHa: commodity.sizeInHa || 0,
+            annualVolumeInKG: commodity.annualVolumeInKG || 0,
             certification: commodity.Certification || "",
           });
         }
@@ -188,15 +192,15 @@ const EditOrganicFarmer = () => {
         othersCommodity: farmer.othersCommodity || "",
         // Facilities
         ownSharedFacilities: farmer.ownSharedFacilities.map((facility) => ({
-          facilitiesMachineryEquipmentUsed: facility.facilitiesMachineryEquipmentUsed,
-          ownership: facility.ownership,
-          model: facility.model,
-          quantity: facility.quantity,
-          volumeServicesArea: facility.volumeServicesArea,
-          averageWorkingHoursDay: facility.averageWorkingHoursDay,
+          facilitiesMachineryEquipmentUsed: facility.facilitiesMachineryEquipmentUsed || "",
+          ownership: facility.ownership || "",
+          model: facility.model || "",
+          quantity: facility.quantity || "",
+          volumeServicesArea: facility.volumeServicesArea || "",
+          averageWorkingHoursDay: facility.averageWorkingHoursDay || "",
           Remarks: facility.Remarks || "",
-          dedicatedToOrganic: facility.dedicatedToOrganic,
-        })),
+          dedicatedToOrganic: facility.dedicatedToOrganic || false,
+        })) || [],
       });
     }
   }, [farmer]);
@@ -210,26 +214,30 @@ const EditOrganicFarmer = () => {
 
   const handleCommodityChange = (index: number, field: keyof CommodityFormData, value: any) => {
     const updatedCommodities = [...formData.agriculturalCommodities];
-    updatedCommodities[index] = {
-      ...updatedCommodities[index] as any,
-      [field]: value
-    };
-    setFormData(prev => ({
-      ...prev,
-      agriculturalCommodities: updatedCommodities
-    }));
+    if (updatedCommodities[index]) {
+      updatedCommodities[index] = {
+        ...updatedCommodities[index]!,
+        [field]: field === 'sizeInHa' || field === 'annualVolumeInKG' ? Number(value) : value
+      };
+      setFormData(prev => ({
+        ...prev,
+        agriculturalCommodities: updatedCommodities
+      }));
+    }
   };
 
   const handleFacilityChange = (index: number, field: keyof FacilityFormData, value: any) => {
     const updatedFacilities = [...formData.ownSharedFacilities];
-    updatedFacilities[index] = {
-      ...updatedFacilities[index] as any,
-      [field]: value
-    };
-    setFormData(prev => ({
-      ...prev,
-      ownSharedFacilities: updatedFacilities
-    }));
+    if (updatedFacilities[index]) {
+      updatedFacilities[index] = {
+        ...updatedFacilities[index]!,
+        [field]: value
+      };
+      setFormData(prev => ({
+        ...prev,
+        ownSharedFacilities: updatedFacilities
+      }));
+    }
   };
 
   const addCommodity = () => {
@@ -278,22 +286,83 @@ const EditOrganicFarmer = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Prepare data for submission
+    // Prepare data for submission - convert empty strings to null/undefined where appropriate
     const submitData = {
-      ...formData,
       id: Number(id),
+      // Basic Information
+      surname: formData.surname,
+      firstname: formData.firstname,
+      middleName: formData.middleName || null,
+      extensionName: formData.extensionName || null,
+      sex: formData.sex,
+      civilStaus: formData.civilStaus,
       dateOfBirth: new Date(formData.dateOfBirth),
-      // Convert empty strings to undefined for optional fields
-      certification: formData.certification || undefined,
-      productionForInputs: formData.productionForInputs || undefined,
-      productionForFood: formData.productionForFood || undefined,
-      postHarvestAndProcessing: formData.postHarvestAndProcessing || undefined,
-      tradingAndWholeSale: formData.tradingAndWholeSale || undefined,
-      retailing: formData.retailing || undefined,
-      transPortAndLogistics: formData.transPortAndLogistics || undefined,
-      WareHousing: formData.WareHousing || undefined,
+      placeOfBirth: formData.placeOfBirth,
+      highestFormOfEducation: formData.highestFormOfEducation,
+      religion: formData.religion || null,
+      FourPS_Benificiaty: formData.FourPS_Benificiaty || null,
+      mothersName: formData.mothersName || null,
+      fathersName: formData.fathersName || null,
+      contactNumber: formData.contactNumber,
+      email_address: formData.email_address || null,
+      personToContactIncaseOfEmerceny: formData.personToContactIncaseOfEmerceny || null,
+      personContactNumberIncaseOfEmergency: formData.personContactNumberIncaseOfEmergency || null,
+      // Address
+      houseOrLotOrBuildingNo: formData.houseOrLotOrBuildingNo,
+      streetOrSitioOrSubDivision: formData.streetOrSitioOrSubDivision,
+      barangay: formData.barangay,
+      municipalityOrCity: formData.municipalityOrCity,
+      province: formData.province,
+      region: formData.region,
+      // Income
+      grossAnualIncomeLastYearFarming: Number(formData.grossAnualIncomeLastYearFarming),
+      grossAnualIncomeLastYeaNonFarming: Number(formData.grossAnualIncomeLastYeaNonFarming),
+      // Certification
+      withOrganicAgricultureCertification: formData.withOrganicAgricultureCertification,
+      certification: formData.certification || null,
+      whatStagesInCertification: formData.whatStagesInCertification || null,
+      // Nature of Business
+      productionForInputs: formData.productionForInputs || null,
+      productionForFood: formData.productionForFood || null,
+      postHarvestAndProcessing: formData.postHarvestAndProcessing || null,
+      tradingAndWholeSale: formData.tradingAndWholeSale || null,
+      retailing: formData.retailing || null,
+      transPortAndLogistics: formData.transPortAndLogistics || null,
+      WareHousing: formData.WareHousing || null,
+      Others: formData.Others || null,
+      // Target Market
+      direcToConsumer: formData.direcToConsumer,
+      trader: formData.trader,
+      specificType1: formData.specificType1 || null,
+      retailer: formData.retailer,
+      institutionalBuyer: formData.institutionalBuyer,
+      SpecificType2: formData.SpecificType2 || null,
+      internationalBasedBuyers: formData.internationalBasedBuyers,
+      SpecificType3: formData.SpecificType3 || null,
+      others: formData.others || null,
+      // Agricultural Commodities
+      agriculturalCommodities: formData.agriculturalCommodities.map(commodity => ({
+        type: commodity.type,
+        name: commodity.name,
+        sizeInHa: Number(commodity.sizeInHa),
+        annualVolumeInKG: Number(commodity.annualVolumeInKG),
+        certification: commodity.certification || ""
+      })),
+      othersCommodity: formData.othersCommodity || null,
+      // Facilities
+      ownSharedFacilities: formData.ownSharedFacilities.map(facility => ({
+        facilitiesMachineryEquipmentUsed: facility.facilitiesMachineryEquipmentUsed,
+        ownership: facility.ownership,
+        model: facility.model,
+        quantity: facility.quantity,
+        volumeServicesArea: facility.volumeServicesArea,
+        averageWorkingHoursDay: facility.averageWorkingHoursDay,
+        Remarks: facility.Remarks || null,
+        dedicatedToOrganic: facility.dedicatedToOrganic
+      }))
     };
 
+    console.log("Submitting data:", submitData);
     updateFarmerMutation.mutate(submitData);
   };
 
@@ -308,13 +377,25 @@ const EditOrganicFarmer = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
+          <div className="mb-2 text-xl text-red-600">⚠️</div>
+          <p className="font-medium text-red-800">Error loading data</p>
+          <p className="mt-1 text-sm text-red-600">{error.message}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="mb-6 text-3xl font-bold">Edit Organic Farmer</h1>
       
-      <form onSubmit={handleSubmit} className="space-y-8 bg-white rounded-md">
+      <form onSubmit={handleSubmit} className="space-y-8">
         {/* Basic Information Section */}
-        <section className="rounded-lg border border-gray-200 p-6">
+        <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-xl font-semibold">Basic Information</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
@@ -495,7 +576,7 @@ const EditOrganicFarmer = () => {
         </section>
 
         {/* Address Section */}
-        <section className="rounded-lg border border-gray-200 p-6">
+        <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-xl font-semibold">Address</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
@@ -562,7 +643,7 @@ const EditOrganicFarmer = () => {
         </section>
 
         {/* Income Section */}
-        <section className="rounded-lg border border-gray-200 p-6">
+        <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-xl font-semibold">Income Information</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
@@ -591,7 +672,7 @@ const EditOrganicFarmer = () => {
         </section>
 
         {/* Certification Section */}
-        <section className="rounded-lg border border-gray-200 p-6">
+        <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-xl font-semibold">Certification</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="flex items-center">
@@ -630,7 +711,7 @@ const EditOrganicFarmer = () => {
         </section>
 
         {/* Nature of Business Section */}
-        <section className="rounded-lg border border-gray-200 p-6">
+        <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-xl font-semibold">Nature of Business</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
@@ -737,7 +818,7 @@ const EditOrganicFarmer = () => {
         </section>
 
         {/* Target Market Section */}
-        <section className="rounded-lg border border-gray-200 p-6">
+        <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-xl font-semibold">Target Market</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="flex items-center">
@@ -841,7 +922,7 @@ const EditOrganicFarmer = () => {
         </section>
 
         {/* Agricultural Commodities Section */}
-        <section className="rounded-lg border border-gray-200 p-6">
+        <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-semibold">Agricultural Commodities</h2>
             <button
@@ -947,7 +1028,7 @@ const EditOrganicFarmer = () => {
         </section>
 
         {/* Facilities Section */}
-        <section className="rounded-lg border border-gray-200 p-6">
+        <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-semibold">Owned/Shared Facilities</h2>
             <button
@@ -1076,4 +1157,4 @@ const EditOrganicFarmer = () => {
   );
 };
 
-export default EditOrganicFarmer;             
+export default EditOrganicFarmer;

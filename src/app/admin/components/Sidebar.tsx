@@ -45,12 +45,18 @@ const Sidebar = () => {
             whileHover={{ scale: 1.05 }}
             className="group flex items-center space-x-3"
           >
-            <div className="relative">
-              <div className="absolute inset-0 rounded-full bg-emerald-500 opacity-20 blur-sm transition-opacity group-hover:opacity-30"></div>
-              <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl">
-                <Leaf className="h-6 w-6 text-white drop-shadow-sm" />
-              </div>
-            </div>
+          <div className="relative group my-4">
+  <div className="absolute -inset-3 rounded-full bg-emerald-500 opacity-20 blur-lg transition-all duration-300 group-hover:opacity-40 group-hover:scale-125"></div>
+
+  <div className="relative h-14 w-14 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl flex items-center justify-center overflow-hidden">
+    <img 
+      src="/header.png"
+      className="h-full w-full object-cover"
+      alt="avatar"
+    />
+  </div>
+</div>
+
             <h1 className="bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-xl font-bold text-transparent">
               AgreBase
             </h1>

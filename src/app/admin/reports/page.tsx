@@ -60,6 +60,7 @@ import {
   DollarSign,
   Crop,
   MapPin,
+  X,
 } from "lucide-react";
 import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/lib/utils";
@@ -72,6 +73,48 @@ const COLORS = [
   "#8b5cf6",
   "#06b6d4",
 ];
+
+// Define types based on your API response
+interface Farmer {
+  id: any;
+  name: string;
+  email: any;
+  municipality: any;
+  status: any;
+  category: any;
+  registrationDate: string;
+  hectares: any;
+  primaryCrop: any;
+}
+
+interface Event {
+  id: number;
+  title: string;
+  location: string;
+  eventDate: string;
+  forFarmers: boolean;
+  forOrganicFarmers: boolean;
+  createdDate: string;
+}
+
+interface Concern {
+  id: number;
+  title: string;
+  description: string;
+  farmerName: string;
+  status: string;
+  messageCount: number;
+  createdDate: string;
+}
+
+interface Allocation {
+  id: any;
+  amount: number;
+  allocationType?: string;
+  approved: boolean;
+  farmers: any[];
+  createdAt: string;
+}
 
 const ReportsPage = () => {
   const now = new Date();
@@ -119,157 +162,263 @@ const ReportsPage = () => {
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: `Agricultural Reports - ${format(new Date(), "yyyy-MM-dd")}`,
+    pageStyle: `
+      @media print {
+        @page {
+          margin: 0.5in;
+        }
+        body {
+          -webkit-print-color-adjust: exact;
+        }
+        .no-print {
+          display: none !important;
+        }
+        .print-header {
+          display: flex !important;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+          padding-bottom: 10px;
+          border-bottom: 2px solid #10b981;
+        }
+        .print-logo {
+          height: 60px;
+          width: auto;
+        }
+        .print-title {
+          text-align: center;
+          flex-grow: 1;
+          margin: 0 20px;
+        }
+        .print-footer {
+          margin-top: 30px;
+          text-align: center;
+          font-size: 12px;
+          color: #6b7280;
+        }
+        .print-table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        .print-table th,
+        .print-table td {
+          border: 1px solid #d1d5db;
+          padding: 8px;
+          text-align: left;
+        }
+        .print-table th {
+          background-color: #f3f4f6;
+          font-weight: bold;
+        }
+      }
+    `,
   });
 
   const exportToCSV = (data: any[], filename: string) => {
-    if (!data || data.length === 0) return;
+    if (!data || data.length === 0) {
+      console.warn("No data to export");
+      return;
+    }
 
     let headers: string[] = [];
     let rows: string[] = [];
 
-    switch (reportType) {
-      case "farmers":
-        headers = [
-          "id",
-          "last name",
-          "first name",
-          "middle name",
-          "ext name",
-          "birthday",
-          "st/purok/brgy",
-          "municipality",
-          "province",
-          "gender",
-          "organic practitioner",
-          "plant",
-          "hectare",
-        ];
-        rows = data.map((row) => {
-          const nameParts = row.name.split(" ");
-          const lastName = nameParts[1] || "";
-          const firstName = nameParts[0] || "";
-          const middleName = nameParts[2] || "";
-          const organicPractitioner = row.category === "ORGANIC_FARMER" ? "yes" : "no";
-          const plant = row.primaryCrop || "Various";
-          const hectare = row.hectares?.toString() || "0";
+    try {
+      switch (reportType) {
+        case "farmers":
+          headers = [
+            "ID",
+            "Name",
+            "Email",
+            "Municipality",
+            "Status",
+            "Category",
+            "Primary Crop",
+            "Hectares",
+            "Registration Date"
+          ];
+          
+          rows = data.map((row: Farmer) => {
+            return [
+              row.id || "",
+              `"${row.name}"`,
+              `"${row.email || ''}"`,
+              `"${row.municipality}"`,
+              `"${row.status}"`,
+              `"${row.category}"`,
+              `"${row.primaryCrop || 'Various'}"`,
+              `"${row.hectares || 0}"`,
+              `"${row.registrationDate}"`
+            ].join(",");
+          });
+          break;
 
-          return [
-            row.id || "",
-            `"${lastName}"`,
-            `"${firstName}"`,
-            `"${middleName}"`,
-            `"${""}"`,
-            `"${""}"`,
-            `"${""}"`,
-            `"${row.municipality}"`,
-            `"Pampanga"`,
-            `"Male"`,
-            `"${organicPractitioner}"`,
-            `"${plant}"`,
-            `"${hectare}"`,
-          ].join(",");
-        });
-        break;
+        case "allocations":
+          headers = [
+            "ID",
+            "Amount",
+            "Allocation Type",
+            "Approved",
+            "Created Date",
+            "Farmer Name",
+            "Farmer Type",
+            "Municipality",
+            "Farmer Status"
+          ];
+          
+          rows = data.flatMap((allocation: Allocation) => 
+            allocation.farmers?.map((farmer: any) => [
+              allocation.id,
+              allocation.amount,
+              `"${allocation.allocationType || "N/A"}"`,
+              allocation.approved ? "Yes" : "No",
+              `"${allocation.createdAt}"`,
+              `"${farmer.name}"`,
+              `"${farmer.type}"`,
+              `"${farmer.municipality}"`,
+              `"${farmer.status}"`
+            ].join(",")) || []
+          );
+          break;
 
-      case "allocations":
-        headers = [
-          "id",
-          "amount",
-          "allocation_type",
-          "approved",
-          "created_date",
-          "farmer_name",
-          "farmer_type",
-          "municipality",
-        ];
-        rows = data.flatMap((allocation) => 
-          allocation.farmers.map((farmer: any) => [
-            allocation.id,
-            allocation.amount,
-            allocation.allocationType || "",
-            allocation.approved ? "yes" : "no",
-            allocation.createdAt,
-            farmer.name,
-            farmer.type,
-            farmer.municipality,
-          ].join(","))
-        );
-        break;
+        case "events":
+          headers = [
+            "ID",
+            "Title",
+            "Location",
+            "Event Date",
+            "Target Farmers",
+            "Target Organic Farmers",
+            "Created Date"
+          ];
+          
+          rows = data.map((event: Event) => [
+            event.id,
+            `"${event.title}"`,
+            `"${event.location}"`,
+            `"${event.eventDate}"`,
+            event.forFarmers ? "Yes" : "No",
+            event.forOrganicFarmers ? "Yes" : "No",
+            `"${event.createdDate}"`
+          ].join(","));
+          break;
 
-      default:
-        headers = Object.keys(data[0] || {});
-        rows = data.map(row => 
-          headers.map(header => `"${row[header] || ''}"`).join(',')
-        );
+        case "concerns":
+          headers = [
+            "ID",
+            "Title",
+            "Description",
+            "Farmer Name",
+            "Status",
+            "Message Count",
+            "Created Date"
+          ];
+          
+          rows = data.map((concern: Concern) => [
+            concern.id,
+            `"${concern.title}"`,
+            `"${concern.description}"`,
+            `"${concern.farmerName}"`,
+            `"${concern.status}"`,
+            concern.messageCount,
+            `"${concern.createdDate}"`
+          ].join(","));
+          break;
+
+        default:
+          headers = Object.keys(data[0] || {});
+          rows = data.map(row => 
+            headers.map(header => {
+              const value = row[header];
+              if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+                return `"${value.replace(/"/g, '""')}"`;
+              }
+              return `"${value || ''}"`;
+            }).join(',')
+          );
+      }
+
+      const csvContent = [
+        headers.join(","),
+        ...rows,
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute(
+        "download",
+        `${filename}-${format(new Date(), "yyyy-MM-dd")}.csv`,
+      );
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error exporting CSV:", error);
+      alert("Error exporting data. Please try again.");
     }
-
-    const csvContent = [
-      headers.join(","),
-      ...rows,
-    ].join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute(
-      "download",
-      `${filename}-${format(new Date(), "yyyy-MM-dd")}.csv`,
-    );
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   const handleExport = () => {
-    if (!reportsData) return;
+    if (!reportsData) {
+      alert("No data available to export.");
+      return;
+    }
+
     if (exportFormat === "print") {
       handlePrint();
     } else {
-      switch (reportType) {
-        case "farmers":
-          exportToCSV(reportsData.farmersList || [], "farmers-report");
-          break;
-        case "events":
-          exportToCSV(reportsData.eventsList || [], "events-report");
-          break;
-        case "concerns":
-          exportToCSV(reportsData.concernsList || [], "concerns-report");
-          break;
-        case "allocations":
-          exportToCSV(reportsData.allocationsList || [], "allocations-report");
-          break;
-        default:
-          exportToCSV(
-            [
-              {
-                metric: "Total Farmers",
-                value: reportsData.totalFarmers,
-              },
-              {
-                metric: "Total Organic Farmers",
-                value: reportsData.totalOrganicFarmers,
-              },
-              {
-                metric: "Total Events",
-                value: reportsData.totalEvents,
-              },
-              {
-                metric: "Total Concerns",
-                value: reportsData.totalConcerns,
-              },
-              {
-                metric: "Total Allocations",
-                value: reportsData.totalAllocations,
-              },
-              {
-                metric: "Total Allocation Amount",
-                value: reportsData.totalAllocationAmount,
-              },
-            ],
-            "overview-report",
-          );
+      try {
+        switch (reportType) {
+          case "farmers":
+            exportToCSV(reportsData.farmersList || [], "farmers-report");
+            break;
+          case "events":
+            exportToCSV(reportsData.eventsList || [], "events-report");
+            break;
+          case "concerns":
+            exportToCSV(reportsData.concernsList || [], "concerns-report");
+            break;
+          case "allocations":
+            exportToCSV(reportsData.allocationsList || [], "allocations-report");
+            break;
+          default:
+            exportToCSV(
+              [
+                {
+                  metric: "Total Farmers",
+                  value: reportsData.totalFarmers,
+                },
+                {
+                  metric: "Total Organic Farmers",
+                  value: reportsData.totalOrganicFarmers,
+                },
+                {
+                  metric: "Total Events",
+                  value: reportsData.totalEvents,
+                },
+                {
+                  metric: "Total Concerns",
+                  value: reportsData.totalConcerns,
+                },
+                {
+                  metric: "Total Allocations",
+                  value: reportsData.totalAllocations,
+                },
+                {
+                  metric: "Total Allocation Amount",
+                  value: reportsData.totalAllocationAmount,
+                },
+              ],
+              "overview-report",
+            );
+        }
+      } catch (error) {
+        console.error("Export error:", error);
+        alert("Error during export. Please try again.");
       }
     }
   };
@@ -279,6 +428,54 @@ const ReportsPage = () => {
     setSearchQuery("");
     refetch();
   };
+
+  const PrintHeader = () => (
+    <div className="print-header no-print" style={{ display: 'none' }}>
+      <img 
+        src="/header.png" 
+        alt="Left Logo" 
+        className="print-logo"
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.style.display = 'none';
+        }}
+      />
+      <div className="print-title">
+        <h1 style={{ margin: 0, color: '#065f46', fontSize: '24px' }}>
+          Agricultural Reports & Analytics
+        </h1>
+        <p style={{ margin: '5px 0 0 0', color: '#374151', fontSize: '14px' }}>
+          Comprehensive insights and data analysis for agricultural management
+        </p>
+        <p style={{ margin: '5px 0 0 0', color: '#6b7280', fontSize: '12px' }}>
+          Report Period: {dateRange?.from ? format(dateRange.from, "MMM dd, yyyy") : "N/A"} - {dateRange?.to ? format(dateRange.to, "MMM dd, yyyy") : "N/A"}
+        </p>
+      </div>
+      <img 
+        src="/header.png" 
+        alt="Right Logo" 
+        className="print-logo"
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.style.display = 'none';
+        }}
+      />
+    </div>
+  );
+
+  const PrintFooter = () => (
+    <div className="print-footer no-print" style={{ display: 'none' }}>
+      <p>
+        Report generated on {format(new Date(), "PPPP")} at {format(new Date(), "p")}
+        {searchQuery && ` • Search: "${searchQuery}"`}
+        {status !== "ALL" && ` • Status: ${status}`}
+        {farmerType !== "all" && ` • Farmer Type: ${farmerType}`}
+      </p>
+      <p style={{ marginTop: '5px', fontSize: '10px' }}>
+        Agricultural Management System © {new Date().getFullYear()}
+      </p>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50 p-4">
@@ -291,7 +488,11 @@ const ReportsPage = () => {
             Comprehensive insights and data analysis for agricultural management
           </p>
         </div>
-        <Card className="mb-6 border-emerald-200 bg-white/90 shadow-xl backdrop-blur-sm">
+
+        {/* Print Header - Hidden in normal view */}
+        <PrintHeader />
+
+        <Card className="mb-6 border-emerald-200 bg-white/90 shadow-xl backdrop-blur-sm no-print">
           <CardHeader>
             <CardTitle className="flex items-center text-emerald-700">
               <Filter className="mr-2 h-5 w-5" />
@@ -353,7 +554,7 @@ const ReportsPage = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="ALL">ALL</SelectItem>
-                    <SelectItem value="NOT_QUALIFIED">NOT_QUALIFIED</SelectItem>
+                    <SelectItem value="NOT_QUALIFIED">NOT QUALIFIED</SelectItem>
                     <SelectItem value="REGISTERED">REGISTERED</SelectItem>
                     <SelectItem value="ARCHIVED">ARCHIVED</SelectItem>
                     <SelectItem value="APPLICANTS">APPLICANTS</SelectItem>
@@ -434,7 +635,7 @@ const ReportsPage = () => {
                       variant="outline"
                       className="bg-red-50 hover:bg-red-100"
                     >
-                      Clear
+                      <X className="h-4 w-4" />
                     </Button>
                   )}
                 </div>
@@ -475,12 +676,13 @@ const ReportsPage = () => {
             </div>
           </CardContent>
         </Card>
+
         <div>
           {isLoading ? (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
               {Array.from({ length: 8 }).map((_, i) => (
                 <Card
-                  key={crypto.randomUUID()}
+                  key={i}
                   className="border-emerald-200 bg-white/90 backdrop-blur-sm"
                 >
                   <CardHeader>
@@ -495,6 +697,9 @@ const ReportsPage = () => {
           ) : (
             <>
               <div ref={printRef}>
+                {/* Print Header for print view */}
+                <PrintHeader />
+
                 {reportType === "overview" && reportsData && (
                   <>
                     <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -510,7 +715,7 @@ const ReportsPage = () => {
                             {reportsData.totalFarmers?.toLocaleString()}
                           </div>
                           <p className="text-muted-foreground text-xs">
-                            +{reportsData.newFarmersThisMonth} this month
+                            +{reportsData.newFarmersThisMonth || 0} this month
                           </p>
                         </CardContent>
                       </Card>
@@ -526,7 +731,7 @@ const ReportsPage = () => {
                             {reportsData.totalOrganicFarmers?.toLocaleString()}
                           </div>
                           <p className="text-muted-foreground text-xs">
-                            +{reportsData.newOrganicFarmersThisMonth} this month
+                            +{reportsData.newOrganicFarmersThisMonth || 0} this month
                           </p>
                         </CardContent>
                       </Card>
@@ -558,7 +763,7 @@ const ReportsPage = () => {
                             {reportsData.totalEvents?.toLocaleString()}
                           </div>
                           <p className="text-muted-foreground text-xs">
-                            +{reportsData.newEventsThisMonth} this month
+                            +{reportsData.newEventsThisMonth || 0} this month
                           </p>
                         </CardContent>
                       </Card>
@@ -573,7 +778,7 @@ const ReportsPage = () => {
                         </CardHeader>
                         <CardContent>
                           <ResponsiveContainer width="100%" height={300}>
-                            <AreaChart data={reportsData.registrationTrends}>
+                            <AreaChart data={reportsData.registrationTrends || []}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis dataKey="month" />
                               <YAxis />
@@ -609,18 +814,18 @@ const ReportsPage = () => {
                           <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
                               <Pie
-                                data={reportsData.statusDistribution}
+                                data={reportsData.statusDistribution || []}
                                 cx="50%"
                                 cy="50%"
                                 labelLine={false}
                                 label={({ name, percent }) =>
-                                  `${name} ${((percent as any) * 100).toFixed(0)}%`
+                                  `${name} ${(percent as any * 100).toFixed(0)}%`
                                 }
                                 outerRadius={80}
                                 fill="#8884d8"
                                 dataKey="value"
                               >
-                                {reportsData.statusDistribution?.map(
+                                {(reportsData.statusDistribution || []).map(
                                   (entry, index) => (
                                     <Cell
                                       key={`cell-${index}`}
@@ -644,7 +849,7 @@ const ReportsPage = () => {
                       </CardHeader>
                       <CardContent>
                         <ResponsiveContainer width="100%" height={300}>
-                          <BarChart data={reportsData.eventsByMonth}>
+                          <BarChart data={reportsData.eventsByMonth || []}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="month" />
                             <YAxis />
@@ -685,12 +890,12 @@ const ReportsPage = () => {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {reportsData.farmersList.map((farmer) => (
-                              <TableRow key={crypto.randomUUID()}>
+                            {(reportsData.farmersList as Farmer[]).map((farmer, index) => (
+                              <TableRow key={farmer.id || `farmer-${index}`}>
                                 <TableCell className="font-medium">
                                   {farmer.name}
                                 </TableCell>
-                                <TableCell>{farmer.email}</TableCell>
+                                <TableCell>{farmer.email || "N/A"}</TableCell>
                                 <TableCell>
                                   <div className="flex items-center">
                                     <MapPin className="mr-1 h-3 w-3" />
@@ -724,11 +929,11 @@ const ReportsPage = () => {
                                 <TableCell>
                                   <div className="flex items-center">
                                     <Crop className="mr-1 h-3 w-3" />
-                                    {farmer.primaryCrop}
+                                    {farmer.primaryCrop || "Various"}
                                   </div>
                                 </TableCell>
                                 <TableCell>
-                                  {farmer.hectares} ha
+                                  {farmer.hectares || 0} ha
                                 </TableCell>
                                 <TableCell>{farmer.registrationDate}</TableCell>
                               </TableRow>
@@ -765,8 +970,8 @@ const ReportsPage = () => {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {reportsData.eventsList.map((event) => (
-                              <TableRow key={crypto.randomUUID()}>
+                            {(reportsData.eventsList as Event[]).map((event, index) => (
+                              <TableRow key={event.id || `event-${index}`}>
                                 <TableCell className="font-medium">
                                   {event.title}
                                 </TableCell>
@@ -818,8 +1023,8 @@ const ReportsPage = () => {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {reportsData.concernsList.map((concern) => (
-                              <TableRow key={crypto.randomUUID()}>
+                            {(reportsData.concernsList as Concern[]).map((concern, index) => (
+                              <TableRow key={concern.id || `concern-${index}`}>
                                 <TableCell className="font-medium">
                                   {concern.title}
                                 </TableCell>
@@ -879,15 +1084,15 @@ const ReportsPage = () => {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {reportsData.allocationsList.map((allocation) => (
-                              <TableRow key={crypto.randomUUID()}>
+                            {(reportsData.allocationsList as Allocation[]).map((allocation, index) => (
+                              <TableRow key={allocation.id || `allocation-${index}`}>
                                 <TableCell className="font-medium">
                                   {allocation.id}
                                 </TableCell>
                                 <TableCell>
                                   <div className="flex items-center">
                                     <DollarSign className="mr-1 h-3 w-3" />
-                                    ₱{allocation.amount.toLocaleString()}
+                                    ₱{allocation.amount?.toLocaleString()}
                                   </div>
                                 </TableCell>
                                 <TableCell>{allocation.allocationType || "N/A"}</TableCell>
@@ -900,14 +1105,19 @@ const ReportsPage = () => {
                                 </TableCell>
                                 <TableCell>
                                   <div className="max-w-xs">
-                                    {allocation.farmers.map((farmer: any, index: number) => (
-                                      <div key={index} className="text-xs">
+                                    {(allocation.farmers || []).map((farmer: any, farmerIndex: number) => (
+                                      <div key={farmerIndex} className="text-xs">
                                         {farmer.name} ({farmer.type})
                                       </div>
                                     ))}
+                                    {(!allocation.farmers || allocation.farmers.length === 0) && (
+                                      <div className="text-xs text-gray-500">No farmers assigned</div>
+                                    )}
                                   </div>
                                 </TableCell>
-                                <TableCell>{allocation.createdAt}</TableCell>
+                                <TableCell>
+                                  {allocation.createdAt}
+                                </TableCell>
                               </TableRow>
                             ))}
                           </TableBody>
@@ -916,15 +1126,21 @@ const ReportsPage = () => {
                     </CardContent>
                   </Card>
                 )}
+
+                {/* Print Footer */}
+                <PrintFooter />
               </div>
             </>
           )}
         </div>
-        <div className="mt-8 text-center">
+
+        <div className="mt-8 text-center no-print">
           <p className="text-sm text-slate-500">
-            Report generated on {format(new Date(), "PPP")} at{" "}
+            Report generated on {format(new Date(), "PPPP")} at{" "}
             {format(new Date(), "p")}
             {searchQuery && ` • Search: "${searchQuery}"`}
+            {status !== "ALL" && ` • Status: ${status}`}
+            {farmerType !== "all" && ` • Farmer Type: ${farmerType}`}
           </p>
         </div>
       </div>

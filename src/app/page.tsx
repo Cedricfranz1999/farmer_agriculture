@@ -68,12 +68,19 @@ export default function AgreBaseLanding() {
               whileHover={{ scale: 1.05 }}
               className="group flex items-center space-x-3"
             >
-              <div className="relative">
-                <div className="absolute inset-0 rounded-full bg-emerald-500 opacity-20 blur-sm transition-opacity group-hover:opacity-30"></div>
-                <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl">
-                  <Leaf className="h-7 w-7 text-white drop-shadow-sm" />
-                </div>
-              </div>
+<div className="relative group">
+  <div className="absolute -inset-2 rounded-full bg-emerald-500 opacity-20 blur-md transition-all duration-300 group-hover:opacity-40 group-hover:scale-110"></div>
+
+  <div className="relative h-12 w-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl flex items-center justify-center overflow-hidden">
+    <img 
+      src="homepage.jpeg"
+      className="h-full w-full rounded-full object-cover"
+      alt="profile"
+    />
+  </div>
+</div>
+
+
               <h1 className="bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-2xl font-bold text-transparent">
                 AgreBase
               </h1>

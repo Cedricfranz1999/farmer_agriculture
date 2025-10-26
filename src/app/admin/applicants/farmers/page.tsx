@@ -378,7 +378,6 @@ Farmer Management Team`;
       .join(" ");
     const age = calculateAge(farmer.dateOfBirth);
     
-    console.log("CONTACT",selectedFarmer?.contactNumber)
     return (
       <Card className="mb-4 overflow-hidden border-emerald-200 bg-white shadow-md transition-all duration-200 hover:shadow-lg">
         <CardContent className="p-4">
