@@ -658,6 +658,7 @@ updateFarmer: publicProcedure
       ...farmerData
     } = input;
 
+    // First, check if farmer exists outside of transaction
     const existingFarmer = await ctx.db.farmer.findUnique({
       where: { id },
       include: {
@@ -677,153 +678,214 @@ updateFarmer: publicProcedure
       });
     }
 
-    // Helper function for upsert operations
-    const upsertDetail = async (tx: any, model: string, data: any, condition: boolean) => {
-      if (!condition || !data) return;
+    // Helper function to prepare data for upsert operations
+    const prepareDetailData = (data: any) => {
+      if (!data) return null;
       
-      const upsertData = {
-        farmerId: id,
-        ...Object.fromEntries(
-          Object.entries(data).map(([key, value]) => [key, value ?? false])
-        )
-      };
+      return Object.fromEntries(
+        Object.entries(data).map(([key, value]) => [key, value ?? false])
+      );
+    };
 
-      await (tx as any)[model].upsert({
+    // Helper function for upsert operations
+    const upsertDetail = async (tx: any, model: string, data: any, shouldUpsert: boolean) => {
+      if (!shouldUpsert || !data) return null;
+      
+      const preparedData = prepareDetailData(data);
+      if (!preparedData) return null;
+
+      return (tx as any)[model].upsert({
         where: { farmerId: id },
-        create: upsertData,
-        update: upsertData,
+        create: { farmerId: id, ...preparedData },
+        update: preparedData,
       });
     };
 
-    // Helper function for AGRI_YOUTH (special case with delete/create)
-    const handleAgriYouth = async (tx: any, data: any, condition: boolean) => {
-      if (condition && data) {
-        await tx.aGRI_YOUTH.deleteMany({ where: { farmerId: id } });
-        await tx.aGRI_YOUTH.create({
-          data: {
-            farmerId: id,
-            ...Object.fromEntries(
-              Object.entries(data).map(([key, value]) => [key, value ?? false])
-            )
-          },
-        });
-      } else if (!condition) {
-        await tx.aGRI_YOUTH.deleteMany({ where: { farmerId: id } });
+    // Helper function for AGRI_YOUTH
+    const handleAgriYouth = async (tx: any, data: any, shouldHandle: boolean) => {
+      if (!shouldHandle) {
+        return tx.aGRI_YOUTH.deleteMany({ where: { farmerId: id } });
       }
+
+      if (!data) return null;
+
+      const preparedData = prepareDetailData(data);
+      if (!preparedData) return null;
+
+      // Delete existing and create new
+      await tx.aGRI_YOUTH.deleteMany({ where: { farmerId: id } });
+      
+      return tx.aGRI_YOUTH.create({
+        data: {
+          farmerId: id,
+          ...preparedData,
+        },
+      });
     };
 
     // Helper function for house head
     const handleHouseHead = async (tx: any, data: any) => {
-      if (data) {
-        await tx.houseHead.upsert({
-          where: { id: existingFarmer.houseHead?.id ?? -1 },
-          create: {
-            farmer: { connect: { id } },
-            houseHoldHead: data.houseHoldHead ?? "",
-            relationship: data.relationship ?? "",
-            numberOfLivingHouseHoldMembersTotal: data.numberOfLivingHouseHoldMembersTotal ?? 0,
-            numberOfMale: data.numberOfMale ?? 0,
-            NumberOfFemale: data.NumberOfFemale ?? 0,
-          },
-          update: {
-            houseHoldHead: data.houseHoldHead ?? "",
-            relationship: data.relationship ?? "",
-            numberOfLivingHouseHoldMembersTotal: data.numberOfLivingHouseHoldMembersTotal ?? 0,
-            numberOfMale: data.numberOfMale ?? 0,
-            NumberOfFemale: data.NumberOfFemale ?? 0,
-          },
+      if (!data) {
+        return tx.houseHead.deleteMany({ where: { farmer: { id } } });
+      }
+
+      const houseHeadData = {
+        houseHoldHead: data.houseHoldHead ?? "",
+        relationship: data.relationship ?? "",
+        numberOfLivingHouseHoldMembersTotal: data.numberOfLivingHouseHoldMembersTotal ?? 0,
+        numberOfMale: data.numberOfMale ?? 0,
+        NumberOfFemale: data.NumberOfFemale ?? 0,
+      };
+
+      if (existingFarmer.houseHead) {
+        return tx.houseHead.update({
+          where: { id: existingFarmer.houseHead.id },
+          data: houseHeadData,
         });
       } else {
-        await tx.houseHead.deleteMany({ where: { farmer: { id } } });
+        return tx.houseHead.create({
+          data: {
+            farmer: { connect: { id } },
+            ...houseHeadData,
+          },
+        });
       }
     };
 
-    // Helper function for farm details
+    // Helper function for farm details - process in batches
     const handleFarmDetails = async (tx: any, farms: any[]) => {
-      if (!farms?.length) return;
+      if (!farms || farms.length === 0) {
+        return Promise.resolve([]);
+      }
 
-      for (const farm of farms) {
+      const operations = farms.map((farm) => {
         const farmData = {
           Location: farm.Location!,
           TotalFarmAreaInHa: farm.TotalFarmAreaInHa!,
-          withAncestordomain: farm.withAncestordomain,
+          withAncestordomain: farm.withAncestordomain ?? false,
           agrarianReform: farm.agrarianReform ?? false,
           OwnerDocumentsNumber: farm.OwnerDocumentsNumber!,
-          RegisterOwner: farm.RegisterOwner,
+          RegisterOwner: farm.RegisterOwner ?? false,
           ownerName: farm.ownerName ?? "",
-          tenantOwner: farm.tenantOwner,
-          teenantName: farm.teenantName,
-          Leese: farm.Leese,
-          leeseName: farm.leeseName,
-          others: farm.others,
-          othersField: farm.othersField,
+          tenantOwner: farm.tenantOwner ?? false,
+          teenantName: farm.teenantName ?? "",
+          Leese: farm.Leese ?? false,
+          leeseName: farm.leeseName ?? "",
+          others: farm.others ?? "",
+          othersField: farm.othersField ?? "",
         };
 
         if (farm.id) {
-          await tx.farmDetails.update({
+          return tx.farmDetails.update({
             where: { id: farm.id },
             data: farmData,
           });
         } else {
-          await tx.farmDetails.create({
+          return tx.farmDetails.create({
             data: { farmerId: id, ...farmData },
           });
         }
+      });
+
+      return Promise.all(operations);
+    };
+
+    // Delete category details that are no longer needed
+    const deleteUnusedCategoryDetails = async (tx: any, newCategory: string) => {
+      const currentCategory = existingFarmer.categoryType;
+      
+      // If category didn't change, no need to delete anything
+      if (newCategory === currentCategory) return;
+
+      const deleteOperations = [];
+
+      if (currentCategory === "FARMER" && newCategory !== "FARMER") {
+        deleteOperations.push(tx.farmerDetails.deleteMany({ where: { farmerId: id } }));
+      }
+      
+      if (currentCategory === "FARMWORKER" && newCategory !== "FARMWORKER") {
+        deleteOperations.push(tx.farmWorkerDetails.deleteMany({ where: { farmerId: id } }));
+      }
+      
+      if (currentCategory === "FISHERFOLK" && newCategory !== "FISHERFOLK") {
+        deleteOperations.push(tx.fisherfolkDetails.deleteMany({ where: { farmerId: id } }));
+      }
+      
+      if (currentCategory === "AGRI_YOUTH" && newCategory !== "AGRI_YOUTH") {
+        deleteOperations.push(tx.aGRI_YOUTH.deleteMany({ where: { farmerId: id } }));
+      }
+
+      if (deleteOperations.length > 0) {
+        await Promise.all(deleteOperations);
       }
     };
 
-    // Delete details when category changes
-    const deleteCategoryDetails = async (tx: any, currentCategory: string) => {
-      const modelsToDelete = [];
-      
-      if (currentCategory !== "FARMER") modelsToDelete.push("farmerDetails");
-      if (currentCategory !== "FARMWORKER") modelsToDelete.push("farmWorkerDetails");
-      if (currentCategory !== "FISHERFOLK") modelsToDelete.push("fisherfolkDetails");
-      if (currentCategory !== "AGRI_YOUTH") modelsToDelete.push("aGRI_YOUTH");
+    try {
+      // Execute all operations in a transaction with increased timeout
+      const completeFarmer = await ctx.db.$transaction(async (tx) => {
+        // First update main farmer record
+        const updateFarmerPromise = tx.farmer.update({
+          where: { id },
+          data: {
+            ...farmerData,
+            ...(categoryType && { categoryType }),
+            ...(numberOfFarms !== undefined && { numberOfFarms }),
+          },
+        });
 
-      await Promise.all(
-        modelsToDelete.map(model => 
-          (tx as any)[model].deleteMany({ where: { farmerId: id } })
-        )
-      );
-    };
+        // Delete unused category details
+        const deletePromise = deleteUnusedCategoryDetails(tx, categoryType || existingFarmer.categoryType);
 
-    // Execute all operations in a transaction
-    const completeFarmer = await ctx.db.$transaction(async (tx) => {
-      // Update main farmer record
-      await tx.farmer.update({
-        where: { id },
-        data: {
-          ...farmerData,
-          ...(categoryType && { categoryType }),
-          ...(numberOfFarms !== undefined && { numberOfFarms }),
-        },
+        // Prepare all detail operations
+        const detailOperations = [
+          upsertDetail(tx, "farmerDetails", farmerDetails, categoryType === "FARMER"),
+          upsertDetail(tx, "farmWorkerDetails", farmworkerDetails, categoryType === "FARMWORKER"),
+          upsertDetail(tx, "fisherfolkDetails", fisherfolkDetails, categoryType === "FISHERFOLK"),
+          handleAgriYouth(tx, agriYouthDetails, categoryType === "AGRI_YOUTH"),
+          handleHouseHead(tx, houseHead),
+          handleFarmDetails(tx, inputFarmDetails as any),
+        ];
+
+        // Execute all operations in parallel
+        await Promise.all([
+          updateFarmerPromise,
+          deletePromise,
+          ...detailOperations.filter(op => op !== null),
+        ]);
+
+        // Return the complete updated farmer
+        return tx.farmer.findUnique({
+          where: { id },
+          include: {
+            farmerDetails: true,
+            farmworkerDetails: true,
+            fisherfolkDetails: true,
+            AGRI_YOUTH: true,
+            houseHead: true,
+            farmDetails: true,
+          },
+        });
+      }, {
+        maxWait: 10000, // 10 seconds max wait
+        timeout: 15000, // 15 seconds timeout
       });
 
-      await deleteCategoryDetails(tx, categoryType || existingFarmer.categoryType);
+      return completeFarmer;
+
+    } catch (error) {
+      console.error("Error updating farmer:", error);
       
-      await Promise.all([
-        upsertDetail(tx, "farmerDetails", farmerDetails, categoryType === "FARMER"),
-        upsertDetail(tx, "farmWorkerDetails", farmworkerDetails, categoryType === "FARMWORKER"),
-        upsertDetail(tx, "fisherfolkDetails", fisherfolkDetails, categoryType === "FISHERFOLK"),
-        handleAgriYouth(tx, agriYouthDetails, categoryType === "AGRI_YOUTH"),
-        handleHouseHead(tx, houseHead),
-        handleFarmDetails(tx, inputFarmDetails as any),
-      ]);
+      if (error instanceof Error && error.message.includes("transaction")) {
+        throw new TRPCError({
+          code: "TIMEOUT",
+          message: "The update operation took too long. Please try again with fewer changes.",
+        });
+      }
 
-      return tx.farmer.findUnique({
-        where: { id },
-        include: {
-          farmerDetails: true,
-          farmworkerDetails: true,
-          fisherfolkDetails: true,
-          AGRI_YOUTH: true,
-          houseHead: true,
-          farmDetails: true,
-        },
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to update farmer",
       });
-    });
-
-    return completeFarmer;
+    }
   }),
 });

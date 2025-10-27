@@ -82,7 +82,7 @@ export default function AgreBaseLanding() {
 
 
               <h1 className="bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-2xl font-bold text-transparent">
-                AgreBase
+                AgreReform
               </h1>
             </motion.div>
             {/* Desktop Navigation */}
@@ -203,7 +203,7 @@ export default function AgreBaseLanding() {
               className="mb-6"
             >
               <h1 className="mb-6 bg-gradient-to-r from-emerald-600 via-emerald-700 to-green-700 bg-clip-text text-6xl font-bold text-transparent drop-shadow-sm md:text-8xl">
-                AgreBase
+                AgreReform
               </h1>
             </motion.div>
             <motion.div
@@ -1152,7 +1152,7 @@ export default function AgreBaseLanding() {
                     <Leaf className="h-6 w-6 text-emerald-600" />
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold">AgreBase</h3>
+                <h3 className="text-2xl font-bold">AgreReform</h3>
               </div>
               <p className="leading-relaxed text-emerald-100">
                 Empowering farmers through digital innovation and sustainable
@@ -1250,7 +1250,7 @@ export default function AgreBaseLanding() {
             <div className="absolute top-0 right-0 left-0 h-px bg-gradient-to-r from-transparent via-emerald-400 to-transparent"></div>
             <div className="text-center text-emerald-100">
               <p>
-                &copy; 2024 AgreBase - Northwest Samar State University. All
+                &copy; 2024 AgreReform - Northwest Samar State University. All
                 rights reserved.
               </p>
               <p className="mt-2 text-sm">

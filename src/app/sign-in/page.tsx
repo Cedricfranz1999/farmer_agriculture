@@ -140,7 +140,7 @@ const LoginPage = () => {
                 <Leaf className="h-8 w-8 text-emerald-100" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-white">AgreBase</h2>
+                <h2 className="text-2xl font-bold text-white">AgreReform</h2>
                 <p className="text-sm text-emerald-100/80">
                   Farm Management System
                 </p>
@@ -202,7 +202,7 @@ const LoginPage = () => {
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-emerald-700">
-                  AgreBase
+                  AgreReform
                 </h2>
                 <p className="text-sm text-gray-500">Farm Management</p>
               </div>

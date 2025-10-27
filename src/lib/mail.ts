@@ -17,7 +17,7 @@ export const sendMail = async (data: MailerType) => {
   });
 
   return await transporter.sendMail({
-    from: `AgreBase Farmer Management <${process.env.NODEMAILER_USER}>`,
+    from: `AgreReform Farmer Management <${process.env.NODEMAILER_USER}>`,
     to: data.to,
     subject: data.subject,
     html: data.html,

@@ -485,7 +485,7 @@ const Header = () => {
 </div>
 
                   <span className="bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-xl font-bold text-transparent">
-                    AgreBase
+                    AgreReform
                   </span>
                 </Link>
                 <Link

@@ -452,7 +452,6 @@ update: publicProcedure
       ...updateData
     } = input;
 
-    // Check if farmer exists
     const existingFarmer = await ctx.db.organic_Farmer.findUnique({
       where: { id },
     });
@@ -464,7 +463,6 @@ update: publicProcedure
       });
     }
 
-    // Define commodity type to foreign key mapping
     const commodityTypeMap: Record<string, string> = {
       "Grains": "GrainsId",
       "LowlandVegetables": "LowlandVegetablesId",
@@ -480,102 +478,134 @@ update: publicProcedure
       "OtherCommodity": "OtherCommodityId",
     };
 
-    // Helper function to process commodities
-    const processCommodities = async (tx: any) => {
-      if (!agriculturalCommodities?.length) return;
+    const processCommodities = async (transaction: any) => {
+      if (!agriculturalCommodities || agriculturalCommodities.length === 0) {
+        return;
+      }
 
-      // Group by type to ensure only one commodity per type
-      const commoditiesByType = agriculturalCommodities.reduce((acc, commodity) => {
-        acc[commodity.type] = commodity;
-        return acc;
-      }, {} as Record<string, any>);
+      const commoditiesByType: Record<string, any> = {};
+      
+      agriculturalCommodities.forEach((commodity) => {
+        commoditiesByType[commodity.type] = commodity;
+      });
 
-      // Create all commodities in parallel
-      await Promise.all(
-        Object.entries(commoditiesByType).map(async ([type, commodity]) => {
-          const foreignKey = commodityTypeMap[type];
-          if (!foreignKey) return;
+      const commodityCreationPromises = Object.entries(commoditiesByType).map(async ([type, commodity]) => {
+        const foreignKey = commodityTypeMap[type];
+        if (!foreignKey) {
+          return;
+        }
 
-          const commodityData = {
-            name: commodity.name,
-            sizeInHa: commodity.sizeInHa,
-            annualVolumeInKG: commodity.annualVolumeInKG,
-            Certification: commodity.certification || null,
-            [foreignKey]: id,
-          };
+        const commodityData = {
+          name: commodity.name,
+          sizeInHa: commodity.sizeInHa,
+          annualVolumeInKG: commodity.annualVolumeInKG,
+          Certification: commodity.certification || null,
+          [foreignKey]: id,
+        };
 
-          await tx.agriculturalCommoditiesFisheryProducts.create({
-            data: commodityData,
+        await transaction.agriculturalCommoditiesFisheryProducts.create({
+          data: commodityData,
+        });
+      });
+
+      await Promise.all(commodityCreationPromises);
+    };
+
+    const processFacilities = async (transaction: any) => {
+      if (!ownSharedFacilities || ownSharedFacilities.length === 0) {
+        return;
+      }
+
+      const facilityCreationPromises = ownSharedFacilities.map((facility) => {
+        const facilityData = {
+          facilitiesMachineryEquipmentUsed: facility.facilitiesMachineryEquipmentUsed,
+          ownership: facility.ownership,
+          model: facility.model,
+          quantity: facility.quantity,
+          volumeServicesArea: facility.volumeServicesArea,
+          averageWorkingHoursDay: facility.averageWorkingHoursDay,
+          Remarks: facility.Remarks || null,
+          dedicatedToOrganic: facility.dedicatedToOrganic,
+          organicFarmerId: id,
+        };
+
+        return transaction.ownSharedFacilities.create({
+          data: facilityData,
+        });
+      });
+
+      await Promise.all(facilityCreationPromises);
+    };
+
+    try {
+      const completeOrganicFarmer = await ctx.db.$transaction(async (transaction) => {
+        const updateFarmerPromise = transaction.organic_Farmer.update({
+          where: { id },
+          data: updateData,
+        });
+
+        const deleteCommoditiesPromises = Object.values(commodityTypeMap).map((field) => {
+          return transaction.agriculturalCommoditiesFisheryProducts.deleteMany({
+            where: { [field]: id }
           });
-        })
-      );
-    };
+        });
 
-    // Helper function to process facilities
-    const processFacilities = async (tx: any) => {
-      if (!ownSharedFacilities?.length) return;
+        const deleteFacilitiesPromise = transaction.ownSharedFacilities.deleteMany({
+          where: { organicFarmerId: id },
+        });
 
-      // Create all facilities in parallel
-      await Promise.all(
-        ownSharedFacilities.map(facility =>
-          tx.ownSharedFacilities.create({
-            data: {
-              ...facility,
-              organicFarmerId: id,
-            },
-          })
-        )
-      );
-    };
+        await Promise.all([
+          updateFarmerPromise,
+          ...deleteCommoditiesPromises,
+          deleteFacilitiesPromise,
+        ]);
 
-    // Execute all operations in a single transaction
-    const completeOrganicFarmer = await ctx.db.$transaction(async (tx) => {
-      // Update the main organic farmer record
-      await tx.organic_Farmer.update({
-        where: { id },
-        data: updateData,
+        await Promise.all([
+          processCommodities(transaction),
+          processFacilities(transaction),
+        ]);
+
+        const updatedFarmer = await transaction.organic_Farmer.findUnique({
+          where: { id },
+          include: {
+            Grains: true,
+            LowlandVegetables: true,
+            UplandVegetables: true,
+            FruitsAndNots: true,
+            Mushroom: true,
+            OrganicSoil: true,
+            Rootcrops: true,
+            PultryProducts: true,
+            LiveStockProducts: true,
+            FisheriesAndAquaCulture: true,
+            IndustrialCropsAndProducts: true,
+            OtherCommodity: true,
+            ownSharedFacilities: true,
+          },
+        });
+
+        return updatedFarmer;
+      }, {
+        maxWait: 10000,
+        timeout: 15000,
       });
 
-      // Delete existing commodities for all types in parallel
-      const deletePromises = Object.values(commodityTypeMap).map(field => 
-        tx.agriculturalCommoditiesFisheryProducts.deleteMany({
-          where: { [field]: id }
-        })
-      );
-      await Promise.all(deletePromises);
+      return completeOrganicFarmer;
 
-      // Delete existing facilities
-      await tx.ownSharedFacilities.deleteMany({
-        where: { organicFarmerId: id },
+    } catch (error) {
+      console.error("Error updating organic farmer:", error);
+      
+      if (error instanceof Error && error.message.includes("transaction")) {
+        throw new TRPCError({
+          code: "TIMEOUT",
+          message: "The update operation took too long. Please try again with fewer changes.",
+        });
+      }
+
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to update organic farmer",
       });
-
-      // Process commodities and facilities in parallel
-      await Promise.all([
-        processCommodities(tx),
-        processFacilities(tx),
-      ]);
-
-      // Return the complete updated organic farmer data with all relations
-      return tx.organic_Farmer.findUnique({
-        where: { id },
-        include: {
-          Grains: true,
-          LowlandVegetables: true,
-          UplandVegetables: true,
-          FruitsAndNots: true,
-          Mushroom: true,
-          OrganicSoil: true,
-          Rootcrops: true,
-          PultryProducts: true,
-          LiveStockProducts: true,
-          FisheriesAndAquaCulture: true,
-          IndustrialCropsAndProducts: true,
-          OtherCommodity: true,
-          ownSharedFacilities: true,
-        },
-      });
-    });
-
-    return completeOrganicFarmer;
+    }
   }),
 });

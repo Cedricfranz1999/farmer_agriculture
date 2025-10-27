@@ -58,7 +58,7 @@ const Sidebar = () => {
 </div>
 
             <h1 className="bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-xl font-bold text-transparent">
-              AgreBase
+              AgrAgreReformeBase
             </h1>
           </motion.div>
         </div>
