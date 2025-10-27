@@ -994,7 +994,7 @@ const FarmerApplicantsPage = () => {
                     >
                       {selectedFarmer.newStatus === "REGISTERED"
                         ? "approve and register"
-                        : "reject"}
+                        : "ARCHIVED"}
                     </span>{" "}
                     this farmer?
                   </p>

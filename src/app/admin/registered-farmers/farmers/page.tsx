@@ -527,7 +527,7 @@ const FarmerApplicantsPage = () => {
             <div>
               <h1 className="bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-2xl font-bold text-transparent sm:text-4xl">
                 Registered Farmer
-              </h1>
+            </h1>
               <p className="mt-2 text-base text-slate-600 sm:text-lg">
                  farmer registrations
               </p>
@@ -990,7 +990,7 @@ const FarmerApplicantsPage = () => {
                     >
                       {selectedFarmer.newStatus === "REGISTERED"
                         ? "approve and register"
-                        : "reject"}
+                        : "ARCHIVED"}
                     </span>{" "}
                     this farmer?
                   </p>

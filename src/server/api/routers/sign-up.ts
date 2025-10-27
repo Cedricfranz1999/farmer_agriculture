@@ -529,366 +529,289 @@ export const signupRouter = createTRPCRouter({
       };
     }),
 updateFarmer: publicProcedure
-    .input(
-      z.object({
-        id: z.number(),
-        // Basic info
-        username: z.string().min(1, "Username is required").optional(),
-        email_address: z.string().nullable().optional(),
-        surname: z.string().min(1, "Surname is required").optional(),
-        firstname: z.string().min(1, "First name is required").optional(),
-        middleName: z.string().nullable().optional(),
-        extensionName: z.string().nullable().optional(),
-        sex: z.enum(["MALE", "FEMALE"]).optional(),
-        // Address
-        houseOrLotOrBuildingNo: z.string().min(1, "House/Lot/Building No is required").optional(),
-        streetOrSitioOrSubDivision: z.string().min(1, "Street/Sitio/Subdivision is required").optional(),
-        barangay: z.string().min(1, "Barangay is required").optional(),
-        municipalityOrCity: z.string().min(1, "Municipality/City is required").optional(),
-        province: z.string().min(1, "Province is required").optional(),
-        region: z.string().min(1, "Region is required").optional(),
-        // Contact & personal info
-        contactNumber: z.string().min(1, "Contact number is required").optional(),
-        placeOfBirth: z.string().min(1, "Place of birth is required").optional(),
-        dateOfBirth: z.date().optional(),
-        highestFormOfEducation: z.enum([
-          "NONE",
-          "ELEMENTARY",
-          "HIGHSCHOOL",
-          "SENIOR_HIGHSCHOOL",
-          "COLLEGE",
-          "POST_GRADUATE",
-          "VOCATIONAL",
-        ]).optional(),
-        religion: z.string().nullable().optional(),
-        civilStaus: z.enum(["SINGLE", "MARRIED", "WIDOWED", "SEPARATED"]).optional(),
-        nameOfSpouse: z.string().nullable().optional(),
-        FourPS_Benificiaty: z.string().nullable().optional(),
-        mothersName: z.string().nullable().optional(),
-        fathersName: z.string().nullable().optional(),
-        govermentId: z.string().min(1, "Government ID is required").optional(),
-        personToContactIncaseOfEmerceny: z.string().nullable().optional(),
-        personContactNumberIncaseOfEmergency: z.string().nullable().optional(),
-        // Income
-        grossAnualIncomeLastYearFarming: z.number().min(0).optional(),
-        grossAnualIncomeLastYeaNonFarming: z.number().min(0).optional(),
-        // Images
-        farmerImage: z.string().min(1, "Farmer image is required").optional(),
-        farmerSignatureAsImage: z.string().nullable().optional(),
-        farmerFingerPrintAsImage: z.string().nullable().optional(),
-        // Category
-        categoryType: z.enum(["FARMER", "FARMWORKER", "FISHERFOLK", "AGRI_YOUTH"]).optional(),
-        // Farmer details
-        farmerDetails: z.object({
-          rice: z.boolean().optional(),
-          corn: z.boolean().optional(),
-          othersCrops: z.string().nullable().optional(),
-          livestock: z.boolean().optional(),
-          livestockDetails: z.string().nullable().optional(),
-          poultry: z.boolean().optional(),
-          poultryDetails: z.string().nullable().optional(),
-        }).optional().nullable(),
-        // Farm worker details
-        farmworkerDetails: z.object({
-          landPreparation: z.boolean().optional(),
-          plantingTransplanting: z.boolean().optional(),
-          cultivation: z.boolean().optional(),
-          harvesting: z.boolean().optional(),
+  .input(
+    z.object({
+      id: z.number(),
+      // Basic info
+      username: z.string().min(1, "Username is required").optional(),
+      email_address: z.string().nullable().optional(),
+      surname: z.string().min(1, "Surname is required").optional(),
+      firstname: z.string().min(1, "First name is required").optional(),
+      middleName: z.string().nullable().optional(),
+      extensionName: z.string().nullable().optional(),
+      sex: z.enum(["MALE", "FEMALE"]).optional(),
+      // Address
+      houseOrLotOrBuildingNo: z.string().min(1, "House/Lot/Building No is required").optional(),
+      streetOrSitioOrSubDivision: z.string().min(1, "Street/Sitio/Subdivision is required").optional(),
+      barangay: z.string().min(1, "Barangay is required").optional(),
+      municipalityOrCity: z.string().min(1, "Municipality/City is required").optional(),
+      province: z.string().min(1, "Province is required").optional(),
+      region: z.string().min(1, "Region is required").optional(),
+      // Contact & personal info
+      contactNumber: z.string().min(1, "Contact number is required").optional(),
+      placeOfBirth: z.string().min(1, "Place of birth is required").optional(),
+      dateOfBirth: z.date().optional(),
+      highestFormOfEducation: z.enum([
+        "NONE",
+        "ELEMENTARY",
+        "HIGHSCHOOL",
+        "SENIOR_HIGHSCHOOL",
+        "COLLEGE",
+        "POST_GRADUATE",
+        "VOCATIONAL",
+      ]).optional(),
+      religion: z.string().nullable().optional(),
+      civilStaus: z.enum(["SINGLE", "MARRIED", "WIDOWED", "SEPARATED"]).optional(),
+      nameOfSpouse: z.string().nullable().optional(),
+      FourPS_Benificiaty: z.string().nullable().optional(),
+      mothersName: z.string().nullable().optional(),
+      fathersName: z.string().nullable().optional(),
+      govermentId: z.string().min(1, "Government ID is required").optional(),
+      personToContactIncaseOfEmerceny: z.string().nullable().optional(),
+      personContactNumberIncaseOfEmergency: z.string().nullable().optional(),
+      // Income
+      grossAnualIncomeLastYearFarming: z.number().min(0).optional(),
+      grossAnualIncomeLastYeaNonFarming: z.number().min(0).optional(),
+      // Images
+      farmerImage: z.string().min(1, "Farmer image is required").optional(),
+      farmerSignatureAsImage: z.string().nullable().optional(),
+      farmerFingerPrintAsImage: z.string().nullable().optional(),
+      // Category
+      categoryType: z.enum(["FARMER", "FARMWORKER", "FISHERFOLK", "AGRI_YOUTH"]).optional(),
+      // Farmer details
+      farmerDetails: z.object({
+        rice: z.boolean().optional(),
+        corn: z.boolean().optional(),
+        othersCrops: z.string().nullable().optional(),
+        livestock: z.boolean().optional(),
+        livestockDetails: z.string().nullable().optional(),
+        poultry: z.boolean().optional(),
+        poultryDetails: z.string().nullable().optional(),
+      }).optional().nullable(),
+      // Farm worker details
+      farmworkerDetails: z.object({
+        landPreparation: z.boolean().optional(),
+        plantingTransplanting: z.boolean().optional(),
+        cultivation: z.boolean().optional(),
+        harvesting: z.boolean().optional(),
+        others: z.string().nullable().optional(),
+      }).optional().nullable(),
+      // Fisherfolk details
+      fisherfolkDetails: z.object({
+        fishCapture: z.boolean().optional(),
+        aquaculture: z.boolean().optional(),
+        gleaning: z.boolean().optional(),
+        fishProcessing: z.boolean().optional(),
+        fishVending: z.boolean().optional(),
+        others: z.string().nullable().optional(),
+      }).optional().nullable(),
+      // Agri Youth details
+      agriYouthDetails: z.object({
+        partOfFarmingHouseHold: z.boolean().optional(),
+        attendedFormalAgriFishery: z.boolean().optional(),
+        attendedNonFormalAgriFishery: z.boolean().optional(),
+        participatedInAnyAgriculturalActivity: z.boolean().optional(),
+        fishVending: z.boolean().optional(),
+        others: z.string().nullable().optional(),
+      }).optional().nullable(),
+      // House head details
+      houseHead: z.object({
+        houseHoldHead: z.string().optional(),
+        relationship: z.string().optional(),
+        numberOfLivingHouseHoldMembersTotal: z.number().optional(),
+        numberOfMale: z.number().optional(),
+        NumberOfFemale: z.number().optional(),
+      }).optional().nullable(),
+      // Farm details
+      farmDetails: z.array(
+        z.object({
+          id: z.number().optional(),
+          Location: z.string().min(1, "Location is required").optional(),
+          TotalFarmAreaInHa: z.number().min(0).optional(),
+          withAncestordomain: z.boolean().nullable().optional(),
+          agrarianReform: z.boolean().optional(),
+          OwnerDocumentsNumber: z.string().min(1, "Owner documents number is required").optional(),
+          RegisterOwner: z.boolean().nullable().optional(),
+          ownerName: z.string().optional(),
+          tenantOwner: z.boolean().nullable().optional(),
+          teenantName: z.string().nullable().optional(),
+          Leese: z.boolean().nullable().optional(),
+          leeseName: z.string().nullable().optional(),
           others: z.string().nullable().optional(),
-        }).optional().nullable(),
-        // Fisherfolk details
-        fisherfolkDetails: z.object({
-          fishCapture: z.boolean().optional(),
-          aquaculture: z.boolean().optional(),
-          gleaning: z.boolean().optional(),
-          fishProcessing: z.boolean().optional(),
-          fishVending: z.boolean().optional(),
-          others: z.string().nullable().optional(),
-        }).optional().nullable(),
-        // Agri Youth details
-        agriYouthDetails: z.object({
-          partOfFarmingHouseHold: z.boolean().optional(),
-          attendedFormalAgriFishery: z.boolean().optional(),
-          attendedNonFormalAgriFishery: z.boolean().optional(),
-          participatedInAnyAgriculturalActivity: z.boolean().optional(),
-          fishVending: z.boolean().optional(),
-          others: z.string().nullable().optional(),
-        }).optional().nullable(),
-        // House head details
-        houseHead: z.object({
-          houseHoldHead: z.string().optional(),
-          relationship: z.string().optional(),
-          numberOfLivingHouseHoldMembersTotal: z.number().optional(),
-          numberOfMale: z.number().optional(),
-          NumberOfFemale: z.number().optional(),
-        }).optional().nullable(),
-        // Farm details
-        farmDetails: z.array(
-          z.object({
-            id: z.number().optional(),
-            Location: z.string().min(1, "Location is required").optional(),
-            TotalFarmAreaInHa: z.number().min(0).optional(),
-            withAncestordomain: z.boolean().nullable().optional(),
-            agrarianReform: z.boolean().optional(),
-            OwnerDocumentsNumber: z.string().min(1, "Owner documents number is required").optional(),
-            RegisterOwner: z.boolean().nullable().optional(),
-            ownerName: z.string().optional(),
-            tenantOwner: z.boolean().nullable().optional(),
-            teenantName: z.string().nullable().optional(),
-            Leese: z.boolean().nullable().optional(),
-            leeseName: z.string().nullable().optional(),
-            others: z.string().nullable().optional(),
-            othersField: z.string().nullable().optional(),
-          })
-        ).optional(),
-        numberOfFarms: z.number().min(0).optional(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const {
-        id,
-        categoryType,
-        farmerDetails,
-        farmworkerDetails,
-        fisherfolkDetails,
-        agriYouthDetails,
-        houseHead,
-        farmDetails: inputFarmDetails,
-        numberOfFarms,
-        ...farmerData
-      } = input;
+          othersField: z.string().nullable().optional(),
+        })
+      ).optional(),
+      numberOfFarms: z.number().min(0).optional(),
+    })
+  )
+  .mutation(async ({ ctx, input }) => {
+    const {
+      id,
+      categoryType,
+      farmerDetails,
+      farmworkerDetails,
+      fisherfolkDetails,
+      agriYouthDetails,
+      houseHead,
+      farmDetails: inputFarmDetails,
+      numberOfFarms,
+      ...farmerData
+    } = input;
 
-      // Fetch the existing farmer
-      const existingFarmer = await ctx.db.farmer.findUnique({
-        where: { id },
-        include: {
-          farmerDetails: true,
-          farmworkerDetails: true,
-          fisherfolkDetails: true,
-          AGRI_YOUTH: true,
-          houseHead: true,
-          farmDetails: true,
-        },
+    const existingFarmer = await ctx.db.farmer.findUnique({
+      where: { id },
+      include: {
+        farmerDetails: true,
+        farmworkerDetails: true,
+        fisherfolkDetails: true,
+        AGRI_YOUTH: true,
+        houseHead: true,
+        farmDetails: true,
+      },
+    });
+
+    if (!existingFarmer) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Farmer not found",
       });
+    }
 
-      if (!existingFarmer) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Farmer not found",
-        });
-      }
+    // Helper function for upsert operations
+    const upsertDetail = async (tx: any, model: string, data: any, condition: boolean) => {
+      if (!condition || !data) return;
+      
+      const upsertData = {
+        farmerId: id,
+        ...Object.fromEntries(
+          Object.entries(data).map(([key, value]) => [key, value ?? false])
+        )
+      };
 
-      // Update farmer with related data using transaction
-      const updatedFarmer = await ctx.db.$transaction(async (tx) => {
-        // Update the main farmer record
-        const updatedFarmer = await tx.farmer.update({
-          where: { id },
+      await (tx as any)[model].upsert({
+        where: { farmerId: id },
+        create: upsertData,
+        update: upsertData,
+      });
+    };
+
+    // Helper function for AGRI_YOUTH (special case with delete/create)
+    const handleAgriYouth = async (tx: any, data: any, condition: boolean) => {
+      if (condition && data) {
+        await tx.aGRI_YOUTH.deleteMany({ where: { farmerId: id } });
+        await tx.aGRI_YOUTH.create({
           data: {
-            ...farmerData,
-            ...(categoryType && { categoryType }),
-            ...(numberOfFarms !== undefined && { numberOfFarms }),
+            farmerId: id,
+            ...Object.fromEntries(
+              Object.entries(data).map(([key, value]) => [key, value ?? false])
+            )
           },
         });
+      } else if (!condition) {
+        await tx.aGRI_YOUTH.deleteMany({ where: { farmerId: id } });
+      }
+    };
 
-        // Update farmer details (if category is FARMER)
-        if (categoryType === "FARMER") {
-          if (farmerDetails) {
-            await tx.farmerDetails.upsert({
-              where: { farmerId: id },
-              create: {
-                farmerId: id,
-                rice: farmerDetails.rice ?? false,
-                corn: farmerDetails.corn ?? false,
-                othersCrops: farmerDetails.othersCrops,
-                livestock: farmerDetails.livestock ?? false,
-                livestockDetails: farmerDetails.livestockDetails,
-                poultry: farmerDetails.poultry ?? false,
-                poultryDetails: farmerDetails.poultryDetails,
-              },
-              update: {
-                rice: farmerDetails.rice ?? false,
-                corn: farmerDetails.corn ?? false,
-                othersCrops: farmerDetails.othersCrops,
-                livestock: farmerDetails.livestock ?? false,
-                livestockDetails: farmerDetails.livestockDetails,
-                poultry: farmerDetails.poultry ?? false,
-                poultryDetails: farmerDetails.poultryDetails,
-              },
-            });
-          }
-        } else {
-          // Delete farmer details if category changed
-          await tx.farmerDetails.deleteMany({
-            where: { farmerId: id },
-          });
-        }
+    // Helper function for house head
+    const handleHouseHead = async (tx: any, data: any) => {
+      if (data) {
+        await tx.houseHead.upsert({
+          where: { id: existingFarmer.houseHead?.id ?? -1 },
+          create: {
+            farmer: { connect: { id } },
+            houseHoldHead: data.houseHoldHead ?? "",
+            relationship: data.relationship ?? "",
+            numberOfLivingHouseHoldMembersTotal: data.numberOfLivingHouseHoldMembersTotal ?? 0,
+            numberOfMale: data.numberOfMale ?? 0,
+            NumberOfFemale: data.NumberOfFemale ?? 0,
+          },
+          update: {
+            houseHoldHead: data.houseHoldHead ?? "",
+            relationship: data.relationship ?? "",
+            numberOfLivingHouseHoldMembersTotal: data.numberOfLivingHouseHoldMembersTotal ?? 0,
+            numberOfMale: data.numberOfMale ?? 0,
+            NumberOfFemale: data.NumberOfFemale ?? 0,
+          },
+        });
+      } else {
+        await tx.houseHead.deleteMany({ where: { farmer: { id } } });
+      }
+    };
 
-        // Update farmworker details (if category is FARMWORKER)
-        if (categoryType === "FARMWORKER") {
-          if (farmworkerDetails) {
-            await tx.farmWorkerDetails.upsert({
-              where: { farmerId: id },
-              create: {
-                farmerId: id,
-                landPreparation: farmworkerDetails.landPreparation ?? false,
-                plantingTransplanting: farmworkerDetails.plantingTransplanting ?? false,
-                cultivation: farmworkerDetails.cultivation ?? false,
-                harvesting: farmworkerDetails.harvesting ?? false,
-                others: farmworkerDetails.others,
-              },
-              update: {
-                landPreparation: farmworkerDetails.landPreparation ?? false,
-                plantingTransplanting: farmworkerDetails.plantingTransplanting ?? false,
-                cultivation: farmworkerDetails.cultivation ?? false,
-                harvesting: farmworkerDetails.harvesting ?? false,
-                others: farmworkerDetails.others,
-              },
-            });
-          }
-        } else {
-          // Delete farmworker details if category changed
-          await tx.farmWorkerDetails.deleteMany({
-            where: { farmerId: id },
-          });
-        }
+    // Helper function for farm details
+    const handleFarmDetails = async (tx: any, farms: any[]) => {
+      if (!farms?.length) return;
 
-        // Update fisherfolk details (if category is FISHERFOLK)
-        if (categoryType === "FISHERFOLK") {
-          if (fisherfolkDetails) {
-            await tx.fisherfolkDetails.upsert({
-              where: { farmerId: id },
-              create: {
-                farmerId: id,
-                fishCapture: fisherfolkDetails.fishCapture ?? false,
-                aquaculture: fisherfolkDetails.aquaculture ?? false,
-                gleaning: fisherfolkDetails.gleaning ?? false,
-                fishProcessing: fisherfolkDetails.fishProcessing ?? false,
-                fishVending: fisherfolkDetails.fishVending ?? false,
-                others: fisherfolkDetails.others,
-              },
-              update: {
-                fishCapture: fisherfolkDetails.fishCapture ?? false,
-                aquaculture: fisherfolkDetails.aquaculture ?? false,
-                gleaning: fisherfolkDetails.gleaning ?? false,
-                fishProcessing: fisherfolkDetails.fishProcessing ?? false,
-                fishVending: fisherfolkDetails.fishVending ?? false,
-                others: fisherfolkDetails.others,
-              },
-            });
-          }
-        } else {
-          // Delete fisherfolk details if category changed
-          await tx.fisherfolkDetails.deleteMany({
-            where: { farmerId: id },
-          });
-        }
+      for (const farm of farms) {
+        const farmData = {
+          Location: farm.Location!,
+          TotalFarmAreaInHa: farm.TotalFarmAreaInHa!,
+          withAncestordomain: farm.withAncestordomain,
+          agrarianReform: farm.agrarianReform ?? false,
+          OwnerDocumentsNumber: farm.OwnerDocumentsNumber!,
+          RegisterOwner: farm.RegisterOwner,
+          ownerName: farm.ownerName ?? "",
+          tenantOwner: farm.tenantOwner,
+          teenantName: farm.teenantName,
+          Leese: farm.Leese,
+          leeseName: farm.leeseName,
+          others: farm.others,
+          othersField: farm.othersField,
+        };
 
-        // Update Agri Youth details (if category is AGRI_YOUTH)
-        if (categoryType === "AGRI_YOUTH") {
-          if (agriYouthDetails) {
-            // Delete existing AGRI_YOUTH records and create new one
-            await tx.aGRI_YOUTH.deleteMany({
-              where: { farmerId: id },
-            });
-            
-            await tx.aGRI_YOUTH.create({
-              data: {
-                farmerId: id,
-                partOfFarmingHouseHold: agriYouthDetails.partOfFarmingHouseHold ?? false,
-                attendedFormalAgriFishery: agriYouthDetails.attendedFormalAgriFishery ?? false,
-                attendedNonFormalAgriFishery: agriYouthDetails.attendedNonFormalAgriFishery ?? false,
-                participatedInAnyAgriculturalActivity: agriYouthDetails.participatedInAnyAgriculturalActivity ?? false,
-                fishVending: agriYouthDetails.fishVending ?? false,
-                others: agriYouthDetails.others,
-              },
-            });
-          }
-        } else {
-          // Delete AGRI_YOUTH details if category changed
-          await tx.aGRI_YOUTH.deleteMany({
-            where: { farmerId: id },
-          });
-        }
-
-        // Update house head
-        if (houseHead) {
-          await tx.houseHead.upsert({
-            where: { id: existingFarmer.houseHead?.id ?? -1 },
-            create: {
-              farmer: { connect: { id } },
-              houseHoldHead: houseHead.houseHoldHead ?? "",
-              relationship: houseHead.relationship ?? "",
-              numberOfLivingHouseHoldMembersTotal: houseHead.numberOfLivingHouseHoldMembersTotal ?? 0,
-              numberOfMale: houseHead.numberOfMale ?? 0,
-              NumberOfFemale: houseHead.NumberOfFemale ?? 0,
-            },
-            update: {
-              houseHoldHead: houseHead.houseHoldHead ?? "",
-              relationship: houseHead.relationship ?? "",
-              numberOfLivingHouseHoldMembersTotal: houseHead.numberOfLivingHouseHoldMembersTotal ?? 0,
-              numberOfMale: houseHead.numberOfMale ?? 0,
-              NumberOfFemale: houseHead.NumberOfFemale ?? 0,
-            },
+        if (farm.id) {
+          await tx.farmDetails.update({
+            where: { id: farm.id },
+            data: farmData,
           });
         } else {
-          // Delete house head if not provided
-          await tx.houseHead.deleteMany({
-            where: { farmer: { id } },
+          await tx.farmDetails.create({
+            data: { farmerId: id, ...farmData },
           });
         }
+      }
+    };
 
-        // Update farm details
-        if (inputFarmDetails && inputFarmDetails.length > 0) {
-          for (const farm of inputFarmDetails) {
-            if (farm.id) {
-              // Update existing farm
-              await tx.farmDetails.update({
-                where: { id: farm.id },
-                data: {
-                  Location: farm.Location!,
-                  TotalFarmAreaInHa: farm.TotalFarmAreaInHa!,
-                  withAncestordomain: farm.withAncestordomain,
-                  agrarianReform: farm.agrarianReform ?? false,
-                  OwnerDocumentsNumber: farm.OwnerDocumentsNumber!,
-                  RegisterOwner: farm.RegisterOwner,
-                  ownerName: farm.ownerName ?? "",
-                  tenantOwner: farm.tenantOwner,
-                  teenantName: farm.teenantName,
-                  Leese: farm.Leese,
-                  leeseName: farm.leeseName,
-                  others: farm.others,
-                  othersField: farm.othersField,
-                },
-              });
-            } else {
-              // Create new farm
-              await tx.farmDetails.create({
-                data: {
-                  farmerId: id,
-                  Location: farm.Location!,
-                  TotalFarmAreaInHa: farm.TotalFarmAreaInHa!,
-                  withAncestordomain: farm.withAncestordomain,
-                  agrarianReform: farm.agrarianReform ?? false,
-                  OwnerDocumentsNumber: farm.OwnerDocumentsNumber!,
-                  RegisterOwner: farm.RegisterOwner,
-                  ownerName: farm.ownerName ?? "",
-                  tenantOwner: farm.tenantOwner,
-                  teenantName: farm.teenantName,
-                  Leese: farm.Leese,
-                  leeseName: farm.leeseName,
-                  others: farm.others,
-                  othersField: farm.othersField,
-                },
-              });
-            }
-          }
-        }
+    // Delete details when category changes
+    const deleteCategoryDetails = async (tx: any, currentCategory: string) => {
+      const modelsToDelete = [];
+      
+      if (currentCategory !== "FARMER") modelsToDelete.push("farmerDetails");
+      if (currentCategory !== "FARMWORKER") modelsToDelete.push("farmWorkerDetails");
+      if (currentCategory !== "FISHERFOLK") modelsToDelete.push("fisherfolkDetails");
+      if (currentCategory !== "AGRI_YOUTH") modelsToDelete.push("aGRI_YOUTH");
 
-        return updatedFarmer;
+      await Promise.all(
+        modelsToDelete.map(model => 
+          (tx as any)[model].deleteMany({ where: { farmerId: id } })
+        )
+      );
+    };
+
+    // Execute all operations in a transaction
+    const completeFarmer = await ctx.db.$transaction(async (tx) => {
+      // Update main farmer record
+      await tx.farmer.update({
+        where: { id },
+        data: {
+          ...farmerData,
+          ...(categoryType && { categoryType }),
+          ...(numberOfFarms !== undefined && { numberOfFarms }),
+        },
       });
 
-      // Fetch the complete updated farmer
-      const completeFarmer = await ctx.db.farmer.findUnique({
+      await deleteCategoryDetails(tx, categoryType || existingFarmer.categoryType);
+      
+      await Promise.all([
+        upsertDetail(tx, "farmerDetails", farmerDetails, categoryType === "FARMER"),
+        upsertDetail(tx, "farmWorkerDetails", farmworkerDetails, categoryType === "FARMWORKER"),
+        upsertDetail(tx, "fisherfolkDetails", fisherfolkDetails, categoryType === "FISHERFOLK"),
+        handleAgriYouth(tx, agriYouthDetails, categoryType === "AGRI_YOUTH"),
+        handleHouseHead(tx, houseHead),
+        handleFarmDetails(tx, inputFarmDetails as any),
+      ]);
+
+      return tx.farmer.findUnique({
         where: { id },
         include: {
           farmerDetails: true,
@@ -899,7 +822,8 @@ updateFarmer: publicProcedure
           farmDetails: true,
         },
       });
+    });
 
-      return completeFarmer;
-    }),
+    return completeFarmer;
+  }),
 });

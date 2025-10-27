@@ -956,21 +956,33 @@ Farmer Management Team`;
                   </button>
                 </div>
                 <div className="mb-6">
-                  <p className="mb-3 text-gray-600">
-                    Are you sure you want to{" "}
-                    <span
-                      className={`font-semibold ${
-                        selectedFarmer.newStatus === "REGISTERED"
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {selectedFarmer.newStatus === "REGISTERED"
-                        ? "approve and register"
-                        : "reject"}
-                    </span>{" "}
-                    this farmer?
-                  </p>
+<p className="mb-3 text-gray-600">
+  Are you sure you want to{" "}
+  <span
+    className={`font-semibold ${
+      selectedFarmer.newStatus === "APPLICANTS"
+        ? "text-blue-600"
+        : selectedFarmer.newStatus === "NOT_QUALIFIED"
+        ? "text-red-600"
+        : selectedFarmer.newStatus === "ARCHIVED"
+        ? "text-yellow-500"
+        : selectedFarmer.newStatus === "REGISTERED"
+        ? "text-green-600"
+        : ""
+    }`}
+  >
+    {selectedFarmer.newStatus === "NOT_QUALIFIED"
+      ? "reject"
+      : selectedFarmer.newStatus === "ARCHIVED"
+      ? "archive"
+      : selectedFarmer.newStatus === "REGISTERED"
+      ? "approve and register"
+      : ""}
+  </span>{" "}
+  this farmer?
+</p>
+
+
                   <div className="mb-3 rounded-lg bg-gray-50 p-3">
                     <p className="font-medium text-gray-900">
                       {selectedFarmer.name}

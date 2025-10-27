@@ -355,226 +355,208 @@ export const organicFarmerRouter = createTRPCRouter({
       return farmer;
     }),
 
-  update: publicProcedure
-    .input(
-      z.object({
-        id: z.number(),
-        // Basic Information
-        surname: z.string().min(1, "Surname is required"),
-        firstname: z.string().min(1, "First name is required"),
-        middleName: z.string().optional().nullable(),
-        extensionName: z.string().optional().nullable(),
-        sex: z.enum(["MALE", "FEMALE"]),
-        civilStaus: z.enum(["SINGLE", "MARRIED", "WIDOWED", "SEPARATED"]),
-        dateOfBirth: z.date(),
-        placeOfBirth: z.string().min(1, "Place of birth is required"),
-        highestFormOfEducation: z.enum([
-          "NONE",
-          "ELEMENTARY",
-          "HIGHSCHOOL",
-          "SENIOR_HIGHSCHOOL",
-          "COLLEGE",
-          "POST_GRADUATE",
-          "VOCATIONAL",
-        ]),
-        religion: z.string().optional().nullable(),
-        FourPS_Benificiaty: z.string().optional().nullable(),
-        mothersName: z.string().optional().nullable(),
-        fathersName: z.string().optional().nullable(),
-        contactNumber: z.string().min(1, "Contact number is required"),
-        email_address: z.string().optional().nullable(),
-        personToContactIncaseOfEmerceny: z.string().optional().nullable(),
-        personContactNumberIncaseOfEmergency: z.string().optional().nullable(),
-        // Address
-        houseOrLotOrBuildingNo: z.string().min(1, "House/Lot/Building No is required"),
-        streetOrSitioOrSubDivision: z.string().min(1, "Street/Sitio/Subdivision is required"),
-        barangay: z.string().min(1, "Barangay is required"),
-        municipalityOrCity: z.string().min(1, "Municipality/City is required"),
-        province: z.string().min(1, "Province is required"),
-        region: z.string().min(1, "Region is required"),
-        // Income
-        grossAnualIncomeLastYearFarming: z.number().min(0),
-        grossAnualIncomeLastYeaNonFarming: z.number().min(0),
-        // Certification
-        withOrganicAgricultureCertification: z.boolean().optional(),
-        certification: z.enum(["THIRD_PARTY_CERTIFICATION", "PARTICIPATORY_GUARANTEE_SYSTEM"]).optional().nullable(),
-        whatStagesInCertification: z.string().optional().nullable(),
-        // Nature of Business
-        productionForInputs: z.enum(["PRIMARY_BUSINESS", "SECONDARY_BUSINESS", "NOT_APPLICABLE"]).optional().nullable(),
-        productionForFood: z.enum(["PRIMARY_BUSINESS", "SECONDARY_BUSINESS", "NOT_APPLICABLE"]).optional().nullable(),
-        postHarvestAndProcessing: z.enum(["PRIMARY_BUSINESS", "SECONDARY_BUSINESS", "NOT_APPLICABLE"]).optional().nullable(),
-        tradingAndWholeSale: z.enum(["PRIMARY_BUSINESS", "SECONDARY_BUSINESS", "NOT_APPLICABLE"]).optional().nullable(),
-        retailing: z.enum(["PRIMARY_BUSINESS", "SECONDARY_BUSINESS", "NOT_APPLICABLE"]).optional().nullable(),
-        transPortAndLogistics: z.enum(["PRIMARY_BUSINESS", "SECONDARY_BUSINESS", "NOT_APPLICABLE"]).optional().nullable(),
-        WareHousing: z.enum(["PRIMARY_BUSINESS", "SECONDARY_BUSINESS", "NOT_APPLICABLE"]).optional().nullable(),
-        Others: z.string().optional().nullable(),
-        // Target Market
-        direcToConsumer: z.boolean().optional(),
-        trader: z.boolean().optional(),
-        specificType1: z.string().optional().nullable(),
-        retailer: z.boolean().optional(),
-        institutionalBuyer: z.boolean().optional(),
-        SpecificType2: z.string().optional().nullable(),
-        internationalBasedBuyers: z.boolean().optional(),
-        SpecificType3: z.string().optional().nullable(),
-        others: z.string().optional().nullable(),
-        // Agricultural Commodities
-        agriculturalCommodities: z.array(
-          z.object({
-            type: z.string(),
-            name: z.string(),
-            sizeInHa: z.number(),
-            annualVolumeInKG: z.number(),
-            certification: z.string().optional(),
-          })
-        ).optional(),
-        othersCommodity: z.string().optional().nullable(),
-        // Facilities
-        ownSharedFacilities: z.array(
-          z.object({
-            facilitiesMachineryEquipmentUsed: z.string(),
-            ownership: z.string(),
-            model: z.string(),
-            quantity: z.string(),
-            volumeServicesArea: z.string(),
-            averageWorkingHoursDay: z.string(),
-            Remarks: z.string().optional().nullable(),
-            dedicatedToOrganic: z.boolean(),
-          })
-        ).optional(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const {
-        id,
-        agriculturalCommodities,
-        ownSharedFacilities,
-        ...updateData
-      } = input;
+update: publicProcedure
+  .input(
+    z.object({
+      id: z.number(),
+      // Basic Information
+      surname: z.string().min(1, "Surname is required"),
+      firstname: z.string().min(1, "First name is required"),
+      middleName: z.string().optional().nullable(),
+      extensionName: z.string().optional().nullable(),
+      sex: z.enum(["MALE", "FEMALE"]),
+      civilStaus: z.enum(["SINGLE", "MARRIED", "WIDOWED", "SEPARATED"]),
+      dateOfBirth: z.date(),
+      placeOfBirth: z.string().min(1, "Place of birth is required"),
+      highestFormOfEducation: z.enum([
+        "NONE",
+        "ELEMENTARY",
+        "HIGHSCHOOL",
+        "SENIOR_HIGHSCHOOL",
+        "COLLEGE",
+        "POST_GRADUATE",
+        "VOCATIONAL",
+      ]),
+      religion: z.string().optional().nullable(),
+      FourPS_Benificiaty: z.string().optional().nullable(),
+      mothersName: z.string().optional().nullable(),
+      fathersName: z.string().optional().nullable(),
+      contactNumber: z.string().min(1, "Contact number is required"),
+      email_address: z.string().optional().nullable(),
+      personToContactIncaseOfEmerceny: z.string().optional().nullable(),
+      personContactNumberIncaseOfEmergency: z.string().optional().nullable(),
+      // Address
+      houseOrLotOrBuildingNo: z.string().min(1, "House/Lot/Building No is required"),
+      streetOrSitioOrSubDivision: z.string().min(1, "Street/Sitio/Subdivision is required"),
+      barangay: z.string().min(1, "Barangay is required"),
+      municipalityOrCity: z.string().min(1, "Municipality/City is required"),
+      province: z.string().min(1, "Province is required"),
+      region: z.string().min(1, "Region is required"),
+      // Income
+      grossAnualIncomeLastYearFarming: z.number().min(0),
+      grossAnualIncomeLastYeaNonFarming: z.number().min(0),
+      // Certification
+      withOrganicAgricultureCertification: z.boolean().optional(),
+      certification: z.enum(["THIRD_PARTY_CERTIFICATION", "PARTICIPATORY_GUARANTEE_SYSTEM"]).optional().nullable(),
+      whatStagesInCertification: z.string().optional().nullable(),
+      // Nature of Business
+      productionForInputs: z.enum(["PRIMARY_BUSINESS", "SECONDARY_BUSINESS", "NOT_APPLICABLE"]).optional().nullable(),
+      productionForFood: z.enum(["PRIMARY_BUSINESS", "SECONDARY_BUSINESS", "NOT_APPLICABLE"]).optional().nullable(),
+      postHarvestAndProcessing: z.enum(["PRIMARY_BUSINESS", "SECONDARY_BUSINESS", "NOT_APPLICABLE"]).optional().nullable(),
+      tradingAndWholeSale: z.enum(["PRIMARY_BUSINESS", "SECONDARY_BUSINESS", "NOT_APPLICABLE"]).optional().nullable(),
+      retailing: z.enum(["PRIMARY_BUSINESS", "SECONDARY_BUSINESS", "NOT_APPLICABLE"]).optional().nullable(),
+      transPortAndLogistics: z.enum(["PRIMARY_BUSINESS", "SECONDARY_BUSINESS", "NOT_APPLICABLE"]).optional().nullable(),
+      WareHousing: z.enum(["PRIMARY_BUSINESS", "SECONDARY_BUSINESS", "NOT_APPLICABLE"]).optional().nullable(),
+      Others: z.string().optional().nullable(),
+      // Target Market
+      direcToConsumer: z.boolean().optional(),
+      trader: z.boolean().optional(),
+      specificType1: z.string().optional().nullable(),
+      retailer: z.boolean().optional(),
+      institutionalBuyer: z.boolean().optional(),
+      SpecificType2: z.string().optional().nullable(),
+      internationalBasedBuyers: z.boolean().optional(),
+      SpecificType3: z.string().optional().nullable(),
+      others: z.string().optional().nullable(),
+      // Agricultural Commodities
+      agriculturalCommodities: z.array(
+        z.object({
+          type: z.string(),
+          name: z.string(),
+          sizeInHa: z.number(),
+          annualVolumeInKG: z.number(),
+          certification: z.string().optional(),
+        })
+      ).optional(),
+      othersCommodity: z.string().optional().nullable(),
+      // Facilities
+      ownSharedFacilities: z.array(
+        z.object({
+          facilitiesMachineryEquipmentUsed: z.string(),
+          ownership: z.string(),
+          model: z.string(),
+          quantity: z.string(),
+          volumeServicesArea: z.string(),
+          averageWorkingHoursDay: z.string(),
+          Remarks: z.string().optional().nullable(),
+          dedicatedToOrganic: z.boolean(),
+        })
+      ).optional(),
+    })
+  )
+  .mutation(async ({ ctx, input }) => {
+    const {
+      id,
+      agriculturalCommodities,
+      ownSharedFacilities,
+      ...updateData
+    } = input;
 
-      // Check if farmer exists
-      const existingFarmer = await ctx.db.organic_Farmer.findUnique({
-        where: { id },
+    // Check if farmer exists
+    const existingFarmer = await ctx.db.organic_Farmer.findUnique({
+      where: { id },
+    });
+
+    if (!existingFarmer) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Farmer not found",
       });
+    }
 
-      if (!existingFarmer) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Farmer not found",
-        });
-      }
+    // Define commodity type to foreign key mapping
+    const commodityTypeMap: Record<string, string> = {
+      "Grains": "GrainsId",
+      "LowlandVegetables": "LowlandVegetablesId",
+      "UplandVegetables": "UplandVegetablesId",
+      "FruitsAndNots": "FruitsAndNotsId",
+      "Mushroom": "MushroomId",
+      "OrganicSoil": "OrganicSoilId",
+      "Rootcrops": "RootcropsId",
+      "PultryProducts": "PultryProductsId",
+      "LiveStockProducts": "LiveStockProductsId",
+      "FisheriesAndAquaCulture": "FisheriesAndAquaCultureId",
+      "IndustrialCropsAndProducts": "IndustrialCropsAndProductsId",
+      "OtherCommodity": "OtherCommodityId",
+    };
 
-      // Update organic farmer with related data using transaction
-      const updatedFarmer = await ctx.db.$transaction(async (tx) => {
-        // Update the main organic farmer record
-        const farmer = await tx.organic_Farmer.update({
-          where: { id },
-          data: updateData,
-        });
+    // Helper function to process commodities
+    const processCommodities = async (tx: any) => {
+      if (!agriculturalCommodities?.length) return;
 
-        // Handle commodities - delete existing ones first
-        const deletePromises = [
-          tx.agriculturalCommoditiesFisheryProducts.deleteMany({ where: { GrainsId: id } }),
-          tx.agriculturalCommoditiesFisheryProducts.deleteMany({ where: { LowlandVegetablesId: id } }),
-          tx.agriculturalCommoditiesFisheryProducts.deleteMany({ where: { UplandVegetablesId: id } }),
-          tx.agriculturalCommoditiesFisheryProducts.deleteMany({ where: { FruitsAndNotsId: id } }),
-          tx.agriculturalCommoditiesFisheryProducts.deleteMany({ where: { MushroomId: id } }),
-          tx.agriculturalCommoditiesFisheryProducts.deleteMany({ where: { OrganicSoilId: id } }),
-          tx.agriculturalCommoditiesFisheryProducts.deleteMany({ where: { RootcropsId: id } }),
-          tx.agriculturalCommoditiesFisheryProducts.deleteMany({ where: { PultryProductsId: id } }),
-          tx.agriculturalCommoditiesFisheryProducts.deleteMany({ where: { LiveStockProductsId: id } }),
-          tx.agriculturalCommoditiesFisheryProducts.deleteMany({ where: { FisheriesAndAquaCultureId: id } }),
-          tx.agriculturalCommoditiesFisheryProducts.deleteMany({ where: { IndustrialCropsAndProductsId: id } }),
-          tx.agriculturalCommoditiesFisheryProducts.deleteMany({ where: { OtherCommodityId: id } }),
-        ];
+      // Group by type to ensure only one commodity per type
+      const commoditiesByType = agriculturalCommodities.reduce((acc, commodity) => {
+        acc[commodity.type] = commodity;
+        return acc;
+      }, {} as Record<string, any>);
 
-        await Promise.all(deletePromises);
+      // Create all commodities in parallel
+      await Promise.all(
+        Object.entries(commoditiesByType).map(async ([type, commodity]) => {
+          const foreignKey = commodityTypeMap[type];
+          if (!foreignKey) return;
 
-        // Create new commodities - only one per type allowed
-        if (agriculturalCommodities && agriculturalCommodities.length > 0) {
-          const commodityByType: Record<string, any> = {};
+          const commodityData = {
+            name: commodity.name,
+            sizeInHa: commodity.sizeInHa,
+            annualVolumeInKG: commodity.annualVolumeInKG,
+            Certification: commodity.certification || null,
+            [foreignKey]: id,
+          };
 
-          // Group by type to ensure only one commodity per type
-          agriculturalCommodities.forEach(commodity => {
-            commodityByType[commodity.type] = commodity;
+          await tx.agriculturalCommoditiesFisheryProducts.create({
+            data: commodityData,
           });
+        })
+      );
+    };
 
-          for (const [type, commodity] of Object.entries(commodityByType)) {
-            const commodityData: any = {
-              name: commodity.name,
-              sizeInHa: commodity.sizeInHa,
-              annualVolumeInKG: commodity.annualVolumeInKG,
-              Certification: commodity.certification || null,
-            };
+    // Helper function to process facilities
+    const processFacilities = async (tx: any) => {
+      if (!ownSharedFacilities?.length) return;
 
-            // Set the appropriate foreign key based on the type
-            switch (type) {
-              case "Grains":
-                commodityData.GrainsId = id;
-                break;
-              case "LowlandVegetables":
-                commodityData.LowlandVegetablesId = id;
-                break;
-              case "UplandVegetables":
-                commodityData.UplandVegetablesId = id;
-                break;
-              case "FruitsAndNots":
-                commodityData.FruitsAndNotsId = id;
-                break;
-              case "Mushroom":
-                commodityData.MushroomId = id;
-                break;
-              case "OrganicSoil":
-                commodityData.OrganicSoilId = id;
-                break;
-              case "Rootcrops":
-                commodityData.RootcropsId = id;
-                break;
-              case "PultryProducts":
-                commodityData.PultryProductsId = id;
-                break;
-              case "LiveStockProducts":
-                commodityData.LiveStockProductsId = id;
-                break;
-              case "FisheriesAndAquaCulture":
-                commodityData.FisheriesAndAquaCultureId = id;
-                break;
-              case "IndustrialCropsAndProducts":
-                commodityData.IndustrialCropsAndProductsId = id;
-                break;
-              case "OtherCommodity":
-                commodityData.OtherCommodityId = id;
-                break;
-            }
+      // Create all facilities in parallel
+      await Promise.all(
+        ownSharedFacilities.map(facility =>
+          tx.ownSharedFacilities.create({
+            data: {
+              ...facility,
+              organicFarmerId: id,
+            },
+          })
+        )
+      );
+    };
 
-            await tx.agriculturalCommoditiesFisheryProducts.create({
-              data: commodityData,
-            });
-          }
-        }
-
-        // Delete existing facilities
-        await tx.ownSharedFacilities.deleteMany({
-          where: { organicFarmerId: id },
-        });
-
-        // Create new facilities
-        if (ownSharedFacilities && ownSharedFacilities.length > 0) {
-          for (const facility of ownSharedFacilities) {
-            await tx.ownSharedFacilities.create({
-              data: {
-                ...facility,
-                organicFarmerId: id,
-              },
-            });
-          }
-        }
-
-        return farmer;
+    // Execute all operations in a single transaction
+    const completeOrganicFarmer = await ctx.db.$transaction(async (tx) => {
+      // Update the main organic farmer record
+      await tx.organic_Farmer.update({
+        where: { id },
+        data: updateData,
       });
 
-      // Fetch the complete updated organic farmer data with all relations
-      const completeOrganicFarmer = await ctx.db.organic_Farmer.findUnique({
+      // Delete existing commodities for all types in parallel
+      const deletePromises = Object.values(commodityTypeMap).map(field => 
+        tx.agriculturalCommoditiesFisheryProducts.deleteMany({
+          where: { [field]: id }
+        })
+      );
+      await Promise.all(deletePromises);
+
+      // Delete existing facilities
+      await tx.ownSharedFacilities.deleteMany({
+        where: { organicFarmerId: id },
+      });
+
+      // Process commodities and facilities in parallel
+      await Promise.all([
+        processCommodities(tx),
+        processFacilities(tx),
+      ]);
+
+      // Return the complete updated organic farmer data with all relations
+      return tx.organic_Farmer.findUnique({
         where: { id },
         include: {
           Grains: true,
@@ -592,7 +574,8 @@ export const organicFarmerRouter = createTRPCRouter({
           ownSharedFacilities: true,
         },
       });
+    });
 
-      return completeOrganicFarmer;
-    }),
+    return completeOrganicFarmer;
+  }),
 });
