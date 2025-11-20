@@ -61,27 +61,11 @@ const AdminLoginPage = () => {
 
   return (
     <>
-      <Head>
-     
-          <title>
-            FARMER TITLE
-          </title>
-   
-          <title>PasaJob | Seeker</title>
-  
-
-            <meta property="og:title" content={"OG TITLE CONTENT"} />
-            <meta property="og:description" content={"OG DESCRIPTION"} />
-            <meta
-                name="keywords"
-                content={`KEYWORDS`}
-            />
-            <meta property="og:author" content={"AUTHOR"} />
-            <meta
-                property="og:image"
-                content={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRqC8wvz4gS3CIvkKZ-DBq0PbSeV2xn1Nhzo_6Jl5ZHbsQ-EZludTh0kQXbTjsReBzh6H0mKraNUXi4ArEW1DlzMEtFokzNc5RaKuUukno&s=10"}
-            />
-            <link rel="icon" href="/favicon.ico" />      
+  <Head>
+        <title>Login | PasaJob Seeker</title>
+        <meta name="title" content="PasaJob - First referral-based job matching-app" />
+        <meta name="description" content="Seek Jobs or Refer jobs and earn money on your free time." />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-green-50 p-4">
       <motion.div
