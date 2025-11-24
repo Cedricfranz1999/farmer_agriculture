@@ -16,10 +16,10 @@ import {
   PieChart,
   Pie,
   Cell,
+  AreaChart,
+  Area,
   LineChart,
   Line,
-  Area,
-  AreaChart,
 } from "recharts";
 import {
   Table,
@@ -61,6 +61,12 @@ import {
   Crop,
   MapPin,
   X,
+  UserCheck,
+  UserX,
+  Package,
+  Apple,
+  Tractor,
+  Sprout,
 } from "lucide-react";
 import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/lib/utils";
@@ -85,6 +91,7 @@ interface Farmer {
   registrationDate: string;
   hectares: any;
   primaryCrop: any;
+  allocations?: any[];
 }
 
 interface Event {
@@ -116,6 +123,22 @@ interface Allocation {
   createdAt: string;
 }
 
+interface AllocationAnalysis {
+  category: string;
+  totalFarmers: number;
+  farmersWithAllocations: number;
+  farmersWithoutAllocations: number;
+  allocationRate: number;
+  totalAllocationAmount: number;
+}
+
+interface AllocationTypeStats {
+  allocationType: string;
+  count: number;
+  totalAmount: number;
+  averageAmount: number;
+}
+
 const ReportsPage = () => {
   const now = new Date();
   const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -127,7 +150,7 @@ const ReportsPage = () => {
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [reportType, setReportType] = useState<
-    "farmers" | "events" | "concerns" | "overview" | "allocations"
+    "farmers" | "events" | "concerns" | "overview" | "allocations" | "allocation-analysis" | "allocation-types"
   >("overview");
   const [status, setStatus] = useState<
     "ARCHIVED" | "APPLICANTS" | "REGISTERED" | "NOT_QUALIFIED" | "ALL"
@@ -235,6 +258,7 @@ const ReportsPage = () => {
             "Category",
             "Primary Crop",
             "Hectares",
+            "Allocation Count",
             "Registration Date"
           ];
           
@@ -248,6 +272,7 @@ const ReportsPage = () => {
               `"${row.category}"`,
               `"${row.primaryCrop || 'Various'}"`,
               `"${row.hectares || 0}"`,
+              `"${row.allocations?.length || 0}"`,
               `"${row.registrationDate}"`
             ].join(",");
           });
@@ -279,6 +304,44 @@ const ReportsPage = () => {
               `"${farmer.status}"`
             ].join(",")) || []
           );
+          break;
+
+        case "allocation-analysis":
+          headers = [
+            "Category",
+            "Total Farmers",
+            "Farmers with Allocations",
+            "Farmers without Allocations",
+            "Allocation Rate (%)",
+            "Total Allocation Amount"
+          ];
+          
+          rows = data.map((row: AllocationAnalysis) => [
+            `"${row.category}"`,
+            row.totalFarmers,
+            row.farmersWithAllocations,
+            row.farmersWithoutAllocations,
+            row.allocationRate.toFixed(2),
+            row.totalAllocationAmount
+          ].join(","));
+          break;
+
+        case "allocation-types":
+          headers = [
+            "Allocation Type",
+            "Count",
+            "Total Amount",
+            "Average Amount",
+            "Percentage of Total"
+          ];
+          
+          rows = data.map((row: AllocationTypeStats) => [
+            `"${row.allocationType}"`,
+            row.count,
+            row.totalAmount,
+            row.averageAmount.toFixed(2),
+            `${((row.totalAmount / (reportsData?.allocationTypeStats?.reduce((sum: number, item: AllocationTypeStats) => sum + item.totalAmount, 0) || 1)) * 100).toFixed(2)}%`
+          ].join(","));
           break;
 
         case "events":
@@ -385,6 +448,12 @@ const ReportsPage = () => {
           case "allocations":
             exportToCSV(reportsData.allocationsList || [], "allocations-report");
             break;
+          case "allocation-analysis":
+            exportToCSV(reportsData.allocationAnalysis || [], "allocation-analysis-report");
+            break;
+          case "allocation-types":
+            exportToCSV(reportsData.allocationTypeStats || [], "allocation-types-report");
+            break;
           default:
             exportToCSV(
               [
@@ -411,6 +480,22 @@ const ReportsPage = () => {
                 {
                   metric: "Total Allocation Amount",
                   value: reportsData.totalAllocationAmount,
+                },
+                {
+                  metric: "Farmers with Allocations",
+                  value: reportsData.farmersWithAllocations,
+                },
+                {
+                  metric: "Farmers without Allocations",
+                  value: reportsData.farmersWithoutAllocations,
+                },
+                {
+                  metric: "Organic Farmers with Allocations",
+                  value: reportsData.organicFarmersWithAllocations,
+                },
+                {
+                  metric: "Organic Farmers without Allocations",
+                  value: reportsData.organicFarmersWithoutAllocations,
                 },
               ],
               "overview-report",
@@ -476,6 +561,36 @@ const ReportsPage = () => {
       </p>
     </div>
   );
+
+  const getAllocationTypeIcon = (type: string) => {
+    switch (type?.toLowerCase()) {
+      case 'cash':
+        return <DollarSign className="h-4 w-4" />;
+      case 'seedling':
+        return <Apple className="h-4 w-4" />;
+      case 'machine':
+        return <Tractor className="h-4 w-4" />;
+      case 'fertilizer':
+        return <Sprout className="h-4 w-4" />;
+      default:
+        return <Package className="h-4 w-4" />;
+    }
+  };
+
+  const getAllocationTypeColor = (type: string) => {
+    switch (type?.toLowerCase()) {
+      case 'cash':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'seedling':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'machine':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'fertilizer':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50 p-4">
@@ -578,10 +693,12 @@ const ReportsPage = () => {
                     <SelectItem value="events">Events</SelectItem>
                     <SelectItem value="concerns">Concerns</SelectItem>
                     <SelectItem value="allocations">Allocations</SelectItem>
+                    <SelectItem value="allocation-analysis">Allocation Analysis</SelectItem>
+                    <SelectItem value="allocation-types">Allocation Types</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              {(reportType === "farmers" || reportType === "overview") && (
+              {(reportType === "farmers" || reportType === "overview" || reportType === "allocation-analysis") && (
                 <div>
                   <label className="mb-2 block text-sm font-medium text-gray-700">
                     Farmer Type
@@ -740,7 +857,7 @@ const ReportsPage = () => {
                           <CardTitle className="text-sm font-medium">
                             Total Allocations
                           </CardTitle>
-                          <DollarSign className="h-4 w-4 text-blue-600" />
+                          <Package className="h-4 w-4 text-blue-600" />
                         </CardHeader>
                         <CardContent>
                           <div className="text-2xl font-bold text-blue-700">
@@ -768,6 +885,133 @@ const ReportsPage = () => {
                         </CardContent>
                       </Card>
                     </div>
+
+                    {/* Allocation Statistics */}
+                    <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                      <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium">
+                            Farmers with Allocations
+                          </CardTitle>
+                          <UserCheck className="h-4 w-4 text-green-600" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold text-green-700">
+                            {reportsData.farmersWithAllocations?.toLocaleString()}
+                          </div>
+                          
+                        </CardContent>
+                      </Card>
+                      <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium">
+                            Farmers without Allocations
+                          </CardTitle>
+                          <UserX className="h-4 w-4 text-orange-600" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold text-orange-700">
+                            {reportsData.farmersWithoutAllocations?.toLocaleString()}
+                          </div>
+                          <p className="text-muted-foreground text-xs">
+                            Need allocation
+                          </p>
+                        </CardContent>
+                      </Card>
+                      <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium">
+                            Organic Farmers with Allocations
+                          </CardTitle>
+                          <UserCheck className="h-4 w-4 text-green-600" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold text-green-700">
+                            {reportsData.organicFarmersWithAllocations?.toLocaleString()}
+                          </div>
+                          <p className="text-muted-foreground text-xs">
+                          </p>
+                        </CardContent>
+                      </Card>
+                      <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium">
+                            Organic Farmers without Allocations
+                          </CardTitle>
+                          <UserX className="h-4 w-4 text-orange-600" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold text-orange-700">
+                            {reportsData.organicFarmersWithoutAllocations?.toLocaleString()}
+                          </div>
+                          <p className="text-muted-foreground text-xs">
+                            Need allocation
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Allocation Type Distribution */}
+                    {reportsData.allocationTypeStats && reportsData.allocationTypeStats.length > 0 && (
+                      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+                        <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
+                          <CardHeader>
+                            <CardTitle className="flex items-center text-emerald-700">
+                              <PieChartIcon className="mr-2 h-5 w-5" />
+                              Allocation Type Distribution
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <ResponsiveContainer width="100%" height={300}>
+                              <PieChart>
+                                <Pie
+                                  data={reportsData.allocationTypeStats}
+                                  cx="50%"
+                                  cy="50%"
+                                  labelLine={false}
+                                  label={({ allocationType, percent }:any) =>
+                                    `${allocationType} ${(percent * 100).toFixed(0)}%`
+                                  }
+                                  outerRadius={80}
+                                  fill="#8884d8"
+                                  dataKey="totalAmount"
+                                >
+                                  {reportsData.allocationTypeStats.map(
+                                    (entry, index) => (
+                                      <Cell
+                                        key={`cell-${index}`}
+                                        fill={COLORS[index % COLORS.length]}
+                                      />
+                                    ),
+                                  )}
+                                </Pie>
+                                <Tooltip formatter={(value) => [`₱${Number(value).toLocaleString()}`, 'Amount']} />
+                              </PieChart>
+                            </ResponsiveContainer>
+                          </CardContent>
+                        </Card>
+                        <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
+                          <CardHeader>
+                            <CardTitle className="flex items-center text-emerald-700">
+                              <BarChart3 className="mr-2 h-5 w-5" />
+                              Allocation Types by Count
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <ResponsiveContainer width="100%" height={300}>
+                              <BarChart data={reportsData.allocationTypeStats}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="allocationType" />
+                                <YAxis />
+                                <Tooltip />
+                                <Bar dataKey="count" fill="#3b82f6" />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    )}
+
                     <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
                       <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
                         <CardHeader>
@@ -806,61 +1050,26 @@ const ReportsPage = () => {
                       <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
                         <CardHeader>
                           <CardTitle className="flex items-center text-emerald-700">
-                            <PieChartIcon className="mr-2 h-5 w-5" />
-                            Registration Status
+                            <BarChart3 className="mr-2 h-5 w-5" />
+                            Events by Month
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
                           <ResponsiveContainer width="100%" height={300}>
-                            <PieChart>
-                              <Pie
-                                data={reportsData.statusDistribution || []}
-                                cx="50%"
-                                cy="50%"
-                                labelLine={false}
-                                label={({ name, percent }) =>
-                                  `${name} ${(percent as any * 100).toFixed(0)}%`
-                                }
-                                outerRadius={80}
-                                fill="#8884d8"
-                                dataKey="value"
-                              >
-                                {(reportsData.statusDistribution || []).map(
-                                  (entry, index) => (
-                                    <Cell
-                                      key={`cell-${index}`}
-                                      fill={COLORS[index % COLORS.length]}
-                                    />
-                                  ),
-                                )}
-                              </Pie>
+                            <BarChart data={reportsData.eventsByMonth || []}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="month" />
+                              <YAxis />
                               <Tooltip />
-                            </PieChart>
+                              <Bar dataKey="events" fill="#3b82f6" />
+                            </BarChart>
                           </ResponsiveContainer>
                         </CardContent>
                       </Card>
                     </div>
-                    <Card className="mb-6 border-emerald-200 bg-white/90 backdrop-blur-sm">
-                      <CardHeader>
-                        <CardTitle className="flex items-center text-emerald-700">
-                          <BarChart3 className="mr-2 h-5 w-5" />
-                          Events by Month
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <ResponsiveContainer width="100%" height={300}>
-                          <BarChart data={reportsData.eventsByMonth || []}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="month" />
-                            <YAxis />
-                            <Tooltip />
-                            <Bar dataKey="events" fill="#3b82f6" />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </CardContent>
-                    </Card>
                   </>
                 )}
+
                 {reportType === "farmers" && reportsData?.farmersList && (
                   <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
                     <CardHeader>
@@ -886,6 +1095,7 @@ const ReportsPage = () => {
                               <TableHead>Category</TableHead>
                               <TableHead>Primary Crop</TableHead>
                               <TableHead>Hectares</TableHead>
+                              <TableHead>Allocations</TableHead>
                               <TableHead>Registration Date</TableHead>
                             </TableRow>
                           </TableHeader>
@@ -935,6 +1145,17 @@ const ReportsPage = () => {
                                 <TableCell>
                                   {farmer.hectares || 0} ha
                                 </TableCell>
+                                <TableCell>
+                                  <Badge
+                                    variant={
+                                      (farmer.allocations?.length || 0) > 0
+                                        ? "default"
+                                        : "secondary"
+                                    }
+                                  >
+                                    {farmer.allocations?.length || 0}
+                                  </Badge>
+                                </TableCell>
                                 <TableCell>{farmer.registrationDate}</TableCell>
                               </TableRow>
                             ))}
@@ -944,6 +1165,284 @@ const ReportsPage = () => {
                     </CardContent>
                   </Card>
                 )}
+
+                {reportType === "allocation-analysis" && reportsData?.allocationAnalysis && (
+                  <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
+                    <CardHeader>
+                      <CardTitle className="flex items-center text-emerald-700">
+                        <BarChart3 className="mr-2 h-5 w-5" />
+                        Allocation Analysis Report
+                        {searchQuery && (
+                          <Badge variant="secondary" className="ml-2">
+                            Search: "{searchQuery}"
+                          </Badge>
+                        )}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <Card className="bg-blue-50">
+                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Total Farmers</CardTitle>
+                            <Users className="h-4 w-4 text-blue-600" />
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold text-blue-600">
+                              {reportsData.totalFarmers?.toLocaleString()}
+                            </div>
+                          </CardContent>
+                        </Card>
+                        <Card className="bg-green-50">
+                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">With Allocations</CardTitle>
+                            <UserCheck className="h-4 w-4 text-green-600" />
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold text-green-600">
+                              {reportsData.farmersWithAllocations?.toLocaleString()}
+                            </div>
+                          </CardContent>
+                        </Card>
+                        <Card className="bg-orange-50">
+                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Without Allocations</CardTitle>
+                            <UserX className="h-4 w-4 text-orange-600" />
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold text-orange-600">
+                              {reportsData.farmersWithoutAllocations?.toLocaleString()}
+                            </div>
+                          </CardContent>
+                        </Card>
+                        <Card className="bg-purple-50">
+                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Allocation Rate</CardTitle>
+                            <TrendingUp className="h-4 w-4 text-purple-600" />
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold text-purple-600">
+                              {reportsData.totalFarmers ? ((reportsData.farmersWithAllocations / reportsData.totalFarmers) * 100).toFixed(1) : 0}%
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Category</TableHead>
+                              <TableHead>Total Farmers</TableHead>
+                              <TableHead>With Allocations</TableHead>
+                              <TableHead>Without Allocations</TableHead>
+                              <TableHead>Allocation Rate</TableHead>
+                              <TableHead>Total Amount</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {(reportsData.allocationAnalysis as AllocationAnalysis[]).map((analysis, index) => (
+                              <TableRow key={index}>
+                                <TableCell className="font-medium">
+                                  {analysis.category}
+                                </TableCell>
+                                <TableCell>{analysis.totalFarmers}</TableCell>
+                                <TableCell>
+                                  <Badge variant="default">{analysis.farmersWithAllocations}</Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant="secondary">{analysis.farmersWithoutAllocations}</Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant={analysis.allocationRate > 50 ? "default" : "destructive"}>
+                                    {analysis.allocationRate.toFixed(1)}%
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="font-medium">
+                                  ₱{analysis.totalAllocationAmount?.toLocaleString()}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {reportType === "allocation-types" && reportsData?.allocationTypeStats && (
+                  <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
+                    <CardHeader>
+                      <CardTitle className="flex items-center text-emerald-700">
+                        <Package className="mr-2 h-5 w-5" />
+                        Allocation Types Report ({reportsData.allocationTypeStats.length} types)
+                        {searchQuery && (
+                          <Badge variant="secondary" className="ml-2">
+                            Search: "{searchQuery}"
+                          </Badge>
+                        )}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <Card className="bg-green-50">
+                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Total Types</CardTitle>
+                            <Package className="h-4 w-4 text-green-600" />
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold text-green-600">
+                              {reportsData.allocationTypeStats.length}
+                            </div>
+                          </CardContent>
+                        </Card>
+                        <Card className="bg-blue-50">
+                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Total Allocations</CardTitle>
+                            <FileText className="h-4 w-4 text-blue-600" />
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold text-blue-600">
+                              {reportsData.allocationTypeStats.reduce((sum, item) => sum + item.count, 0)}
+                            </div>
+                          </CardContent>
+                        </Card>
+                        <Card className="bg-orange-50">
+                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Total Amount</CardTitle>
+                            <DollarSign className="h-4 w-4 text-orange-600" />
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold text-orange-600">
+                              ₱{reportsData.allocationTypeStats.reduce((sum, item) => sum + item.totalAmount, 0)?.toLocaleString()}
+                            </div>
+                          </CardContent>
+                        </Card>
+                        <Card className="bg-purple-50">
+                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Avg per Allocation</CardTitle>
+                            <TrendingUp className="h-4 w-4 text-purple-600" />
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold text-purple-600">
+                              ₱{reportsData.allocationTypeStats.length > 0 ? 
+                                (reportsData.allocationTypeStats.reduce((sum, item) => sum + item.totalAmount, 0) / 
+                                 reportsData.allocationTypeStats.reduce((sum, item) => sum + item.count, 0)).toFixed(0) : 0}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+                        <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
+                          <CardHeader>
+                            <CardTitle className="flex items-center text-emerald-700">
+                              <PieChartIcon className="mr-2 h-5 w-5" />
+                              Allocation Type Distribution by Amount
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <ResponsiveContainer width="100%" height={300}>
+                              <PieChart>
+                                <Pie
+                                  data={reportsData.allocationTypeStats}
+                                  cx="50%"
+                                  cy="50%"
+                                  labelLine={false}
+                                  label={({ allocationType, percent }:any) =>
+                                    `${allocationType} ${(percent * 100).toFixed(0)}%`
+                                  }
+                                  outerRadius={80}
+                                  fill="#8884d8"
+                                  dataKey="totalAmount"
+                                >
+                                  {reportsData.allocationTypeStats.map(
+                                    (entry, index) => (
+                                      <Cell
+                                        key={`cell-${index}`}
+                                        fill={COLORS[index % COLORS.length]}
+                                      />
+                                    ),
+                                  )}
+                                </Pie>
+                                <Tooltip formatter={(value) => [`₱${Number(value).toLocaleString()}`, 'Amount']} />
+                              </PieChart>
+                            </ResponsiveContainer>
+                          </CardContent>
+                        </Card>
+                        <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
+                          <CardHeader>
+                            <CardTitle className="flex items-center text-emerald-700">
+                              <BarChart3 className="mr-2 h-5 w-5" />
+                              Allocation Types by Count
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <ResponsiveContainer width="100%" height={300}>
+                              <BarChart data={reportsData.allocationTypeStats}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="allocationType" />
+                                <YAxis />
+                                <Tooltip />
+                                <Bar dataKey="count" fill="#3b82f6" />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Allocation Type</TableHead>
+                              <TableHead>Count</TableHead>
+                              <TableHead>Total Amount</TableHead>
+                              <TableHead>Average Amount</TableHead>
+                              <TableHead>Percentage of Total</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {(reportsData.allocationTypeStats as AllocationTypeStats[]).map((stats, index) => {
+                              const totalAmount = reportsData.allocationTypeStats.reduce((sum, item) => sum + item.totalAmount, 0);
+                              const percentage = totalAmount > 0 ? (stats.totalAmount / totalAmount) * 100 : 0;
+                              
+                              return (
+                                <TableRow key={index}>
+                                  <TableCell className="font-medium">
+                                    <div className="flex items-center gap-2">
+                                      {getAllocationTypeIcon(stats.allocationType)}
+                                      {stats.allocationType}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge variant="outline">{stats.count}</Badge>
+                                  </TableCell>
+                                  <TableCell className="font-semibold">
+                                    ₱{stats.totalAmount?.toLocaleString()}
+                                  </TableCell>
+                                  <TableCell>
+                                    ₱{stats.averageAmount?.toFixed(0)}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-full bg-gray-200 rounded-full h-2">
+                                        <div 
+                                          className={`h-2 rounded-full ${getAllocationTypeColor(stats.allocationType).split(' ')[0]}`}
+                                          style={{ width: `${percentage}%` }}
+                                        ></div>
+                                      </div>
+                                      <span className="text-sm font-medium">{percentage.toFixed(1)}%</span>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {reportType === "events" && reportsData?.eventsList && (
                   <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
                     <CardHeader>
@@ -996,6 +1495,7 @@ const ReportsPage = () => {
                     </CardContent>
                   </Card>
                 )}
+
                 {reportType === "concerns" && reportsData?.concernsList && (
                   <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
                     <CardHeader>
@@ -1004,7 +1504,7 @@ const ReportsPage = () => {
                         Concerns Report ({reportsData.concernsList.length} records)
                         {searchQuery && (
                           <Badge variant="secondary" className="ml-2">
-                            Search: "{searchQuery}"
+                            Search: "${searchQuery}"
                           </Badge>
                         )}
                       </CardTitle>
@@ -1057,6 +1557,7 @@ const ReportsPage = () => {
                     </CardContent>
                   </Card>
                 )}
+
                 {reportType === "allocations" && reportsData?.allocationsList && (
                   <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
                     <CardHeader>
@@ -1065,7 +1566,7 @@ const ReportsPage = () => {
                         Allocations Report ({reportsData.allocationsList.length} records)
                         {searchQuery && (
                           <Badge variant="secondary" className="ml-2">
-                            Search: "{searchQuery}"
+                            Search: "${searchQuery}"
                           </Badge>
                         )}
                       </CardTitle>
@@ -1095,7 +1596,14 @@ const ReportsPage = () => {
                                     ₱{allocation.amount?.toLocaleString()}
                                   </div>
                                 </TableCell>
-                                <TableCell>{allocation.allocationType || "N/A"}</TableCell>
+                                <TableCell>
+                                  <Badge className={getAllocationTypeColor(allocation.allocationType || '')}>
+                                    <div className="flex items-center gap-1">
+                                      {getAllocationTypeIcon(allocation.allocationType || '')}
+                                      {allocation.allocationType || "N/A"}
+                                    </div>
+                                  </Badge>
+                                </TableCell>
                                 <TableCell>
                                   <Badge
                                     variant={allocation.approved ? "default" : "secondary"}

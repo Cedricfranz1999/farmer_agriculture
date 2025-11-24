@@ -58,7 +58,7 @@ export const allocationRouter = createTRPCRouter({
       const allocation = await ctx.db.allocation.create({
         data: {
           amount: input.amount,
-          AllocationType:input.type,
+          AllocationType: input.type,
           approved: false,
           farmers: {
             create: {
@@ -115,8 +115,48 @@ export const allocationRouter = createTRPCRouter({
       }
       return allocation;
     }),
+
+  // Get farmer allocation history
+  getFarmerAllocationHistory: publicProcedure
+    .input(z.object({ farmerId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const allocations = await ctx.db.allocation.findMany({
+        where: {
+          farmers: {
+            some: {
+              farmerId: parseInt(input.farmerId)
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+      return allocations;
+    }),
+
+  // Get organic farmer allocation history
+  getOrganicFarmerAllocationHistory: publicProcedure
+    .input(z.object({ organicFarmerId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const allocations = await ctx.db.allocation.findMany({
+        where: {
+          farmers: {
+            some: {
+              organicFarmerId: parseInt(input.organicFarmerId)
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+      return allocations;
+    }),
+
+  // Get all allocations
   getAllAllocations: publicProcedure.query(async ({ ctx }) => {
-  const allocations = await ctx.db.allocation.findMany({
+    const allocations = await ctx.db.allocation.findMany({
       include: {
         farmers: {
           include: {
@@ -125,7 +165,7 @@ export const allocationRouter = createTRPCRouter({
                 firstname: true,
                 surname: true,
                 farmerImage: true,
-                createdAt:true,
+                createdAt: true,
               },
             },
             organicFarmer: {
@@ -133,7 +173,7 @@ export const allocationRouter = createTRPCRouter({
                 firstname: true,
                 surname: true,
                 farmerImage: true,
-                createdAt:true
+                createdAt: true
               },
             },
           },
@@ -142,4 +182,170 @@ export const allocationRouter = createTRPCRouter({
     });
     return allocations;
   }),
+
+  // Get farmers with allocations
+  getFarmersWithAllocations: publicProcedure.query(async ({ ctx }) => {
+    const farmersWithAllocations = await ctx.db.farmer.findMany({
+      where: {
+        status: "REGISTERED",
+        allocations: {
+          some: {}
+        }
+      },
+      include: {
+        allocations: {
+          include: {
+            allocation: true
+          }
+        }
+      }
+    });
+
+    return farmersWithAllocations;
+  }),
+
+  // Get farmers without allocations
+  getFarmersWithoutAllocations: publicProcedure.query(async ({ ctx }) => {
+    const farmersWithoutAllocations = await ctx.db.farmer.findMany({
+      where: {
+        status: "REGISTERED",
+        allocations: {
+          none: {}
+        }
+      }
+    });
+
+    return farmersWithoutAllocations;
+  }),
+
+  // Get organic farmers with allocations
+  getOrganicFarmersWithAllocations: publicProcedure.query(async ({ ctx }) => {
+    const organicFarmersWithAllocations = await ctx.db.organic_Farmer.findMany({
+      where: {
+        status: "REGISTERED",
+        allocations: {
+          some: {}
+        }
+      },
+      include: {
+        allocations: {
+          include: {
+            allocation: true
+          }
+        }
+      }
+    });
+
+    return organicFarmersWithAllocations;
+  }),
+
+  // Get organic farmers without allocations
+  getOrganicFarmersWithoutAllocations: publicProcedure.query(async ({ ctx }) => {
+    const organicFarmersWithoutAllocations = await ctx.db.organic_Farmer.findMany({
+      where: {
+        status: "REGISTERED",
+        allocations: {
+          none: {}
+        }
+      }
+    });
+
+    return organicFarmersWithoutAllocations;
+  }),
+
+  // Get all farmers (both with and without allocations) separated
+  getAllFarmersSeparated: publicProcedure.query(async ({ ctx }) => {
+    const [farmersWithAllocations, farmersWithoutAllocations] = await Promise.all([
+      ctx.db.farmer.findMany({
+        where: {
+          status: "REGISTERED",
+          allocations: {
+            some: {}
+          }
+        },
+        include: {
+          allocations: {
+            include: {
+              allocation: true
+            }
+          }
+        }
+      }),
+      ctx.db.farmer.findMany({
+        where: {
+          status: "REGISTERED",
+          allocations: {
+            none: {}
+          }
+        }
+      })
+    ]);
+
+    const [organicFarmersWithAllocations, organicFarmersWithoutAllocations] = await Promise.all([
+      ctx.db.organic_Farmer.findMany({
+        where: {
+          status: "REGISTERED",
+          allocations: {
+            some: {}
+          }
+        },
+        include: {
+          allocations: {
+            include: {
+              allocation: true
+            }
+          }
+        }
+      }),
+      ctx.db.organic_Farmer.findMany({
+        where: {
+          status: "REGISTERED",
+          allocations: {
+            none: {}
+          }
+        }
+      })
+    ]);
+
+    return {
+      farmersWithAllocations,
+      farmersWithoutAllocations,
+      organicFarmersWithAllocations,
+      organicFarmersWithoutAllocations
+    };
+  }),
+
+  // Get all organic farmers (both with and without allocations) separated
+  getOrganicFarmersSeparated: publicProcedure.query(async ({ ctx }) => {
+    const [organicFarmersWithAllocations, organicFarmersWithoutAllocations] = await Promise.all([
+      ctx.db.organic_Farmer.findMany({
+        where: {
+          status: "REGISTERED",
+          allocations: {
+            some: {}
+          }
+        },
+        include: {
+          allocations: {
+            include: {
+              allocation: true
+            }
+          }
+        }
+      }),
+      ctx.db.organic_Farmer.findMany({
+        where: {
+          status: "REGISTERED",
+          allocations: {
+            none: {}
+          }
+        }
+      })
+    ]);
+
+    return {
+      organicFarmersWithAllocations,
+      organicFarmersWithoutAllocations
+    };
+  })
 });
