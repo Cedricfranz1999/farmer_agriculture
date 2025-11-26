@@ -335,7 +335,7 @@ model ConcernMessage {
 
 model Allocation {
     id Int @id @default(autoincrement())
-    amount Int
+    amount String
     AllocationType String?
     approved  Boolean @default(false)
     farmers FarmerAllocation[]

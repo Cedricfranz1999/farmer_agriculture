@@ -56,7 +56,6 @@ export const reportsRouter = createTRPCRouter({
           newEventsThisMonth,
           newConcernsThisMonth,
           totalAllocations,
-          totalAllocationAmount,
           farmersWithAllocations,
           farmersWithoutAllocations,
           organicFarmersWithAllocations,
@@ -117,12 +116,6 @@ export const reportsRouter = createTRPCRouter({
           ctx.db.allocation.count({
             where: dateFilter,
           }),
-          ctx.db.allocation.aggregate({
-            where: dateFilter,
-            _sum: {
-              amount: true,
-            },
-          }),
           // Farmers with allocations
           ctx.db.farmer.count({
             where: {
@@ -170,9 +163,6 @@ export const reportsRouter = createTRPCRouter({
             _count: {
               _all: true,
             },
-            _sum: {
-              amount: true,
-            },
           }),
         ]);
 
@@ -180,8 +170,6 @@ export const reportsRouter = createTRPCRouter({
         const processedAllocationTypeStats = allocationTypeStats.map(stat => ({
           allocationType: stat.AllocationType || 'Unknown',
           count: stat._count._all,
-          totalAmount: stat._sum.amount || 0,
-          averageAmount: stat._count._all > 0 ? (stat._sum.amount || 0) / stat._count._all : 0,
         }));
 
         const registrationTrends = [];
@@ -217,68 +205,6 @@ export const reportsRouter = createTRPCRouter({
           });
         }
 
-        const [
-          applicantFarmers,
-          registeredFarmers,
-          notQualifiedFarmers,
-          applicantOrganicFarmers,
-          registeredOrganicFarmers,
-          notQualifiedOrganicFarmers,
-        ] = await Promise.all([
-          ctx.db.farmer.count({
-            where: { status: "APPLICANTS", ...dateFilter },
-          }),
-          ctx.db.farmer.count({
-            where: { status: "REGISTERED", ...dateFilter },
-          }),
-          ctx.db.farmer.count({
-            where: { status: "NOT_QUALIFIED", ...dateFilter },
-          }),
-          ctx.db.organic_Farmer.count({
-            where: { status: "APPLICANTS", ...dateFilter },
-          }),
-          ctx.db.organic_Farmer.count({
-            where: { status: "REGISTERED", ...dateFilter },
-          }),
-          ctx.db.organic_Farmer.count({
-            where: { status: "NOT_QUALIFIED", ...dateFilter },
-          }),
-        ]);
-
-        const statusDistribution = [
-          {
-            name: "Applicants",
-            value: applicantFarmers + applicantOrganicFarmers,
-          },
-          {
-            name: "Registered",
-            value: registeredFarmers + registeredOrganicFarmers,
-          },
-          {
-            name: "Not Qualified",
-            value: notQualifiedFarmers + notQualifiedOrganicFarmers,
-          },
-        ];
-
-        const allocationDistribution = [
-          {
-            name: "Farmers with Allocations",
-            value: farmersWithAllocations,
-          },
-          {
-            name: "Farmers without Allocations",
-            value: farmersWithoutAllocations,
-          },
-          {
-            name: "Organic Farmers with Allocations",
-            value: organicFarmersWithAllocations,
-          },
-          {
-            name: "Organic Farmers without Allocations",
-            value: organicFarmersWithoutAllocations,
-          },
-        ];
-
         const eventsByMonth = [];
         for (let i = 11; i >= 0; i--) {
           const monthStart = startOfMonth(subMonths(new Date(), i));
@@ -305,7 +231,6 @@ export const reportsRouter = createTRPCRouter({
           totalEvents,
           totalConcerns,
           totalAllocations,
-          totalAllocationAmount: totalAllocationAmount._sum.amount || 0,
           newFarmersThisMonth,
           newOrganicFarmersThisMonth,
           newEventsThisMonth,
@@ -316,8 +241,6 @@ export const reportsRouter = createTRPCRouter({
           organicFarmersWithoutAllocations,
           allocationTypeStats: processedAllocationTypeStats,
           registrationTrends,
-          statusDistribution,
-          allocationDistribution,
           eventsByMonth,
         };
       }
@@ -555,14 +478,6 @@ export const reportsRouter = createTRPCRouter({
         const organicFarmersWithAllocations = organicFarmers.filter(f => f.allocations.length > 0);
         const organicFarmersWithoutAllocations = organicFarmers.filter(f => f.allocations.length === 0);
 
-        const totalRegularAllocationAmount = regularFarmersWithAllocations.reduce((sum, farmer) => {
-          return sum + farmer.allocations.reduce((allocSum, alloc) => allocSum + (alloc.allocation?.amount || 0), 0);
-        }, 0);
-
-        const totalOrganicAllocationAmount = organicFarmersWithAllocations.reduce((sum, farmer) => {
-          return sum + farmer.allocations.reduce((allocSum, alloc) => allocSum + (alloc.allocation?.amount || 0), 0);
-        }, 0);
-
         const allocationAnalysis = [
           {
             category: "Regular Farmers",
@@ -570,7 +485,6 @@ export const reportsRouter = createTRPCRouter({
             farmersWithAllocations: regularFarmersWithAllocations.length,
             farmersWithoutAllocations: regularFarmersWithoutAllocations.length,
             allocationRate: regularFarmers.length > 0 ? (regularFarmersWithAllocations.length / regularFarmers.length) * 100 : 0,
-            totalAllocationAmount: totalRegularAllocationAmount,
           },
           {
             category: "Organic Farmers",
@@ -578,7 +492,6 @@ export const reportsRouter = createTRPCRouter({
             farmersWithAllocations: organicFarmersWithAllocations.length,
             farmersWithoutAllocations: organicFarmersWithoutAllocations.length,
             allocationRate: organicFarmers.length > 0 ? (organicFarmersWithAllocations.length / organicFarmers.length) * 100 : 0,
-            totalAllocationAmount: totalOrganicAllocationAmount,
           },
           {
             category: "All Farmers",
@@ -587,7 +500,6 @@ export const reportsRouter = createTRPCRouter({
             farmersWithoutAllocations: regularFarmersWithoutAllocations.length + organicFarmersWithoutAllocations.length,
             allocationRate: (regularFarmers.length + organicFarmers.length) > 0 ? 
               ((regularFarmersWithAllocations.length + organicFarmersWithAllocations.length) / (regularFarmers.length + organicFarmers.length)) * 100 : 0,
-            totalAllocationAmount: totalRegularAllocationAmount + totalOrganicAllocationAmount,
           },
         ];
 
@@ -606,16 +518,11 @@ export const reportsRouter = createTRPCRouter({
           _count: {
             _all: true,
           },
-          _sum: {
-            amount: true,
-          },
         });
 
         const processedAllocationTypeStats = allocationTypeStats.map(stat => ({
           allocationType: stat.AllocationType || 'Unknown',
           count: stat._count._all,
-          totalAmount: stat._sum.amount || 0,
-          averageAmount: stat._count._all > 0 ? (stat._sum.amount || 0) / stat._count._all : 0,
         }));
 
         return { allocationTypeStats: processedAllocationTypeStats };

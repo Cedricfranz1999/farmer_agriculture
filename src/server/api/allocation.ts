@@ -35,7 +35,7 @@ export const allocationRouter = createTRPCRouter({
         .object({
           farmerId: z.number().optional(),
           organicFarmerId: z.number().optional(),
-          amount: z.number(),
+          amount: z.string(),
           type: z.string(),
         })
         .refine(

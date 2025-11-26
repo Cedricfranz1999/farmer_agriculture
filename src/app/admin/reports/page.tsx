@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -18,8 +18,6 @@ import {
   Cell,
   AreaChart,
   Area,
-  LineChart,
-  Line,
 } from "recharts";
 import {
   Table,
@@ -116,7 +114,7 @@ interface Concern {
 
 interface Allocation {
   id: any;
-  amount: number;
+  amount: string;
   allocationType?: string;
   approved: boolean;
   farmers: any[];
@@ -129,14 +127,11 @@ interface AllocationAnalysis {
   farmersWithAllocations: number;
   farmersWithoutAllocations: number;
   allocationRate: number;
-  totalAllocationAmount: number;
 }
 
 interface AllocationTypeStats {
   allocationType: string;
   count: number;
-  totalAmount: number;
-  averageAmount: number;
 }
 
 const ReportsPage = () => {
@@ -158,7 +153,7 @@ const ReportsPage = () => {
   const [farmerType, setFarmerType] = useState<"all" | "farmer" | "organic">("all");
   const [exportFormat, setExportFormat] = useState<"csv" | "print">("csv");
   const [searchQuery, setSearchQuery] = useState("");
-  const printRef = React.useRef<HTMLDivElement>(null);
+  const printRef = useRef<HTMLDivElement>(null);
 
   const {
     data: reportsData,
@@ -294,7 +289,7 @@ const ReportsPage = () => {
           rows = data.flatMap((allocation: Allocation) => 
             allocation.farmers?.map((farmer: any) => [
               allocation.id,
-              allocation.amount,
+              `"${allocation.amount}"`,
               `"${allocation.allocationType || "N/A"}"`,
               allocation.approved ? "Yes" : "No",
               `"${allocation.createdAt}"`,
@@ -312,8 +307,7 @@ const ReportsPage = () => {
             "Total Farmers",
             "Farmers with Allocations",
             "Farmers without Allocations",
-            "Allocation Rate (%)",
-            "Total Allocation Amount"
+            "Allocation Rate (%)"
           ];
           
           rows = data.map((row: AllocationAnalysis) => [
@@ -321,26 +315,19 @@ const ReportsPage = () => {
             row.totalFarmers,
             row.farmersWithAllocations,
             row.farmersWithoutAllocations,
-            row.allocationRate.toFixed(2),
-            row.totalAllocationAmount
+            row.allocationRate.toFixed(2)
           ].join(","));
           break;
 
         case "allocation-types":
           headers = [
             "Allocation Type",
-            "Count",
-            "Total Amount",
-            "Average Amount",
-            "Percentage of Total"
+            "Count"
           ];
           
           rows = data.map((row: AllocationTypeStats) => [
             `"${row.allocationType}"`,
-            row.count,
-            row.totalAmount,
-            row.averageAmount.toFixed(2),
-            `${((row.totalAmount / (reportsData?.allocationTypeStats?.reduce((sum: number, item: AllocationTypeStats) => sum + item.totalAmount, 0) || 1)) * 100).toFixed(2)}%`
+            row.count
           ].join(","));
           break;
 
@@ -478,10 +465,6 @@ const ReportsPage = () => {
                   value: reportsData.totalAllocations,
                 },
                 {
-                  metric: "Total Allocation Amount",
-                  value: reportsData.totalAllocationAmount,
-                },
-                {
                   metric: "Farmers with Allocations",
                   value: reportsData.farmersWithAllocations,
                 },
@@ -565,7 +548,7 @@ const ReportsPage = () => {
   const getAllocationTypeIcon = (type: string) => {
     switch (type?.toLowerCase()) {
       case 'cash':
-        return <DollarSign className="h-4 w-4" />;
+        return <Package className="h-4 w-4" />;
       case 'seedling':
         return <Apple className="h-4 w-4" />;
       case 'machine':
@@ -864,7 +847,7 @@ const ReportsPage = () => {
                             {reportsData.totalAllocations?.toLocaleString()}
                           </div>
                           <p className="text-muted-foreground text-xs">
-                            ₱{reportsData.totalAllocationAmount?.toLocaleString()} total
+                            Free-form text amounts
                           </p>
                         </CardContent>
                       </Card>
@@ -899,7 +882,6 @@ const ReportsPage = () => {
                           <div className="text-2xl font-bold text-green-700">
                             {reportsData.farmersWithAllocations?.toLocaleString()}
                           </div>
-                          
                         </CardContent>
                       </Card>
                       <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
@@ -929,8 +911,6 @@ const ReportsPage = () => {
                           <div className="text-2xl font-bold text-green-700">
                             {reportsData.organicFarmersWithAllocations?.toLocaleString()}
                           </div>
-                          <p className="text-muted-foreground text-xs">
-                          </p>
                         </CardContent>
                       </Card>
                       <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
@@ -969,12 +949,12 @@ const ReportsPage = () => {
                                   cx="50%"
                                   cy="50%"
                                   labelLine={false}
-                                  label={({ allocationType, percent }:any) =>
-                                    `${allocationType} ${(percent * 100).toFixed(0)}%`
+                                  label={({ allocationType, count }: any) =>
+                                    `${allocationType} (${count})`
                                   }
                                   outerRadius={80}
                                   fill="#8884d8"
-                                  dataKey="totalAmount"
+                                  dataKey="count"
                                 >
                                   {reportsData.allocationTypeStats.map(
                                     (entry, index) => (
@@ -985,7 +965,7 @@ const ReportsPage = () => {
                                     ),
                                   )}
                                 </Pie>
-                                <Tooltip formatter={(value) => [`₱${Number(value).toLocaleString()}`, 'Amount']} />
+                                <Tooltip formatter={(value) => [`${value} allocations`, 'Count']} />
                               </PieChart>
                             </ResponsiveContainer>
                           </CardContent>
@@ -1235,7 +1215,6 @@ const ReportsPage = () => {
                               <TableHead>With Allocations</TableHead>
                               <TableHead>Without Allocations</TableHead>
                               <TableHead>Allocation Rate</TableHead>
-                              <TableHead>Total Amount</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -1255,9 +1234,6 @@ const ReportsPage = () => {
                                   <Badge variant={analysis.allocationRate > 50 ? "default" : "destructive"}>
                                     {analysis.allocationRate.toFixed(1)}%
                                   </Badge>
-                                </TableCell>
-                                <TableCell className="font-medium">
-                                  ₱{analysis.totalAllocationAmount?.toLocaleString()}
                                 </TableCell>
                               </TableRow>
                             ))}
@@ -1282,7 +1258,7 @@ const ReportsPage = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                         <Card className="bg-green-50">
                           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Total Types</CardTitle>
@@ -1305,30 +1281,7 @@ const ReportsPage = () => {
                             </div>
                           </CardContent>
                         </Card>
-                        <Card className="bg-orange-50">
-                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total Amount</CardTitle>
-                            <DollarSign className="h-4 w-4 text-orange-600" />
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-2xl font-bold text-orange-600">
-                              ₱{reportsData.allocationTypeStats.reduce((sum, item) => sum + item.totalAmount, 0)?.toLocaleString()}
-                            </div>
-                          </CardContent>
-                        </Card>
-                        <Card className="bg-purple-50">
-                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Avg per Allocation</CardTitle>
-                            <TrendingUp className="h-4 w-4 text-purple-600" />
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-2xl font-bold text-purple-600">
-                              ₱{reportsData.allocationTypeStats.length > 0 ? 
-                                (reportsData.allocationTypeStats.reduce((sum, item) => sum + item.totalAmount, 0) / 
-                                 reportsData.allocationTypeStats.reduce((sum, item) => sum + item.count, 0)).toFixed(0) : 0}
-                            </div>
-                          </CardContent>
-                        </Card>
+                 
                       </div>
 
                       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -1336,7 +1289,7 @@ const ReportsPage = () => {
                           <CardHeader>
                             <CardTitle className="flex items-center text-emerald-700">
                               <PieChartIcon className="mr-2 h-5 w-5" />
-                              Allocation Type Distribution by Amount
+                              Allocation Type Distribution
                             </CardTitle>
                           </CardHeader>
                           <CardContent>
@@ -1347,12 +1300,12 @@ const ReportsPage = () => {
                                   cx="50%"
                                   cy="50%"
                                   labelLine={false}
-                                  label={({ allocationType, percent }:any) =>
-                                    `${allocationType} ${(percent * 100).toFixed(0)}%`
+                                  label={({ allocationType, count }: any) =>
+                                    `${allocationType} (${count})`
                                   }
                                   outerRadius={80}
                                   fill="#8884d8"
-                                  dataKey="totalAmount"
+                                  dataKey="count"
                                 >
                                   {reportsData.allocationTypeStats.map(
                                     (entry, index) => (
@@ -1363,7 +1316,7 @@ const ReportsPage = () => {
                                     ),
                                   )}
                                 </Pie>
-                                <Tooltip formatter={(value) => [`₱${Number(value).toLocaleString()}`, 'Amount']} />
+                                <Tooltip formatter={(value) => [`${value} allocations`, 'Count']} />
                               </PieChart>
                             </ResponsiveContainer>
                           </CardContent>
@@ -1395,15 +1348,13 @@ const ReportsPage = () => {
                             <TableRow>
                               <TableHead>Allocation Type</TableHead>
                               <TableHead>Count</TableHead>
-                              <TableHead>Total Amount</TableHead>
-                              <TableHead>Average Amount</TableHead>
-                              <TableHead>Percentage of Total</TableHead>
+                              <TableHead>Percentage</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
                             {(reportsData.allocationTypeStats as AllocationTypeStats[]).map((stats, index) => {
-                              const totalAmount = reportsData.allocationTypeStats.reduce((sum, item) => sum + item.totalAmount, 0);
-                              const percentage = totalAmount > 0 ? (stats.totalAmount / totalAmount) * 100 : 0;
+                              const totalCount = reportsData.allocationTypeStats.reduce((sum, item) => sum + item.count, 0);
+                              const percentage = totalCount > 0 ? (stats.count / totalCount) * 100 : 0;
                               
                               return (
                                 <TableRow key={index}>
@@ -1415,12 +1366,6 @@ const ReportsPage = () => {
                                   </TableCell>
                                   <TableCell>
                                     <Badge variant="outline">{stats.count}</Badge>
-                                  </TableCell>
-                                  <TableCell className="font-semibold">
-                                    ₱{stats.totalAmount?.toLocaleString()}
-                                  </TableCell>
-                                  <TableCell>
-                                    ₱{stats.averageAmount?.toFixed(0)}
                                   </TableCell>
                                   <TableCell>
                                     <div className="flex items-center gap-2">
@@ -1562,7 +1507,6 @@ const ReportsPage = () => {
                   <Card className="border-emerald-200 bg-white/90 backdrop-blur-sm">
                     <CardHeader>
                       <CardTitle className="flex items-center text-emerald-700">
-                        <DollarSign className="mr-2 h-5 w-5" />
                         Allocations Report ({reportsData.allocationsList.length} records)
                         {searchQuery && (
                           <Badge variant="secondary" className="ml-2">
@@ -1592,8 +1536,7 @@ const ReportsPage = () => {
                                 </TableCell>
                                 <TableCell>
                                   <div className="flex items-center">
-                                    <DollarSign className="mr-1 h-3 w-3" />
-                                    ₱{allocation.amount?.toLocaleString()}
+                                    {allocation.amount}
                                   </div>
                                 </TableCell>
                                 <TableCell>

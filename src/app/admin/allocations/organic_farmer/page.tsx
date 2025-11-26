@@ -277,7 +277,7 @@ const AllocationModal = ({
   onClose: () => void;
   onSuccess: (allocationId: string) => void;
 }) => {
-  const [amount, setAmount] = useState<number>(0);
+  const [amount, setAmount] = useState<string>("");
   const [type, setType] = useState<string>("");
   
   const { mutate: createAllocation } = api.allocation.createAllocation.useMutation();
@@ -291,7 +291,7 @@ const AllocationModal = ({
       alert("Please select an allocation type.");
       return;
     }
-    if (amount <= 0) {
+    if (!amount || amount.trim() === "") {
       alert("Please enter a valid amount.");
       return;
     }
@@ -299,7 +299,7 @@ const AllocationModal = ({
     createAllocation(
       {
         organicFarmerId: organicFarmerId,
-        amount,
+        amount: amount,
         type
       },
       {
@@ -318,7 +318,7 @@ const AllocationModal = ({
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setAmount(value === "" ? 0 : parseInt(value) || 0);
+    setAmount(value);
   };
 
   const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -367,14 +367,14 @@ const AllocationModal = ({
 
             <div className="mb-4">
               <label className="mb-1 block text-sm font-medium text-gray-700">
-                Allocation Amount
+                Allocation 
               </label>
               <input
-                type="number"
-                value={amount === 0 ? "" : amount}
+                type="text"
+                value={amount}
                 onChange={handleAmountChange}
                 className="w-full rounded-md border p-2"
-                placeholder="Enter amount "
+                placeholder="Enter amount"
               />
             </div>
 
@@ -483,7 +483,7 @@ const AllocationSuccessDisplay = ({
           <strong>Allocation Type:</strong> {allocationDetails.AllocationType}
         </p>
         <p>
-          <strong>Amount:</strong> {allocationDetails.amount} kg
+          <strong>Allocation:</strong> {allocationDetails.amount}
         </p>
       </AlertDescription>
     </Alert>
