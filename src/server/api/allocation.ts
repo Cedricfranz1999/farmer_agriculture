@@ -59,7 +59,7 @@ export const allocationRouter = createTRPCRouter({
         data: {
           amount: input.amount,
           AllocationType: input.type,
-          approved: false,
+          approved: true,
           farmers: {
             create: {
               farmerId: input.farmerId,
